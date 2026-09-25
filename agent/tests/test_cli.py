@@ -398,3 +398,61 @@ def test_run_with_only_edusoft_paused_still_syncs_blackboard(world, monkeypatch)
 
     assert world.edusoft.logins == []
     assert world.blackboard.logins == [(BB_USER, BB_PASSWORD)]
+
+
+def test_fetch_also_saves_blackboards_answers_when_set_up(world, tmp_path, monkeypatch):
+    import json
+
+    from sla_contract.schema import Blackboard
+
+    configure()
+    credentials.save_blackboard(BB_USER, BB_PASSWORD)
+    state = load_state()
+    state.blackboard_username, state.registered_courses = BB_USER, [["IT093IU", "02"]]
+    save_state(state)
+
+    def read(client, registered):
+        client.capture["/v1/users/_1_1/courses?limit=100&expand=course"] = {"results": []}
+        return Blackboard(courses=[])
+
+    monkeypatch.setattr(cli, "read_blackboard", read)
+    folder = tmp_path / "pages"
+
+    assert cli.main(["fetch", "--save-html", str(folder)]) == 0
+
+    saved = json.loads((folder / "blackboard-raw.json").read_text(encoding="utf-8"))
+    assert saved == {"/v1/users/_1_1/courses?limit=100&expand=course": {"results": []}}
+    assert world.blackboard.logouts == 1
+
+
+def _fetch_blackboard_with(world, tmp_path, monkeypatch, saved_courses):
+    from pathlib import Path
+
+    from sla_contract.schema import Blackboard
+
+    configure()
+    credentials.save_blackboard(BB_USER, BB_PASSWORD)
+    state = load_state()
+    state.blackboard_username, state.registered_courses = BB_USER, saved_courses
+    save_state(state)
+    seen = []
+    monkeypatch.setattr(cli, "read_blackboard", lambda client, registered: seen.append(registered) or Blackboard(courses=[]))
+    world.edusoft.pages["registration"] = [
+        {"registration": (Path(__file__).parent / "fixtures" / "registration.html").read_text(encoding="utf-8")}
+    ] if saved_courses is None else [{"registration": "<html>not the registration page</html>"}]
+
+    assert cli.main(["fetch", "--save-html", str(tmp_path / "pages")]) == 0
+    return [(r.code, r.group) for r in seen[0]]
+
+
+def test_fetch_reads_blackboard_for_the_courses_on_the_registration_page_it_just_saved(world, tmp_path, monkeypatch):
+    # Before the first sync there is no saved course list yet.
+    courses = _fetch_blackboard_with(world, tmp_path, monkeypatch, saved_courses=None)
+
+    assert ("IT093IU", "02") in courses and len(courses) == 8
+
+
+def test_fetch_falls_back_to_the_saved_course_list(world, tmp_path, monkeypatch):
+    courses = _fetch_blackboard_with(world, tmp_path, monkeypatch, saved_courses=[["IT093IU", "02"]])
+
+    assert courses == [("IT093IU", "02")]

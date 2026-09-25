@@ -123,6 +123,7 @@ class FakeBlackboard:
         self.logins = []
         self.logouts = 0
         self.user_id = "_1_1"
+        self.capture = None
 
     def login(self, username, password):
         self.logins.append((username, password))

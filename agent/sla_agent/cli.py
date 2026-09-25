@@ -11,6 +11,7 @@
 
 import argparse
 import getpass
+import json
 import logging
 import sys
 from datetime import datetime, timedelta, timezone
@@ -33,6 +34,7 @@ from sla_agent.errors import (
 )
 from sla_agent.log import protect, setup_logging
 from sla_agent.parsers import PARSERS
+from sla_agent.parsers.registration import RegisteredCourse, parse_registered_courses
 from sla_agent.scheduler import SchedulerError, current_user, install_task, remove_task, windowless_python
 from sla_agent.server_client import ServerClient, check_server_url
 from sla_agent.state import agent_home, load_state, save_state
@@ -289,6 +291,21 @@ def cmd_fetch(args):
     except AgentError as error:
         say(f"Couldn't read EduSoft: {error}")
         return 1
+    blackboard, blackboard_password = _blackboard_login(state)
+    if blackboard is not None and not state.blackboard_paused:
+        try:  # this semester's courses, from the registration page just saved
+            registered = parse_registered_courses({"registration": files["registration.html"]})
+        except ParseError:
+            registered = [RegisteredCourse(code, group) for code, group in state.registered_courses or []]
+        blackboard.capture = {}
+        try:
+            blackboard.login(state.blackboard_username, blackboard_password)
+            read_blackboard(blackboard, registered)
+        except AgentError as error:
+            say(f"Couldn't read Blackboard: {error}")
+        finally:
+            blackboard.logout()
+        files["blackboard-raw.json"] = json.dumps(blackboard.capture, ensure_ascii=False, indent=1)
     folder.mkdir(parents=True, exist_ok=True)
     for name, html in files.items():
         (folder / name).write_text(html, encoding="utf-8")
