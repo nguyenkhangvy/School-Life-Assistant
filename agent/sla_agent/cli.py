@@ -16,7 +16,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from sla_contract.schema import SECTION_NAMES, FinishRun
+from sla_contract.schema import EDUSOFT_SECTIONS, FinishRun
 
 from sla_agent import credentials
 from sla_agent.blackboard_client import BlackboardClient
@@ -265,7 +265,7 @@ def cmd_fetch(args):
     try:
         edusoft.login(state.student_id, password)
         files = {"home.html": edusoft.get_page("home")}
-        for section in SECTION_NAMES:
+        for section in EDUSOFT_SECTIONS:
             for part, html in edusoft.read(section).items():
                 if part != "term":
                     files[_file_name(section, part)] = html

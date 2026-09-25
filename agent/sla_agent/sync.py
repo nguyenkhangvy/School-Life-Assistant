@@ -8,7 +8,7 @@ re-login and one retry of that page.
 import logging
 from dataclasses import dataclass
 
-from sla_contract.schema import SECTION_NAMES, FinishRun
+from sla_contract.schema import EDUSOFT_SECTIONS, FinishRun
 
 from sla_agent.errors import AgentError, BadCredentials, ExtraVerification, SessionExpired
 from sla_agent.log import protect
@@ -59,7 +59,7 @@ def _collect(state, edusoft, parsers, password):
     try:
         edusoft.login(state.student_id, password)
         sections = {name: _read_section(name, edusoft, parsers, state.student_id, password)
-                    for name in SECTION_NAMES}
+                    for name in EDUSOFT_SECTIONS}
         return FinishRun.model_validate(sections)
     except PAUSING_ERRORS as error:
         log.warning("Pausing automatic sync: %s", error)

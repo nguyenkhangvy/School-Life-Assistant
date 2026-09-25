@@ -104,7 +104,7 @@ Blackboard
     ├── announcements[]: bb_id, title, text, posted_at, url
     ├── assignments[]:   bb_id, name, due_at (nullable), points_possible (nullable),
     │                    score (nullable), grade_text (nullable), status, feedback (nullable),
-    │                    graded_at (nullable), url
+    │                    url
     └── materials[]:     bb_id, title, kind (file/folder/link/document/other), path, created_at (nullable), url
 ```
 
@@ -116,7 +116,7 @@ Times are timezone-aware like the rest of the format. Unknown fields are rejecte
 |---|---|
 | `school_bb_courses` | bb_id, course_code, name, url |
 | `school_bb_announcements` | course_id, bb_id, title, text, posted_at, url |
-| `school_bb_assignments` | course_id, bb_id, name, due_at, points_possible, score, grade_text, status, feedback, graded_at, url |
+| `school_bb_assignments` | course_id, bb_id, name, due_at, points_possible, score, grade_text, status, feedback, url |
 | `school_bb_materials` | course_id, bb_id, title, kind, path, created_at, url |
 
 A successful `blackboard` section replaces the user's Blackboard rows in one transaction. A failed section keeps the old rows.

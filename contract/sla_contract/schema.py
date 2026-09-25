@@ -16,6 +16,7 @@ ErrorCode = Literal[
     "session_expired",  # EduSoft logged us out mid-sync, and one re-login did not help
     "network",  # EduSoft could not be reached, timed out, or was under maintenance
     "edusoft_changed",  # a page no longer looks the way the parser expects
+    "source_changed",  # Blackboard's answers are in an unexpected format
     "extra_verification",  # EduSoft asked for a CAPTCHA, one-time code or Microsoft sign-in
     "unknown",
 ]
@@ -88,6 +89,53 @@ class Tuition(_Strict):
     items: Annotated[list[TuitionItem], Field(max_length=60)] = []
 
 
+BbId = Annotated[str, Field(min_length=1, max_length=64)]
+BbUrl = Annotated[str, Field(max_length=500, pattern=r"^https://blackboard\.hcmiu\.edu\.vn/")]
+
+
+class BbAnnouncement(_Strict):
+    bb_id: BbId
+    title: Name
+    text: Annotated[str, Field(max_length=5000)] = ""
+    posted_at: AwareDatetime | None = None
+    url: BbUrl
+
+
+class BbAssignment(_Strict):
+    bb_id: BbId
+    name: Name
+    due_at: AwareDatetime | None = None
+    points_possible: Annotated[float, Field(ge=0)] | None = None
+    score: float | None = None
+    grade_text: Annotated[str, Field(max_length=50)] | None = None
+    status: Literal["not_graded", "needs_grading", "graded", "exempt"]
+    feedback: Annotated[str, Field(max_length=1000)] | None = None
+    url: BbUrl
+
+
+class BbMaterial(_Strict):
+    bb_id: BbId
+    title: Name
+    kind: Literal["file", "folder", "link", "document", "other"]
+    path: Annotated[str, Field(max_length=500)] = ""
+    created_at: AwareDatetime | None = None
+    url: BbUrl
+
+
+class BbCourse(_Strict):
+    bb_id: BbId
+    course_code: Code | None = None
+    name: Name
+    url: BbUrl
+    announcements: Annotated[list[BbAnnouncement], Field(max_length=300)] = []
+    assignments: Annotated[list[BbAssignment], Field(max_length=300)] = []
+    materials: Annotated[list[BbMaterial], Field(max_length=1000)] = []
+
+
+class Blackboard(_Strict):
+    courses: Annotated[list[BbCourse], Field(max_length=40)]
+
+
 T = TypeVar("T")
 
 
@@ -105,8 +153,10 @@ class SectionFailed(_Strict):
 TimetableResult = Annotated[SectionOk[Timetable] | SectionFailed, Field(discriminator="status")]
 ExamsResult = Annotated[SectionOk[Exams] | SectionFailed, Field(discriminator="status")]
 TuitionResult = Annotated[SectionOk[Tuition] | SectionFailed, Field(discriminator="status")]
+BlackboardResult = Annotated[SectionOk[Blackboard] | SectionFailed, Field(discriminator="status")]
 
-SECTION_NAMES = ("timetable", "exams", "tuition")
+EDUSOFT_SECTIONS = ("timetable", "exams", "tuition")
+SECTION_NAMES = EDUSOFT_SECTIONS + ("blackboard",)
 
 
 class FinishRun(_Strict):
@@ -118,6 +168,7 @@ class FinishRun(_Strict):
     timetable: TimetableResult | None = None
     exams: ExamsResult | None = None
     tuition: TuitionResult | None = None
+    blackboard: BlackboardResult | None = None
 
     @model_validator(mode="after")
     def _error_or_sections(self):

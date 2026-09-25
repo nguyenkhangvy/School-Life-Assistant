@@ -112,3 +112,61 @@ def test_overall_status(changes, expected):
             payload[key] = value
 
     assert FinishRun.model_validate(payload).overall_status() == expected
+
+
+BB = "https://blackboard.hcmiu.edu.vn"
+
+
+def blackboard_payload():
+    return {
+        "courses": [{
+            "bb_id": "_101_1", "course_code": "IT093IU", "name": "Web Application Development",
+            "url": f"{BB}/webapps/blackboard/execute/launcher?type=Course&id=_101_1&url=",
+            "announcements": [{"bb_id": "_501_1", "title": "No class on Thursday", "text": "Class is cancelled.",
+                               "posted_at": "2026-09-28T02:00:00+00:00", "url": f"{BB}/x"}],
+            "assignments": [{"bb_id": "_701_1", "name": "Lab 3", "due_at": "2026-10-02T16:59:00+00:00",
+                             "points_possible": 10, "score": 8.5, "grade_text": "8.5", "status": "graded",
+                             "feedback": "Good work", "url": f"{BB}/x"}],
+            "materials": [{"bb_id": "_902_1", "title": "Week 5 slides.pdf", "kind": "file", "path": "Week 5",
+                           "created_at": "2026-09-28T01:00:00+00:00", "url": f"{BB}/x"}],
+        }],
+    }
+
+
+def test_a_blackboard_section_is_accepted_next_to_edusoft():
+    payload = full_payload()
+    payload["blackboard"] = {"status": "ok", "data": blackboard_payload()}
+
+    finish = FinishRun.model_validate(payload)
+
+    assert list(finish.sections()) == ["timetable", "exams", "tuition", "blackboard"]
+    assert finish.blackboard.data.courses[0].assignments[0].score == 8.5
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda p: p["courses"][0]["announcements"][0].update(url="https://evil.example/x"),
+        lambda p: p["courses"][0]["announcements"][0].update(posted_at="2026-09-28T02:00:00"),
+        lambda p: p["courses"][0]["assignments"][0].update(status="done"),
+        lambda p: p["courses"][0]["materials"][0].update(kind="video"),
+        lambda p: p["courses"][0].update(student_email="s@example.com"),
+        lambda p: p["courses"][0]["announcements"][0].update(text="x" * 5001),
+    ],
+    ids=["link-to-another-site", "naive-time", "unknown-status", "unknown-kind", "extra-field", "text-too-long"],
+)
+def test_bad_blackboard_data_is_rejected(change):
+    data = blackboard_payload()
+    change(data)
+
+    with pytest.raises(ValidationError):
+        FinishRun.model_validate({"blackboard": {"status": "ok", "data": data}})
+
+
+def test_a_failed_blackboard_part_can_say_its_format_changed():
+    finish = FinishRun.model_validate({
+        "timetable": full_payload()["timetable"],
+        "blackboard": {"status": "failed", "error_code": "source_changed", "error_message": "Unexpected format"},
+    })
+
+    assert finish.overall_status() == "partial"
