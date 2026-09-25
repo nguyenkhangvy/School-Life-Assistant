@@ -151,3 +151,47 @@ def test_an_empty_exam_schedule_is_not_announced_again_and_again():
 
 def test_an_empty_timetable_is_not_announced_again_and_again():
     assert timetable_changes(None, [], NOW) == []
+
+
+from app.school.services.changes import BbItem, blackboard_changes
+
+DUE = datetime(2026, 10, 2, 16, 59)  # Fri 02/10 23:59 Vietnam
+
+
+def bb(kind, bb_id, title, **extra):
+    return BbItem(kind=kind, course="Web App", bb_id=bb_id, title=title, **extra)
+
+
+def test_first_blackboard_sync_gives_one_summary_line():
+    new = (["Web App"], [bb("announcement", "a1", "Hi"), bb("assignment", "x1", "Lab 3", due_at=DUE)])
+
+    assert summaries(blackboard_changes(None, new)) == [
+        ("added", "Blackboard loaded: 1 course, 1 announcement, 1 assignment, 0 materials")]
+
+
+def test_no_blackboard_courses_means_no_line():
+    assert blackboard_changes(None, ([], [])) == []
+
+
+def test_new_announcement_assignment_and_material():
+    old = (["Web App"], [])
+    new = (["Web App"], [bb("announcement", "a1", "No class on Thursday"),
+                         bb("assignment", "x1", "Lab 3", due_at=DUE),
+                         bb("material", "m1", "Week 5 slides.pdf", material_kind="file"),
+                         bb("material", "m2", "Week 5", material_kind="folder")])
+
+    assert summaries(blackboard_changes(old, new)) == [
+        ("added", "New announcement · Web App: No class on Thursday"),
+        ("added", "New assignment · Web App: Lab 3, due Fri 02/10 23:59"),
+        ("added", "New material · Web App: Week 5 slides.pdf"),
+    ]
+
+
+def test_a_moved_deadline_and_a_new_grade():
+    before = bb("assignment", "x1", "Lab 3", due_at=DUE, status="not_graded", points_possible=10.0)
+    after = before._replace(due_at=datetime(2026, 10, 5, 16, 59), status="graded", score=8.5)
+
+    assert summaries(blackboard_changes((["Web App"], [before]), (["Web App"], [after]))) == [
+        ("changed", "Due date changed · Web App, Lab 3: Fri 02/10 23:59 → Mon 05/10 23:59"),
+        ("changed", "New grade · Web App, Lab 3: 8.5/10"),
+    ]

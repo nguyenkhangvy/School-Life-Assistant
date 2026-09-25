@@ -168,3 +168,63 @@ def tuition_changes(old, new):
     if old.status_text != new.status_text:
         changes.append(Change("changed", f"{title}: status {old.status_text or '-'} → {new.status_text or '-'}"))
     return changes
+
+
+class BbItem(NamedTuple):
+    kind: str  # announcement / assignment / material
+    course: str
+    bb_id: str
+    title: str
+    due_at: datetime | None = None  # naive UTC
+    status: str | None = None
+    score: float | None = None
+    points_possible: float | None = None
+    grade_text: str | None = None
+    material_kind: str | None = None
+
+
+def _number(value):
+    return f"{value:g}"
+
+
+def _grade(item):
+    if item.score is not None and item.points_possible:
+        return f"{_number(item.score)}/{_number(item.points_possible)}"
+    if item.score is not None:
+        return _number(item.score)
+    return item.grade_text or "graded"
+
+
+def blackboard_changes(old, new):
+    """old/new: (course names, [BbItem]). old is None on the first Blackboard sync."""
+    courses, items = new
+    if old is None:
+        if not courses:
+            return []
+        def count(kind):
+            return sum(1 for i in items if i.kind == kind)
+        return [Change("added", f"Blackboard loaded: {_count(len(courses), 'course')}, "
+                                f"{_count(count('announcement'), 'announcement')}, "
+                                f"{_count(count('assignment'), 'assignment')}, "
+                                f"{_count(count('material'), 'material')}")]
+
+    before = {(i.kind, i.bb_id): i for i in old[1]}
+    changes = []
+    for item in items:
+        previous = before.get((item.kind, item.bb_id))
+        if item.kind == "announcement" and previous is None:
+            changes.append(Change("added", f"New announcement · {item.course}: {item.title}"))
+        elif item.kind == "assignment" and previous is None:
+            due = f", due {when(item.due_at)}" if item.due_at else ""
+            changes.append(Change("added", f"New assignment · {item.course}: {item.title}{due}"))
+        elif item.kind == "assignment":
+            if item.due_at and previous.due_at and item.due_at != previous.due_at:
+                changes.append(Change("changed", f"Due date changed · {item.course}, {item.title}: "
+                                                 f"{when(previous.due_at)} → {when(item.due_at)}"))
+            elif item.due_at and previous.due_at is None:
+                changes.append(Change("changed", f"Due date set · {item.course}, {item.title}: {when(item.due_at)}"))
+            if item.status == "graded" and (previous.status != "graded" or previous.score != item.score):
+                changes.append(Change("changed", f"New grade · {item.course}, {item.title}: {_grade(item)}"))
+        elif item.kind == "material" and previous is None and item.material_kind != "folder":
+            changes.append(Change("added", f"New material · {item.course}: {item.title}"))
+    return changes

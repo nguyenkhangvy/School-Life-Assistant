@@ -13,6 +13,10 @@ from sqlalchemy import delete, select
 
 from app.extensions import db
 from app.school.models import (
+    SchoolBbAnnouncement,
+    SchoolBbAssignment,
+    SchoolBbCourse,
+    SchoolBbMaterial,
     SchoolChange,
     SchoolClassMeeting,
     SchoolCourse,
@@ -20,9 +24,11 @@ from app.school.models import (
     SchoolTuition,
 )
 from app.school.services.changes import (
+    BbItem,
     ExamInfo,
     Meeting,
     TuitionInfo,
+    blackboard_changes,
     exam_changes,
     timetable_changes,
     tuition_changes,
@@ -120,7 +126,59 @@ def _save_tuition(user_id, tuition, now):
     return tuition_changes(old, new)
 
 
-SAVERS = {"timetable": _save_timetable, "exams": _save_exams, "tuition": _save_tuition}
+def _bb_items(courses):
+    """[BbItem] from Blackboard rows or from the shared-format courses."""
+    items = []
+    for course in courses:
+        for a in course.announcements:
+            items.append(BbItem("announcement", course.name, a.bb_id, a.title))
+        for a in course.assignments:
+            due = a.due_at if a.due_at is None or a.due_at.tzinfo is None else to_utc(a.due_at)
+            items.append(BbItem("assignment", course.name, a.bb_id, a.name, due_at=due, status=a.status,
+                                score=a.score, points_possible=a.points_possible, grade_text=a.grade_text))
+        for m in course.materials:
+            items.append(BbItem("material", course.name, m.bb_id, m.title, material_kind=m.kind))
+    return items
+
+
+def _optional_utc(moment):
+    return None if moment is None else to_utc(moment)
+
+
+def _save_blackboard(user_id, blackboard, now):
+    old_courses = db.session.execute(select(SchoolBbCourse).filter_by(user_id=user_id)).scalars().all()
+    old = ([c.name for c in old_courses], _bb_items(old_courses)) if old_courses else None
+    new = ([c.name for c in blackboard.courses], _bb_items(blackboard.courses))
+
+    mine = select(SchoolBbCourse.id).filter_by(user_id=user_id)
+    for model in (SchoolBbAnnouncement, SchoolBbAssignment, SchoolBbMaterial):
+        db.session.execute(delete(model).where(model.course_id.in_(mine)))
+    db.session.execute(delete(SchoolBbCourse).filter_by(user_id=user_id))
+    for course in blackboard.courses:
+        row = SchoolBbCourse(user_id=user_id, bb_id=course.bb_id, course_code=course.course_code,
+                             name=course.name, url=course.url)
+        row.announcements = [SchoolBbAnnouncement(user_id=user_id, bb_id=a.bb_id, title=a.title, text=a.text,
+                                                  posted_at=_optional_utc(a.posted_at), url=a.url)
+                             for a in course.announcements]
+        row.assignments = [SchoolBbAssignment(user_id=user_id, bb_id=a.bb_id, name=a.name,
+                                              due_at=_optional_utc(a.due_at), points_possible=a.points_possible,
+                                              score=a.score, grade_text=a.grade_text, status=a.status,
+                                              feedback=a.feedback, url=a.url)
+                           for a in course.assignments]
+        row.materials = [SchoolBbMaterial(user_id=user_id, bb_id=m.bb_id, title=m.title, kind=m.kind, path=m.path,
+                                          created_at=_optional_utc(m.created_at), url=m.url)
+                         for m in course.materials]
+        db.session.add(row)
+    db.session.flush()
+    return blackboard_changes(old, new)
+
+
+SAVERS = {
+    "timetable": _save_timetable,
+    "exams": _save_exams,
+    "tuition": _save_tuition,
+    "blackboard": _save_blackboard,
+}
 
 
 def finish_run(run, payload, now):

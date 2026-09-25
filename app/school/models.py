@@ -9,6 +9,7 @@ from sqlalchemy import (
     Boolean,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -173,3 +174,79 @@ class SchoolChange(db.Model):
     summary: Mapped[str] = mapped_column(String(500), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
     seen_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+# ---- Blackboard --------------------------------------------------------------
+
+
+def _bb_course_id():
+    return mapped_column(ForeignKey("school_bb_courses.id", ondelete="CASCADE"), nullable=False, index=True)
+
+
+class SchoolBbCourse(db.Model):
+    __tablename__ = "school_bb_courses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = _user_id()
+    bb_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    course_code: Mapped[str | None] = mapped_column(String(20))
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+
+    announcements: Mapped[list["SchoolBbAnnouncement"]] = relationship(
+        back_populates="course", cascade="all, delete-orphan", passive_deletes=True)
+    assignments: Mapped[list["SchoolBbAssignment"]] = relationship(
+        back_populates="course", cascade="all, delete-orphan", passive_deletes=True)
+    materials: Mapped[list["SchoolBbMaterial"]] = relationship(
+        back_populates="course", cascade="all, delete-orphan", passive_deletes=True)
+
+
+class SchoolBbAnnouncement(db.Model):
+    __tablename__ = "school_bb_announcements"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = _user_id()
+    course_id: Mapped[int] = _bb_course_id()
+    bb_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    posted_at: Mapped[datetime | None] = mapped_column(DateTime)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+
+    course: Mapped[SchoolBbCourse] = relationship(back_populates="announcements")
+
+
+class SchoolBbAssignment(db.Model):
+    __tablename__ = "school_bb_assignments"
+    __table_args__ = (Index("ix_school_bb_assignments_user_due", "user_id", "due_at"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = _user_id()
+    course_id: Mapped[int] = _bb_course_id()
+    bb_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    due_at: Mapped[datetime | None] = mapped_column(DateTime)
+    points_possible: Mapped[float | None] = mapped_column(Float)
+    score: Mapped[float | None] = mapped_column(Float)
+    grade_text: Mapped[str | None] = mapped_column(String(50))
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    feedback: Mapped[str | None] = mapped_column(Text)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+
+    course: Mapped[SchoolBbCourse] = relationship(back_populates="assignments")
+
+
+class SchoolBbMaterial(db.Model):
+    __tablename__ = "school_bb_materials"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = _user_id()
+    course_id: Mapped[int] = _bb_course_id()
+    bb_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    kind: Mapped[str] = mapped_column(String(10), nullable=False)
+    path: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+
+    course: Mapped[SchoolBbCourse] = relationship(back_populates="materials")

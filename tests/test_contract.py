@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from sla_contract.schema import FinishRun
-from tests.helpers import full_payload
+from tests.helpers import BB, blackboard_payload, full_payload
 
 
 def test_a_complete_upload_is_accepted():
@@ -112,25 +112,6 @@ def test_overall_status(changes, expected):
             payload[key] = value
 
     assert FinishRun.model_validate(payload).overall_status() == expected
-
-
-BB = "https://blackboard.hcmiu.edu.vn"
-
-
-def blackboard_payload():
-    return {
-        "courses": [{
-            "bb_id": "_101_1", "course_code": "IT093IU", "name": "Web Application Development",
-            "url": f"{BB}/webapps/blackboard/execute/launcher?type=Course&id=_101_1&url=",
-            "announcements": [{"bb_id": "_501_1", "title": "No class on Thursday", "text": "Class is cancelled.",
-                               "posted_at": "2026-09-28T02:00:00+00:00", "url": f"{BB}/x"}],
-            "assignments": [{"bb_id": "_701_1", "name": "Lab 3", "due_at": "2026-10-02T16:59:00+00:00",
-                             "points_possible": 10, "score": 8.5, "grade_text": "8.5", "status": "graded",
-                             "feedback": "Good work", "url": f"{BB}/x"}],
-            "materials": [{"bb_id": "_902_1", "title": "Week 5 slides.pdf", "kind": "file", "path": "Week 5",
-                           "created_at": "2026-09-28T01:00:00+00:00", "url": f"{BB}/x"}],
-        }],
-    }
 
 
 def test_a_blackboard_section_is_accepted_next_to_edusoft():
