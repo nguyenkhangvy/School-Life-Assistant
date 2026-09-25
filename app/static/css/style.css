@@ -251,3 +251,21 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 .system-lines li { margin: 2px 0; }
 .system-paused, .system-partial { color: #c77700; }
 .system-failed { color: var(--error); }
+
+/* School: Blackboard */
+:root { --due-color: #c77700; }
+@media (prefers-color-scheme: dark) { :root { --due-color: #e0a040; } }
+.legend-due::before { background: var(--due-color); }
+.fc .event-due { background: var(--due-color); border-color: var(--due-color); color: #fff; }
+.fc .fc-list-event.event-due { background: transparent; color: var(--text); }
+.fc .fc-list-event.event-due .fc-list-event-dot { border-color: var(--due-color); }
+.item-due { border-left-color: var(--due-color); }
+.bb-item { padding: 10px 0; border-top: 1px solid var(--border); }
+.bb-item:first-of-type { border-top: 0; }
+.bb-item h3 { margin: 0 0 4px; font-size: 1rem; }
+.bb-item p { margin: 4px 0; }
+.bb-text { white-space: pre-line; }
+.bb-item.is-overdue h3 { color: var(--error); }
+.badge-warning { background: var(--due-color); }
+.bb-materials { margin: 0; padding-left: 18px; }
+.bb-materials li { margin-bottom: 6px; }

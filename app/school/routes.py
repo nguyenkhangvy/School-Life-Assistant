@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -6,7 +6,16 @@ from sqlalchemy import select
 
 from app.extensions import db
 from app.school.forms import DeviceForm
-from app.school.models import SchoolChange, SchoolExam, SchoolSyncDevice, SchoolSyncRun, SchoolTuition
+from app.school.models import (
+    SchoolBbAnnouncement,
+    SchoolBbAssignment,
+    SchoolBbCourse,
+    SchoolChange,
+    SchoolExam,
+    SchoolSyncDevice,
+    SchoolSyncRun,
+    SchoolTuition,
+)
 from app.school.services import schedule
 from app.school.services.changes import WEEKDAYS, to_vietnam, when
 from app.school.services.devices import create_device
@@ -41,6 +50,11 @@ def day_label(day):
 @bp.app_template_filter("money")
 def money(amount):
     return f"{amount:,}"
+
+
+@bp.app_template_filter("score")
+def score(value):
+    return f"{value:g}"
 
 
 def _active_devices():
@@ -96,6 +110,15 @@ def index():
     ).scalars().all()
     lines = system_lines([RunInfo(r.status, r.started_at, r.finished_at, r.error_code, r.error_message, r.sections)
                           for r in recent], now)
+    due_soon = db.session.execute(
+        select(SchoolBbAssignment).filter_by(user_id=current_user.id)
+        .where(SchoolBbAssignment.due_at >= now, SchoolBbAssignment.due_at < now + timedelta(days=7))
+        .order_by(SchoolBbAssignment.due_at)
+    ).scalars().all()
+    latest_announcements = db.session.execute(
+        select(SchoolBbAnnouncement).filter_by(user_id=current_user.id)
+        .order_by(SchoolBbAnnouncement.posted_at.desc(), SchoolBbAnnouncement.id.desc()).limit(3)
+    ).scalars().all()
     return render_template(
         "school/index.html",
         status=status,
@@ -105,6 +128,8 @@ def index():
         tomorrow_items=schedule.items_on(current_user.id, today + timedelta(days=1)),
         next_exam=next_exam,
         changes=changes,
+        due_soon=due_soon,
+        latest_announcements=latest_announcements,
     )
 
 
@@ -147,7 +172,40 @@ def calendar_feed():
     if not start < end or (end - start).days > MAX_CALENDAR_DAYS:
         return jsonify(error=f"the range must be 1 to {MAX_CALENDAR_DAYS} days"), 400
     items = schedule.items_between(current_user.id, schedule.day_start_utc(start), schedule.day_start_utc(end))
-    return jsonify([_calendar_event(item) for item in items])
+    events = [_calendar_event(item) for item in items]
+    for deadline in schedule.deadlines_between(current_user.id, schedule.day_start_utc(start), schedule.day_start_utc(end)):
+        events.append({
+            "title": f"Due {vn_clock(deadline.due_at)}: {deadline.name} · {deadline.course.name}",
+            "start": schedule.vietnam_date(deadline.due_at).isoformat(),
+            "allDay": True,
+            "classNames": ["event-due"],
+            "extendedProps": {"kind": "due", "code": deadline.course.course_code, "room": None},
+        })
+    return jsonify(events)
+
+
+@bp.get("/courses")
+@login_required
+def courses():
+    rows = db.session.execute(
+        select(SchoolBbCourse).filter_by(user_id=current_user.id).order_by(SchoolBbCourse.name)
+    ).scalars().all()
+    return render_template("school/courses.html", courses=rows)
+
+
+@bp.get("/courses/<int:course_id>")
+@login_required
+def course(course_id):
+    row = db.first_or_404(select(SchoolBbCourse).filter_by(id=course_id, user_id=current_user.id))
+    far_future = datetime.max
+    return render_template(
+        "school/course.html",
+        course=row,
+        announcements=sorted(row.announcements, key=lambda a: a.posted_at or datetime.min, reverse=True),
+        assignments=sorted(row.assignments, key=lambda a: a.due_at or far_future),
+        materials=sorted(row.materials, key=lambda m: m.created_at or datetime.min, reverse=True),
+        now=utcnow(),
+    )
 
 
 @bp.get("/exams")

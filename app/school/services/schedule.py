@@ -10,7 +10,7 @@ from typing import NamedTuple
 from sqlalchemy import select
 
 from app.extensions import db
-from app.school.models import SchoolClassMeeting, SchoolCourse, SchoolExam
+from app.school.models import SchoolBbAssignment, SchoolClassMeeting, SchoolCourse, SchoolExam
 
 VIETNAM_OFFSET = timedelta(hours=7)
 EXAM_LABELS = {"final": "Final exam", "midterm": "Midterm exam", "other": "Exam"}
@@ -61,3 +61,14 @@ def items_between(user_id, start_utc, end_utc):
 
 def items_on(user_id, day):
     return items_between(user_id, day_start_utc(day), day_start_utc(day + timedelta(days=1)))
+
+
+def deadlines_between(user_id, start_utc, end_utc):
+    """Blackboard deadlines in [start_utc, end_utc), soonest first."""
+    return db.session.execute(
+        select(SchoolBbAssignment).where(
+            SchoolBbAssignment.user_id == user_id,
+            SchoolBbAssignment.due_at >= start_utc,
+            SchoolBbAssignment.due_at < end_utc,
+        ).order_by(SchoolBbAssignment.due_at)
+    ).scalars().all()

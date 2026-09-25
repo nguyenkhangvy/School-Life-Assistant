@@ -24,6 +24,33 @@
     </section>
 
     <section class="card">
+      <h2>Due soon</h2>
+      {% if due_soon %}
+        <ul class="items">
+          {% for a in due_soon %}
+            <li class="item item-due">
+              <span class="item-time">{{ a.due_at | vn_time }}</span>
+              <span class="item-title">{{ a.name }}</span>
+              <span class="item-meta">{{ a.course.name }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">Nothing due in the next 7 days.</p>
+      {% endif %}
+
+      <h2>Latest announcements</h2>
+      {% if latest_announcements %}
+        <ul class="changes">
+          {% for a in latest_announcements %}
+            <li><a href="{{ url_for('school.course', course_id=a.course_id) }}">{{ a.course.name }}</a>: {{ a.title }}
+                <span class="muted">{{ a.text[:120] }}{% if a.text | length > 120 %}…{% endif %}</span></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No announcements yet.</p>
+      {% endif %}
+
       <h2>Next exam</h2>
       {% if next_exam %}
         <p><strong>{{ next_exam.course_name }}</strong> ({{ next_exam.exam_type }})<br>
