@@ -14,7 +14,14 @@ from urllib.parse import urljoin, urlsplit, urlunsplit
 import requests
 from bs4 import BeautifulSoup
 
-from sla_agent.errors import BadCredentials, ExtraVerification, NetworkError, SessionExpired, UnexpectedRedirect
+from sla_agent.errors import (
+    BadCredentials,
+    ExtraVerification,
+    NetworkError,
+    ParseError,
+    SessionExpired,
+    UnexpectedRedirect,
+)
 
 log = logging.getLogger(__name__)
 
@@ -30,8 +37,20 @@ USERNAME_FIELD = "ctl00$ContentPlaceHolder1$ctl00$txtTaiKhoa"
 PASSWORD_FIELD = "ctl00$ContentPlaceHolder1$ctl00$txtMatKhau"
 SUBMIT_FIELD = "ctl00$ContentPlaceHolder1$ctl00$btnDangNhap"
 
-# EduSoft page names (default.aspx?page=...). To be confirmed with real pages.
-PAGES = {"home": "gioithieu", "timetable": "thoikhoabieu", "exams": "xemlichthi", "tuition": "xemhocphi"}
+# EduSoft page names (default.aspx?page=...), confirmed with real pages on 2026-09-25.
+PAGES = {
+    "home": "gioithieu",
+    "timetable": "thoikhoabieu",
+    "exams": "xemlichthi",  # final exams
+    "midterm_exams": "xemlichthigk",
+    "tuition": "xemhocphi",
+}
+
+# Form fields used to switch views (reading only; nothing is changed on EduSoft).
+TIMETABLE_TERM_FIELD = "ctl00$ContentPlaceHolder1$ctl00$ddlChonNHHK"
+TIMETABLE_VIEW_FIELD = "ctl00$ContentPlaceHolder1$ctl00$ddlLoai"
+SEMESTER_VIEW = "1"  # "TKB học kỳ cá nhân": every course of the semester, not just this week
+FINAL_EXAM_TERM_FIELD = "ctl00$ContentPlaceHolder1$ctl00$dropNHHK"
 
 VERIFICATION_HINTS = ("captcha", "recaptcha", "otp", "maxacnhan", "xacthuc")
 MICROSOFT_HOSTS = ("login.microsoftonline.com", "login.live.com", "login.windows.net")
@@ -51,11 +70,36 @@ def _asks_for_verification(soup):
     return False
 
 
+def _selected(html, field):
+    """(selected value, all values) of a dropdown in the page."""
+    select = BeautifulSoup(html, "html.parser").find("select", attrs={"name": field})
+    if select is None:
+        return None, []
+    options = select.find_all("option")
+    chosen = select.find("option", selected=True) or (options[0] if options else None)
+    return (chosen.get("value") if chosen else None), [o.get("value") for o in options]
+
+
+def _form_fields(html):
+    """What a browser would send back: hidden fields and each dropdown's current choice."""
+    form = BeautifulSoup(html, "html.parser").find("form")
+    if form is None:
+        raise ParseError("EduSoft's page has no form to switch views with.")
+    fields = {tag["name"]: tag.get("value", "") for tag in form.find_all("input", attrs={"type": "hidden"})
+              if tag.get("name")}
+    for select in form.find_all("select"):
+        if select.get("name"):
+            chosen = select.find("option", selected=True) or select.find("option")
+            fields[select["name"]] = chosen.get("value", "") if chosen else ""
+    return fields
+
+
 class EduSoftClient:
     def __init__(self, session=None, sleep=time.sleep):
         self.session = session or requests.Session()
         self.session.headers["User-Agent"] = USER_AGENT
         self.sleep = sleep
+        self.current_term = None  # e.g. "20261", learned from the timetable page
 
     # ---- HTTP with safety checks ------------------------------------------
 
@@ -130,9 +174,39 @@ class EduSoftClient:
             raise BadCredentials("EduSoft rejected the student ID or password.")
         log.info("Logged in to EduSoft")
 
-    def get_page(self, name):
-        url = f"{BASE_URL}default.aspx?page={PAGES[name]}"
-        html = self._get_with_retries(url).text
+    def _page_url(self, name):
+        return f"{BASE_URL}default.aspx?page={PAGES[name]}"
+
+    @staticmethod
+    def _logged_in(html):
         if _has_login_form(BeautifulSoup(html, "html.parser")):
             raise SessionExpired("EduSoft showed the login form instead of the page.")
         return html
+
+    def get_page(self, name):
+        return self._logged_in(self._get_with_retries(self._page_url(name)).text)
+
+    def switch_view(self, name, html, field, value):
+        """Send the page's form back with one dropdown changed, as choosing it in a browser does."""
+        fields = _form_fields(html)
+        fields.update({field: value, "__EVENTTARGET": field, "__EVENTARGUMENT": ""})
+        return self._logged_in(self._request("POST", self._page_url(name), data=fields).text)
+
+    def read(self, section):
+        """All pages one section needs, for its reader in sla_agent.parsers."""
+        if section == "timetable":
+            weekly = self.get_page("timetable")
+            self.current_term = _selected(weekly, TIMETABLE_TERM_FIELD)[0]
+            semester = self.switch_view("timetable", weekly, TIMETABLE_VIEW_FIELD, SEMESTER_VIEW)
+            return {"weekly": weekly, "semester": semester}
+        if section == "exams":
+            if self.current_term is None:
+                self.current_term = _selected(self.get_page("timetable"), TIMETABLE_TERM_FIELD)[0]
+            final = self.get_page("exams")
+            shown, listed = _selected(final, FINAL_EXAM_TERM_FIELD)
+            if shown != self.current_term and self.current_term in listed:
+                final = self.switch_view("exams", final, FINAL_EXAM_TERM_FIELD, self.current_term)
+            return {"term": self.current_term, "final": final, "midterm": self.get_page("midterm_exams")}
+        if section == "tuition":
+            return {"tuition": self.get_page("tuition")}
+        raise KeyError(section)

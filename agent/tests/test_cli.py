@@ -206,8 +206,11 @@ def test_fetch_saves_the_pages_locally_with_a_privacy_warning(world, tmp_path, c
     assert cli.main(["fetch", "--save-html", str(folder)]) == 0
 
     saved = sorted(p.name for p in folder.iterdir())
-    assert saved == ["exams.html", "home.html", "timetable.html", "tuition.html"]
-    assert (folder / "timetable.html").read_text(encoding="utf-8") == "<html>timetable</html>"
+    assert saved == [
+        "exams-final.html", "exams-midterm.html", "home.html",
+        "timetable-semester.html", "timetable-weekly.html", "tuition.html",
+    ]
+    assert (folder / "timetable-semester.html").read_text(encoding="utf-8") == "<html>timetable semester</html>"
     assert all(PASSWORD not in p.read_text(encoding="utf-8") for p in folder.iterdir())
     assert "personal" in capsys.readouterr().out
     assert world.server.starts == []
@@ -225,17 +228,35 @@ def test_fetch_with_a_wrong_password_pauses(world, tmp_path):
 # ---- import --------------------------------------------------------------------
 
 
-def test_import_uploads_one_part_from_a_saved_page_even_while_paused(world, tmp_path):
+def test_import_uploads_the_parts_found_in_a_saved_folder_even_while_paused(world, tmp_path):
     configure(paused="extra_verification")
-    page = tmp_path / "exams.html"
-    page.write_text("<html>exams</html>", encoding="utf-8")
+    (tmp_path / "exams-final.html").write_text("<html>final</html>", encoding="utf-8")
+    (tmp_path / "exams-midterm.html").write_text("<html>midterm</html>", encoding="utf-8")
 
-    assert cli.main(["import", str(page), "--kind", "exams"]) == 0
+    assert cli.main(["import", str(tmp_path), "--term", "20261"]) == 0
 
     assert world.server.starts == ["import"]
     [(_, result)] = world.server.finishes
     assert list(result.sections()) == ["exams"]
     assert world.edusoft.logins == []
+
+
+def test_import_of_exams_needs_to_know_the_semester(world, tmp_path, capsys):
+    configure()
+    (tmp_path / "exams-final.html").write_text("<html>final</html>", encoding="utf-8")
+
+    assert cli.main(["import", str(tmp_path)]) == 1
+
+    assert world.server.starts == []
+    assert "--term" in capsys.readouterr().out
+
+
+def test_import_of_an_empty_folder_says_nothing_was_found(world, tmp_path, capsys):
+    configure()
+
+    assert cli.main(["import", str(tmp_path)]) == 1
+
+    assert "No saved EduSoft pages" in capsys.readouterr().out
 
 
 # ---- status and forget -----------------------------------------------------------

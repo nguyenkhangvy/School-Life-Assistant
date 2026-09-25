@@ -115,7 +115,7 @@ def test_a_page_the_parser_cannot_read_fails_only_that_part(state):
 
 
 def test_an_expired_session_logs_in_again_once_and_retries_the_page(state):
-    edusoft = FakeEduSoft(pages={"exams": [SessionExpired("login form shown"), "<html>exams</html>"]})
+    edusoft = FakeEduSoft(pages={"exams": [SessionExpired("login form shown"), {"term": "20261", "final": "", "midterm": ""}]})
 
     sync(state, edusoft)
 

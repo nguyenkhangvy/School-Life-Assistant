@@ -1,17 +1,15 @@
-"""Page readers: EduSoft HTML -> the shared data format.
+"""Page readers: EduSoft pages -> the shared data format.
 
-They are written against real (anonymized) EduSoft pages in build step 4.
-Until then each one reports clearly that it isn't written yet.
+Each reader takes the dict of pages that EduSoftClient.read(section) returns.
 """
 
 from sla_agent.errors import ParseError
+from sla_agent.parsers.exams import parse_exams
+from sla_agent.parsers.timetable import parse_timetable
 
 
-def _not_written_yet(name):
-    def parse(html):
-        raise ParseError(f"The {name} reader isn't written yet: it needs real EduSoft pages (build step 4).")
-
-    return parse
+def parse_tuition(pages):
+    raise ParseError("The tuition reader isn't written yet: EduSoft's tuition report hasn't been located.")
 
 
-PARSERS = {name: _not_written_yet(name) for name in ("timetable", "exams", "tuition")}
+PARSERS = {"timetable": parse_timetable, "exams": parse_exams, "tuition": parse_tuition}

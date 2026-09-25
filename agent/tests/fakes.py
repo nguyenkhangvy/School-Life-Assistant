@@ -61,7 +61,7 @@ TIMETABLE_PAGE = page('<table id="ContentPlaceHolder1_ctl00_Table1"><tr><td>IT09
 
 
 class FakeEduSoft:
-    """Records calls. `pages[name]` is a list of results to return in order
+    """Records calls. `pages[section]` is a list of results for read() to return in order
     (an exception instance is raised instead of returned)."""
 
     def __init__(self, login_error=None, pages=None):
@@ -75,9 +75,17 @@ class FakeEduSoft:
         if self.login_error:
             raise self.login_error
 
+    SECTION_PARTS = {"timetable": ("weekly", "semester"), "exams": ("final", "midterm"), "tuition": ("tuition",)}
+
     def get_page(self, name):
+        return f"<html>{name}</html>"
+
+    def read(self, name):
         self.page_calls.append(name)
-        results = self.pages.get(name, [f"<html>{name}</html>"])
+        default = {part: f"<html>{name} {part}</html>" for part in self.SECTION_PARTS[name]}
+        if name == "exams":
+            default["term"] = "20261"
+        results = self.pages.get(name, [default])
         result = results.pop(0) if len(results) > 1 else results[0]
         if isinstance(result, Exception):
             raise result

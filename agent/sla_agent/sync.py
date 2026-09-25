@@ -38,12 +38,12 @@ def _read_section(name, edusoft, parsers, student_id, password):
     """One part's result for the upload. Pausing errors are raised to stop the whole run."""
     try:
         try:
-            html = edusoft.get_page(name)
+            pages = edusoft.read(name)
         except SessionExpired:
             log.info("EduSoft session expired while reading %s; logging in again once", name)
             edusoft.login(student_id, password)
-            html = edusoft.get_page(name)
-        return {"status": "ok", "data": parsers[name](html)}
+            pages = edusoft.read(name)
+        return {"status": "ok", "data": parsers[name](pages)}
     except PAUSING_ERRORS:
         raise
     except AgentError as error:

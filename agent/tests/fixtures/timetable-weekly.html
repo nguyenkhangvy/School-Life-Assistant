@@ -1,0 +1,2206 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<script language="javascript" type="text/javascript">
+
+    
+
+    var gv = 'False';
+
+</script>
+
+<script type="text/javascript" src="https://apis.google.com/js/platform.js?hl=vn" async defer></script>
+
+<head><meta name="google-signin-scope" content="profile email" /><meta id="metaGoogle" name="google-signin-client_id" /><link id="favicon" rel="shortcut icon" type="image/x-icon" href="Images/Edusoft.gif" />
+
+    <script src="JS/jquery-2.2.1.js" type="text/javascript"></script>
+
+    <script src="JS/dialog.js" type="text/javascript"></script>
+
+    <script src="JS/checkdate.js" type="text/javascript"></script>
+
+    <script src="JS/balloontip.js" type="text/javascript"></script>
+
+    <link href="JS/balloontip.css" rel="stylesheet" type="text/css" /><title>
+
+	Cổng Thông Tin Đào Tạo-Trường ĐH Quốc Tế - ĐHQG TP.HCM-Trường STUDENT Quốc tế-DHQTDH
+
+</title>
+
+    <script type="text/javascript" language="javascript">
+
+
+
+        function ShowMess() {
+
+            var url = location.href;
+
+            if (url.indexOf("err=serveroverload", 0) > 0)
+
+                alert('Server quá tải, vui lòng đăng nhập lại!');
+
+            else if (url.indexOf("err=sessionreuse", 0) > 0)
+
+                alert('Vui lòng tắt và mở lại trình duyệt!');
+
+        }
+
+
+
+        $(function () {
+
+            if (typeof AjaxPro != 'undefined' && AjaxPro && AjaxPro.Request && AjaxPro.Request.prototype) {
+
+                AjaxPro.Request.prototype.doStateChange = function () {
+
+                    this.onStateChanged(this.xmlHttp.readyState, this);
+
+                    if (this.xmlHttp.readyState != 4 || !this.isRunning) {
+
+                        return;
+
+                    }
+
+                    this.duration = new Date().getTime() - this.__start;
+
+                    if (this.timeoutTimer != null) {
+
+                        clearTimeout(this.timeoutTimer);
+
+                    }
+
+                    var res = this.getEmptyRes();
+
+                    if (this.xmlHttp.status == 200 && (this.xmlHttp.statusText == "OK" || !this.xmlHttp.statusText)) {
+
+                        res = this.createResponse(res);
+
+                    } else {
+
+                        res = this.createResponse(res, true);
+
+                        res.error = { Message: this.xmlHttp.statusText, Type: "ConnectFailure", Status: this.xmlHttp.status };
+
+                    }
+
+                    this.endRequest(res);
+
+                };
+
+            }
+
+            //gapi.load('auth2', function () {
+
+            //    gapi.auth2.GoogleUser(u => {
+
+            //        u.getAuthResponse(a => {
+
+            //            EduSoft.Web.DefaultMaster.CheckGoogle(a.id_token, x => {
+
+            //                if (x.value) {
+
+            //                    self.location = decodeURIComponent(x.value);
+
+            //                }
+
+            //            });
+
+            //        });
+
+            //    });
+
+            //}
+
+        });
+
+    </script>
+
+
+
+<link href="/WebResource.axd?d=eMsgJWu_4xKjpPZ5ET6y4MgASj-Oz_ee-HD3ggsqAxfwtJOeG2JnYCPwaa6gL5IYATbRLOgZ1tifLbWltJGJPsCzHW0IZzKenANMday9uUO7IwCO3sFmcrNiVnQh0kb2FPOGdtC9WqIqZAsVacQxI_HM9MAUNswmWOf-phoNsblOUbduFjx3eNcWK60tUtha0&amp;t=638403871200000000" rel="stylesheet" type="text/css" /><link href="App_Themes/Standard/Standard.css" type="text/css" rel="stylesheet" /><link href="App_Themes/Standard/StyleSheet.css" type="text/css" rel="stylesheet" /></head>
+
+
+
+<body background="App_Themes/Standard/Images/background.png" onload="ShowMess()">
+
+    <form method="post" action="./default.aspx?page=thoikhoabieu" id="form1" enctype="multipart/form-data">
+
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="VIEWSTATE-REMOVED" />
+
+
+
+
+
+<script type="text/javascript">
+
+//<![CDATA[
+
+
+
+            function ShowMsgBox(type,message,height,width)
+
+            {
+
+                if(width == undefined)
+
+                    width = '340';
+
+                if(height == undefined)
+
+                    height = '60';
+
+                var ajaxModal = $get('ContentPlaceHolder1_ctl00_MessageBox1_ajaxModal');
+
+                var headerText = $get('ContentPlaceHolder1_ctl00_MessageBox1_lblPopupHeader');
+
+                $get('ContentPlaceHolder1_ctl00_MessageBox1_lblMessageDisplay').innerHTML = message;
+
+                $get('ContentPlaceHolder1_ctl00_MessageBox1_panelMessageBox').style.width = width+'px';        
+
+                $get('ContentPlaceHolder1_ctl00_MessageBox1_panelBody').style.height = height+'px';
+
+                $get('ContentPlaceHolder1_ctl00_MessageBox1_ctl03').style.width = (parseInt(width) - 70) +'px';  
+
+                $get('ContentPlaceHolder1_ctl00_MessageBox1_lblMessageDisplay').style.width = (parseInt(width) - 80) +'px'; 
+
+                var imgType = $get('ContentPlaceHolder1_ctl00_MessageBox1_ctl02');
+
+                if(type.toLowerCase() == 'success'){
+
+                    headerText.innerHTML = 'Successful';
+
+                    imgType.src = '/WebResource.axd?d=zvoqOGstF5hDfasb5-itVkeMDMnNDnIOGUnRH8b9btlTXuxwfm9QpFVNTMck01m0l6uN5JT8KZ_kAYBN7tpLv7H0u9BaZV5Zqdn8U5yoDJ5AcfmZ9j5VmuA9PErtZ6HDgpvVA6T5YbVqPb00i-M7t-Zw4APqOKaxwFjgM8VFz8GgPmmrbHEhkrk-9LCcGndP0&t=638403871200000000';
+
+                }
+
+                else if(type.toLowerCase() == 'error'){
+
+                     headerText.innerHTML = 'Error';
+
+                     imgType.src = '/WebResource.axd?d=fxwF1cqB65LhnL4cvwTb3ZypGqIETXWEwSrK1U-1MQzsy7g0baipNsV1IpMwpSPpvd3RTDYLwr0SpMoKZAO0juY_DwrpIkhGHXwKftzf7t3DN3klJaHyrFBBpusaSOKjOc7A573sGajowzrRK55xfO1MlaKcaHd7MrCo_GawUFYN0pPb36nzNLGucyWXz97M0&t=638403871200000000';
+
+                }
+
+                else if(type.toLowerCase() == 'warning'){
+
+                     headerText.innerHTML = 'Warning';
+
+                     imgType.src = '/WebResource.axd?d=entiQxjz1s0G0fdTO_MNLBoggb7sC-dbZlCENn7xQUHNewelpFyHq_fgylXqy04ouUx0J6uEJvT6Nm4vLtmp2PPvTsGojUfN2Iy4QTMwurd-yR1L8VXZoEj_hoP712u4wJD4rIbR6B9cwpR7Nb_ixYk-7AZD4PSsD8z9jSGQ0vIlgmx3PKrjeQ-1Kn2z2GQz0&t=638403871200000000';
+
+                }
+
+                else{
+
+                     headerText.innerHTML = 'Information';
+
+                     imgType.src = '/WebResource.axd?d=entiQxjz1s0G0fdTO_MNLBoggb7sC-dbZlCENn7xQUHNewelpFyHq_fgylXqy04ouUx0J6uEJvT6Nm4vLtmp2PPvTsGojUfN2Iy4QTMwurd-yR1L8VXZoEj_hoP712u4wJD4rIbR6B9cwpR7Nb_ixYk-7AZD4PSsD8z9jSGQ0vIlgmx3PKrjeQ-1Kn2z2GQz0&t=638403871200000000';
+
+                }
+
+               
+
+                $find('ContentPlaceHolder1_ctl00_MessageBox1_ajaxModal').show();
+
+                $get('ContentPlaceHolder1_ctl00_MessageBox1_btnOk').focus();
+
+            }
+
+            //]]>
+
+</script>
+
+
+
+<script type="text/javascript" src="/ajaxpro/prototype.ashx"></script>
+
+<script type="text/javascript" src="/ajaxpro/core.ashx"></script>
+
+<script type="text/javascript" src="/ajaxpro/converter.ashx"></script>
+
+<script type="text/javascript" src="/ajaxpro/EduSoft.Web.DefaultMaster,EduSoft.Web.ashx"></script>
+
+<script type="text/javascript" src="/ajaxpro/EduSoft.Web.UC.Logout,EduSoft.Web.ashx"></script>
+
+<script type="text/javascript" src="/ajaxpro/EduSoft.Web.UC.ThoiKhoaBieu,EduSoft.Web.ashx"></script>
+
+<script type="text/javascript" src="/ajaxpro/EduSoft.Web.UC.Footer,EduSoft.Web.ashx"></script>
+
+
+
+<script src="/ScriptResource.axd?d=xJgLLhO_n6wCd_PKXaDuR64GIUSwRjKv2LjheqbWv0UlzqtNO0L_qzzVGScgPZCTaiwtUZt5EVP0UabHgiECenv--O68bq0LbOsgEWGAck7f99yWK22-hcDbFT2_DBB2EuPIbpkPrifyClrGBlMzdIU1rxUGiW8PxUSllIDH9_I1&amp;t=5c0e0825" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=6pXYqz5XghImgLQdhxys7GIc8wFcJ4BLj6a4ZY3wCbU82CVRvBd38tTIXYEDNg1vSlQqDwUvUDhVDkoy9msYd8cBiBZQPeFEC9QjQEw0MRF5jycg5zIXAvCgdid8gvdWTpmtSdwfMImf1krotkINkZzx2axKPyK4_3R5WJPmCBY1&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=zLmyFSyo64CqsXCeRfTsXWxxzt8nmkofY22JQK-8cLL9JflyBbER8A3-eEokJAluIGTFfFn_8NvA57UC1gha7o2zVngbJnCymwS7yfsBV7qpDlOB3VpYhdoFLTa-wGHxOBHnorG6lOD_S8r3mgnq67kLIc58M2princRiharChE1&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=Jddaodz9mSeZw3lZuA3M41j5bJzeuiHU8yCoylmJAfdmiQWuxk_twcDxh7vi7qfRC6sq2vKwkrjK6C_89GmThuyBR_Wm8GBgzTeDKFgDeEuq4jqiWvYgLFArr2A7tovgKEkutn7p5UMMSNAW-TiJ45uiZmqwReiJj-Rj6G47DgMjqaYT6mYIgOqbxk5wGU7b0&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=n-893SSfv54qQtfqdNNI0agK-XN3pWyIWu-qgkszxe2e92_ydzReXXb64XNc5jzG9-KiJEUS9S1hi3q2l0DLah7FUQfuw_0_1a4YurS3rq4-C-XESHiuIUOCSvMQaA-QEOZINrrx9MXPuXSojN1PvC8TYQxdGZbK03RpQbL8yHc1&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=GenC9kUObyS7dlKTkNPnKAKwQOrJHkhCvQt2LjE3y64x5XWr4LpUF1a9FuCjRyp2vj2uCBRRhTeRUbiYNNJxafE6vTd74BoarVPqK9HdFriN3EndZS3tJVjVAtoH1VuJalp8qn6od0NjTI64rceWIoh_nMiLtJLLUc7cE56Vi1w1&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=BhozoYOdEQbTGpeHJuV9cSQYkqZMmqoZ_G9hZsDvS4FwJMoDWzneOfgGZtPRDLPafRnX_RDZLFFq729aLj15C3A4o2d2POJ6YAaPigTnY-P-rzfupliXVqLYoUFGDYuw88no-XTio2QXBL36HaS0Wk5oe5gzpzgqbt2Eg0JB14hSySggofCsv9b-ULeW-iOg0&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=skgzq7Gfoga8ISSBsoQt-_UqrNGsotIAIZ6AKD6UKhXFOA6Ou22NSCjf2J81_9mEroE78wUFDmS8zAVAev0J-Zw5GAS0GNqe-JnUilkKSTLGEYjBG3XoHt7XzW2XDzs-VasT-vhQqOOHrMA7gTnlndo-bDQhNsEF5jNE7tnckvPIE4p5DjYMWG7G7PdTHxhG0&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=OQQs7pqJaEIH6DF70sgZsl7qLxr61-OPG5TlTyWTjzSY6Xpvho3vAfcp0uEWhDCPFLarGoZIfGkehIFCGLQ9SDeS3BtK_tLOwARHblr6npIQreiebi1agRQt87QPxnM-Os3bo0iD9QNQ4KeWm1TvO8M1GzDKTksCazhPyycB8gxJOdPAb9iu_hDRrRnVVlRK0&amp;t=2e070b50" type="text/javascript"></script>
+
+<script src="/ScriptResource.axd?d=RsHuR6L1iLixV-tRZyUhXr1rFIw4bdw6TZ_mY--M9-5ouFsieUWwI2Y9Lw2yssuRwNHzAnNuy02ctZjkjuMTHO31krTGbOxRkt5M566TGuqXavameJHRnlJYkVHSSDItV7Xi_SXBrQTDEpPOC96pKLP3l5Cq50sARsvtIuFyHJZxV1ihXDKtC_4uzvVp37230&amp;t=2e070b50" type="text/javascript"></script>
+
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="CA0B0334" />
+
+        <div align="center">
+
+            <div class="base">
+
+                
+
+                <table>
+
+                    <tr>
+
+                        <td>
+
+                            
+
+
+
+<div style="background-image: url(Images/bg_heading_thongbao.png)">
+
+    <table width="1000px">
+
+        <tr>
+
+            <td height="20px" style="padding-left: 50px" valign="bottom" align="right">
+
+                
+
+
+
+
+
+
+
+<script language="javascript" type="text/javascript">
+
+
+
+    function changeLanguage_click(obj) {
+
+        EduSoft.Web.UC.Logout.ChangeLanguage(obj, changeLanguage_callback);
+
+    }
+
+    function changeLanguage_callback() {
+
+        var loc = window.location.href;
+
+        if (loc.endsWith("/")) loc = loc.substr(0, loc.length - 1);
+
+        if (loc.toLowerCase().indexOf("default.aspx") <= 0)
+
+            self.location = loc + "/default.aspx?pgtemp=x";
+
+        else if (loc.toLowerCase().indexOf("?") <= 0)
+
+            self.location = loc + "?lang=x";
+
+        else if (loc.endsWith("&lang=x"))
+
+            self.location = loc.replace("&lang=x", "&lang=y");
+
+        else if (loc.endsWith("&lang=y"))
+
+            self.location = loc.replace("&lang=y", "&lang=x");
+
+        else
+
+            self.location = loc + "&lang=x";
+
+    }
+
+    function selectFont_change() {
+
+        var selectmenu = document.getElementById("selectFont");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+        var font = chosenOption.value;
+
+        EduSoft.Web.UC.Logout.ChangeFont(font, ChangeFont_callback);
+
+    }
+
+    function ChangeFont_callback() {
+
+        //self.location=window.location;
+
+    }
+
+
+
+    function ConfirmChuaLuu(obj) {
+
+
+
+        alert(obj);
+
+        self.location = "default.aspx?page=dkmonhoc";
+
+    }
+
+
+
+    
+
+
+
+    function signOutGoogle(dest) {
+
+        var url = 'https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue='
+
+            + decodeURIComponent(dest);
+
+        document.location = url;
+
+        
+
+        //gapi.load('auth2', function () {
+
+        //    gapi.auth2.init();
+
+        //    var auth = gapi.auth2.GoogleAuth;
+
+        //    auth.signOut().then(function () {
+
+        //        location = decodeURIComponent(dest) + 'page=gioithieu';
+
+        //    });
+
+        //});
+
+    }
+
+</script>
+
+
+
+<div id="Header1_Logout1_dLog" class="logout" style="text-align: right; margin-bottom: 0px">
+
+    
+
+    <img src="App_Themes/Standard/Images/US.gif" alt="English" onclick="changeLanguage_click('_us')"
+
+        id="imgUS" title="English" />
+
+    <img src="App_Themes/Standard/Images/VI.gif" alt="Vietnamese" onclick="changeLanguage_click('_vi')"
+
+        id="imgVi" title="Vietnamese" />
+
+    <span id="Header1_Logout1_lblNguoiDung" class="Label"><b><font color="#FF3300">Chào bạn STUDENT (STUDENT)</font></b></span>&nbsp;<a id="Header1_Logout1_lbtnThongBao" href="javascript:__doPostBack(&#39;ctl00$Header1$Logout1$lbtnThongBao&#39;,&#39;&#39;)" style="font-family: 'Tahoma', Times, serif"><i><font color="#FF3300">Xem thông báo</font></i></a><span id="Header1_Logout1_lblXiet1" class="Label"><font color="#FF3300"> | </font></span>
+
+    <a id="Header1_Logout1_lbtnChangePass" href="javascript:__doPostBack(&#39;ctl00$Header1$Logout1$lbtnChangePass&#39;,&#39;&#39;)" style="font-family: 'Tahoma', Times, serif"><b><font color="#FF3300">Thay đổi mật khẩu</font></b></a>
+
+    <span id="Header1_Logout1_lblXiet2" class="Label"><font color="#FF3300"> | </font></span>
+
+    <a id="Header1_Logout1_lbtnLogOut" href="javascript:__doPostBack(&#39;ctl00$Header1$Logout1$lbtnLogOut&#39;,&#39;&#39;)" style="font-family: 'Tahoma', Times, serif"><b><font color="#FF3300" size="2">Thoát</font></b></a>
+
+    &nbsp;<select id="selectFont" style="font-size: 11px; width: 100px; color: #000080;"
+
+        onchange="selectFont_change()">
+
+        <option value="uni">-------Font-------</option>
+
+        <option value="uni" selected>Font Unicode</option>
+
+        <option value="abc" >Font ABC</option>
+
+        <option value="vni" >Font Vni</option>
+
+        <option value="not" >Text không
+
+            dấu</option>
+
+    </select>
+
+</div>
+
+
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+
+
+                            
+
+
+
+<style type="text/css">
+
+    .styleApplication {
+
+        font-size: 26;
+
+        font-weight: bold;
+
+    }
+
+
+
+    @font-face {
+
+        font-family: 'myriadpro';
+
+        src: url('js/myriadpro-bold.otf');
+
+    }
+
+
+
+    .menufontdhxd {
+
+        font-family: 'myriadpro';
+
+        font-size: 14px;
+
+    }
+
+</style>
+
+
+
+<div class="left-menu">
+
+    <div class="right-menu">
+
+
+
+        <div class="main-menu" style="height: 110px">
+
+
+
+            <div id="menu_pnlGioithieu" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=gioithieu">
+
+                        <span id="menu_lblTrangChu" class="Label">TRANG CHỦ</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            <div id="menu_pnDangKyMonHoc" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=dkmonhoc">
+
+                        <span id="menu_lblDangKyMonHoc" class="Label">ĐĂNG KÝ MÔN HỌC</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+
+
+            <div id="menu_thoikhoabieu" class="over-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=thoikhoabieu">
+
+                        <span id="menu_lblThoiKhoaBieu" class="Label">XEM TKB</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+
+
+            <div id="menu_xemlichthi" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=xemlichthi">
+
+                        <span id="menu_lblXemLichThi" class="Label">LỊCH THI CUỐI KỲ</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+            <div id="menu_xemlichthigk" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=xemlichthigk">
+
+                        <span id="menu_lblXemLichThiGK" class="Label">LỊCH THI GIỮA KỲ</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+            <div id="menu_xemhocphi" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=xemhocphi">
+
+                        <span id="menu_lblXemHocPhi" class="Label">XEM HỌC PHÍ</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+
+
+            <div id="menu_xemdiemthi" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=xemdiemthi">
+
+                        <span id="menu_lblXemDiem" class="Label">XEM ĐIỂM</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            <div id="menu_pnlXemCTDTKhoi" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=ctdtkhoisv">
+
+                        <span id="menu_lblXemCTDTKhoiSV" class="Label">XEM CTĐT</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            <div id="menu_pnlXemMonTienQuyet" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=xemmontienquyet">
+
+                        <span id="menu_lblXemMonTQ" class="Label">XEM MÔN TQ</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+
+
+            
+
+
+
+            <div id="menu_thaydoittcn" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=thaydoittcn">
+
+                        <span id="menu_lblThayDoiTTCN" class="Label">SỬA TT CÁ NHÂN</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            <div id="menu_ykiensinhvien" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href="Default.aspx?page=ykiensinhvien">
+
+                        <span id="menu_lblykiensinhvien" class="Label">GÓP Ý KIẾN</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+
+
+
+
+            
+
+
+
+
+
+
+
+            
+
+
+
+
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+            <div id="menu_pnlSinhVienDanhGia" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a id="menu_lkDanhgiaGV" href="javascript:__doPostBack(&#39;ctl00$menu$lkDanhgiaGV&#39;,&#39;&#39;)"><span id="menu_lblDanhGiaTrucTuyen" class="Label">ĐÁNH GIÁ GIẢNG DẠY</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+
+
+
+
+            
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+            
+
+            
+
+
+
+             
+
+
+
+            
+
+
+
+
+
+            
+
+
+
+            
+
+            
+
+            
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+            
+
+            
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            <div id="menu_pnlHDDT" class="out-menu">
+
+	
+
+                <div class="left"></div>
+
+                <div class="center" style="white-space: nowrap">
+
+                    <a href='Default.aspx?page=hddt'>
+
+                        <span id="menu_lblHoaDonDT" class="Label">HÓA ĐƠN ĐIỆN TỬ</span></a>
+
+                </div>
+
+                <div class="right"></div>
+
+            
+
+</div>
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+            
+
+
+
+
+
+            
+
+            
+
+
+
+            
+
+            
+
+            
+
+
+
+            
+
+            
+
+        </div>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td height="500px" valign="top">
+
+                            
+
+
+
+<span id="ContentPlaceHolder1_ctl00_MessageBox1"><a id="ContentPlaceHolder1_ctl00_MessageBox1_lbTarget" href="javascript:__doPostBack(&#39;ctl00$ContentPlaceHolder1$ctl00$MessageBox1$lbTarget&#39;,&#39;&#39;)"></a><div id="ContentPlaceHolder1_ctl00_MessageBox1_panelMessageBox" class="confirmBox" style="display:none">
+
+	<div id="ContentPlaceHolder1_ctl00_MessageBox1_panelHeader" class="header" style="background: url(Images/header.png);repeat-x 0px -200px;">
+
+		<div class="msg">
+
+			<span id="ContentPlaceHolder1_ctl00_MessageBox1_lblPopupHeader" class="Label" style="color:White;font-family:Arial Black;"></span>
+
+		</div><input type="image" name="ctl00$ContentPlaceHolder1$ctl00$MessageBox1$imgCloseButton" id="ContentPlaceHolder1_ctl00_MessageBox1_imgCloseButton" class="close" src="/WebResource.axd?d=PwQTBIEc948XQGG6L0l8I7o-YDq-DhcNiL8yYV5s7iL7136RiabHd1ekkC6whUwLj7MdBB3WVUOHU3I_5K4bkOTgbKodGTaVarwriMcYkepaOUYzzlF25mtNKQTWW90wL5n3MzoKddDYlQasL_KuViT__RzNeNs0IyZvbrJsv22F2ocskBLX48Kw6bOH_dZ70&amp;t=638403871200000000" />
+
+	</div><div id="ContentPlaceHolder1_ctl00_MessageBox1_panelBody" class="body" style="background-color:#E1E5F0;">
+
+		<div class="body-left" style="background-color:#E1E5F0;">
+
+			<img id="ContentPlaceHolder1_ctl00_MessageBox1_ctl02" src="" />
+
+		</div><div id="ContentPlaceHolder1_ctl00_MessageBox1_ctl03" class="body-right" style="background-color:#E1E5F0;">
+
+			<span id="ContentPlaceHolder1_ctl00_MessageBox1_lblMessageDisplay" class="Label" style="font-family:Tahoma;color:#263F75;"></span>
+
+		</div>
+
+	</div><div id="ContentPlaceHolder1_ctl00_MessageBox1_panelFooter" class="footer" style="background-color:#E1E5F0;">
+
+		<div class="right" style="background-color:#E1E5F0;">
+
+			<input type="image" name="ctl00$ContentPlaceHolder1$ctl00$MessageBox1$btnOk" id="ContentPlaceHolder1_ctl00_MessageBox1_btnOk" class="button_small_active" src="/WebResource.axd?d=lSXO9BwBXcTd_Xlvw9Y-b6ixmShFxibORUqrR2PcrBRqbND8lxHmOOj-FD92wEHplZ4i4CWJnD_GYLa3TofwcJ2XWT9yqB_Rz_Ef-Dmi7Xqa6jhnsdGNpLUuLPO7gskQCUsbjw7QC1HCinHmC1AgdPe1-1WJFCR9inr1zvGcXEn6uAHsNhbccrNJ5EmWEQql0&amp;t=638403871200000000" />
+
+		</div>
+
+	</div>
+
+</div></span>
+
+
+
+
+
+<style type="text/css">
+
+    #dhtmltooltip {
+
+        position: absolute;
+
+        padding: 2px;
+
+        visibility: hidden;
+
+        z-index: 100;
+
+        height: 230px;
+
+    }
+
+
+
+    #dhtmltooltip2 {
+
+        position: absolute;
+
+        padding: 2px;
+
+        visibility: hidden;
+
+        z-index: 101;
+
+        height: 15px;
+
+    }
+
+
+
+    .style1 {
+
+        height: 34px;
+
+    }
+
+
+
+    .style2 {
+
+        height: 23px;
+
+    }
+
+
+
+    .auto-style1 {
+
+        height: 1px;
+
+    }
+
+</style>
+
+<div id="dhtmltooltip" style="background-image: url(App_Themes/Standard/Images/tooltip.png); text-align: center"></div>
+
+<div id="dhtmltooltip2" style="text-align: center"></div>
+
+<script type="text/javascript">
+
+
+
+    var offsetxpoint = -60 //Customize x offset of tooltip
+
+    var offsetypoint = 20 //Customize y offset of tooltip
+
+    var ie = document.all
+
+    var ns6 = document.getElementById && !document.all
+
+    var enabletip = false
+
+    if (ie || ns6)
+
+        var tipobj = document.all ? document.all["dhtmltooltip"] : document.getElementById ? document.getElementById("dhtmltooltip") : ""
+
+
+
+    function ietruebody() {
+
+        return (document.compatMode && document.compatMode != "BackCompat") ? document.documentElement : document.body
+
+    }
+
+
+
+    function ddrivetip(maLop, tenMH, maMH, Thu, TC, Phong, tbd, st, giaoVien, ngaybd, ngaykt, thecolor, thewidth, num, tkbTuan) {
+
+        if (ns6 || ie) {
+
+            if (typeof thewidth != "undefined") tipobj.style.width = thewidth + "px"
+
+            if (typeof thecolor != "undefined" && thecolor != "") tipobj.style.backgroundColor = thecolor;
+
+
+
+            var nums = num.split("-");
+
+            if (tkbTuan == "0") {
+
+                tipobj.innerHTML = "<table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;font-size:10pt;font-family:tahoma;font-weight:bold'><tr height='20px'><td colspan='3' valign='top'><table><tr><td width='5px'></td><td width='30px' valign='top'><IMG src='App_Themes/Standard/Images/Learning.gif' width='30' height='42'/></td><td align='left'><span style='font-size:11pt ;font-weight:bold;color:#ffffff'>" + tenMH + "</span></td></tr></table></td></tr><tr height='20px'><td width='40px'></td><td colspan='2'> </td></tr><tr><td width='40px'></td><td>" + nums[0] + " :</td><td><span style='color:Teal'>" + maMH + "</span></td></tr><tr><td width='40px'></td><td>" + nums[1] + " :</td><td><span style='color:Teal'>" + tenMH + "</span></td></tr><tr><td width='40px'></td><td width='120px'>" + nums[2] + " :</td><td><span style='color:Teal'>" + Phong + "</span></td></tr><tr><td width='40px'></td><td>" + nums[3] + " :</td><td><span style='color:Teal'>" + Thu + "</span></td></tr><tr><td width='40px'></td><td width='120px'>" + nums[4] + " :</td><td><span style='color:Teal'>" + tbd + "</span></td></tr><tr><td width='40px'></td><td width='120px'>" + nums[5] + " :</td><td><span style='color:Teal'>" + st + "</span></td></tr><tr><td width='40px'></td><td>" + nums[6] + " :</td><td><span style='color:Teal'>" + giaoVien.split('_').join(' ') + "</span></td></tr>  <tr><td width='40px'></td><td>" + nums[9] + " :</td><td><span style='color:Teal'>" + maLop + "</span></td></tr>  <tr><td width='40px'></td><td>" + nums[7] + " :</td><td><span style='color:Teal'>" + ngaybd + "</span><span style='font-style:italic;color:gray'> " + nums[8] + "</span> <span style='color:Teal'>" + ngaykt + "</span></td></tr></table>";
+
+            }
+
+            else {
+
+                tipobj.innerHTML = "<table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;font-size:10pt;font-family:tahoma;font-weight:bold'><tr height='20px'><td colspan='3' valign='top'><table><tr><td width='5px'></td><td width='30px' valign='top'><IMG src='App_Themes/Standard/Images/Learning.gif' width='30' height='42'/></td><td align='left'><span style='font-size:11pt ;font-weight:bold;color:#ffffff'>" + tenMH + "</span></td></tr></table></td></tr><tr height='20px'><td width='40px'></td><td colspan='2'> </td></tr><tr><td width='40px'></td><td>" + nums[0] + " :</td><td><span style='color:Teal'>" + maMH + "</span></td></tr><tr><td width='40px'></td><td>" + nums[1] + " :</td><td><span style='color:Teal'>" + tenMH + "</span></td></tr><tr><td width='40px'></td><td width='120px'>" + nums[2] + " :</td><td><span style='color:Teal'>" + Phong + "</span></td></tr><tr><td width='40px'></td><td>" + nums[3] + " :</td><td><span style='color:Teal'>" + Thu + "</span></td></tr><tr><td width='40px'></td><td width='120px'>" + nums[4] + " :</td><td><span style='color:Teal'>" + tbd + "</span></td></tr><tr><td width='40px'></td><td width='120px'>" + nums[5] + " :</td><td><span style='color:Teal'>" + st + "</span></td></tr><tr><td width='40px'></td><td>" + nums[6] + " :</td><td><span style='color:Teal'>" + giaoVien.split('_').join(' ') + "</span></td></tr>  <tr><td width='40px'></td><td>" + nums[9] + " :</td><td><span style='color:Teal'>" + maLop + "</span></td></tr>  <tr><td width='40px'></td></tr></table>";
+
+            }
+
+            enabletip = true
+
+            return false
+
+        }
+
+    }
+
+    function positiontip(e) {
+
+        if (enabletip) {
+
+            var curX = (ns6) ? e.pageX : event.clientX + ietruebody().scrollLeft;
+
+            var curY = (ns6) ? e.pageY : event.clientY + ietruebody().scrollTop;
+
+            //Find out how close the mouse is to the corner of the window
+
+            var rightedge = ie && !window.opera ? ietruebody().clientWidth - event.clientX - offsetxpoint : window.innerWidth - e.clientX - offsetxpoint - 20
+
+            var bottomedge = ie && !window.opera ? ietruebody().clientHeight - event.clientY - offsetypoint : window.innerHeight - e.clientY - offsetypoint - 20
+
+
+
+            var leftedge = (offsetxpoint < 0) ? offsetxpoint * (-1) : -1000
+
+
+
+            //if the horizontal distance isn't enough to accomodate the width of the context menu
+
+            if (rightedge < tipobj.offsetWidth)
+
+                //move the horizontal position of the menu to the left by it's width
+
+                tipobj.style.left = ie ? ietruebody().scrollLeft + event.clientX - tipobj.offsetWidth + "px" : window.pageXOffset + e.clientX - tipobj.offsetWidth + "px"
+
+            else if (curX < leftedge)
+
+                tipobj.style.left = "5px"
+
+            else
+
+                //position the horizontal position of the menu where the mouse is positioned
+
+                tipobj.style.left = curX + offsetxpoint + "px"
+
+
+
+            //same concept with the vertical position
+
+            if (bottomedge < tipobj.offsetHeight)
+
+                tipobj.style.top = ie ? ietruebody().scrollTop + event.clientY - tipobj.offsetHeight - offsetypoint + "px" : window.pageYOffset + e.clientY - tipobj.offsetHeight - offsetypoint + "px"
+
+            else
+
+                tipobj.style.top = curY + offsetypoint + "px"
+
+            tipobj.style.visibility = "visible"
+
+        }
+
+    }
+
+    function ddrivetiptuan(NgayGioiHanHoc) {
+
+        if (ns6 || ie) {
+
+            var thewidth = 170;
+
+            if (typeof thewidth != "undefined") tipobj.style.width = thewidth + "px"
+
+            tipobj = document.getElementById("dhtmltooltip2");
+
+            tipobj.innerHTML = "<table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;font-size:10pt;font-family:tahoma;background-color:#2E6C92; color:White; '><tr height='20px'><td align='center' >" + NgayGioiHanHoc + "</td></tr></table>";
+
+            enabletip = true
+
+            return false
+
+        }
+
+    }
+
+    function hideddrivetip() {
+
+        if (ns6 || ie) {
+
+            enabletip = false
+
+            tipobj.style.visibility = "hidden"
+
+            tipobj.style.left = "-1000px"
+
+            tipobj.style.backgroundColor = ''
+
+            tipobj.style.width = ''
+
+        }
+
+    }
+
+
+
+    document.onmousemove = positiontip
+
+    function showGrv() {
+
+    }
+
+    function InTKBClick() {
+
+        EduSoft.Web.UC.ThoiKhoaBieu.LoadDatatablePrint(LoadDatatablePrint_Callback)
+
+    }
+
+    function LoadDatatablePrint_Callback(obj) {
+
+        window.open('Report/TKBReportView.aspx', '_Blank');
+
+    }
+
+</script>
+
+
+
+
+
+<div id="ContentPlaceHolder1_ctl00_pnlPage">
+
+	
+
+
+
+    <div class="navigate-base">
+
+        <div class="title-base">
+
+            <div class="title">
+
+                <table style="width: 480px">
+
+                    <tr>
+
+                        <td width="10px">
+
+                            <img src="App_Themes/Standard/Images/icon_04b.gif" />
+
+                        </td>
+
+                        <td>
+
+                            <span id="ContentPlaceHolder1_ctl00_lbltieudetkb" class="Label">Thông Tin Thời Khóa Biểu</span>
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+
+        <table>
+
+            <tr id="ContentPlaceHolder1_ctl00_pnlTTCanhan">
+
+		<td colspan="2">
+
+
+
+                    
+
+
+
+                </td>
+
+	</tr>
+
+	
+
+            <tr>
+
+                <td rowspan="3" width="80px">
+
+                    <img src="App_Themes/Standard/Images/icon_lich.png" alt="" width="70px" height="60px" /></td>
+
+                <td align="left" valign="top">
+
+                    <span id="ContentPlaceHolder1_ctl00_lblTT" class="Label"><font size="2">Chọn học kỳ xem TKB</font></span>&nbsp; 
+
+      <select name="ctl00$ContentPlaceHolder1$ctl00$ddlChonNHHK" id="ContentPlaceHolder1_ctl00_ddlChonNHHK" class="DropDown">
+
+		<option selected="selected" value="20261">Học kỳ 1 - Năm học 2026-2027</option>
+
+		<option value="20253">Học kỳ 3 - Năm học 2025-2026</option>
+
+		<option value="20252">Học kỳ 2 - Năm học 2025-2026</option>
+
+		<option value="20251">Học kỳ 1 - Năm học 2025-2026</option>
+
+
+
+	</select></td>
+
+            </tr>
+
+            <tr>
+
+                <td align="left" style="font-size: 10px">
+
+                    <select name="ctl00$ContentPlaceHolder1$ctl00$ddlLoai" id="ContentPlaceHolder1_ctl00_ddlLoai" class="DropDown">
+
+		<option selected="selected" value="0">TKB theo tuần</option>
+
+		<option value="1">TKB học kỳ c&#225; nh&#226;n</option>
+
+
+
+	</select>
+
+                    
+
+                    
+
+                    
+
+                    
+
+                    <select name="ctl00$ContentPlaceHolder1$ctl00$ddlTuan" id="ContentPlaceHolder1_ctl00_ddlTuan" class="DropDown">
+
+		<option value="Tuần 01 [Từ 31/08/2026 -- Đến 06/09/2026]">Tuần 01 [Từ 31/08/2026 -- Đến 06/09/2026]</option>
+
+		<option value="Tuần 02 [Từ 07/09/2026 -- Đến 13/09/2026]">Tuần 02 [Từ 07/09/2026 -- Đến 13/09/2026]</option>
+
+		<option value="Tuần 03 [Từ 14/09/2026 -- Đến 20/09/2026]">Tuần 03 [Từ 14/09/2026 -- Đến 20/09/2026]</option>
+
+		<option selected="selected" value="Tuần 04 [Từ 21/09/2026 -- Đến 27/09/2026]">Tuần 04 [Từ 21/09/2026 -- Đến 27/09/2026]</option>
+
+		<option value="Tuần 05 [Từ 28/09/2026 -- Đến 04/10/2026]">Tuần 05 [Từ 28/09/2026 -- Đến 04/10/2026]</option>
+
+		<option value="Tuần 06 [Từ 05/10/2026 -- Đến 11/10/2026]">Tuần 06 [Từ 05/10/2026 -- Đến 11/10/2026]</option>
+
+		<option value="Tuần 07 [Từ 12/10/2026 -- Đến 18/10/2026]">Tuần 07 [Từ 12/10/2026 -- Đến 18/10/2026]</option>
+
+		<option value="Tuần 08 [Từ 19/10/2026 -- Đến 25/10/2026]">Tuần 08 [Từ 19/10/2026 -- Đến 25/10/2026]</option>
+
+		<option value="Tuần 09 [Từ 26/10/2026 -- Đến 01/11/2026]">Tuần 09 [Từ 26/10/2026 -- Đến 01/11/2026]</option>
+
+		<option value="Tuần 10 [Từ 02/11/2026 -- Đến 08/11/2026]">Tuần 10 [Từ 02/11/2026 -- Đến 08/11/2026]</option>
+
+		<option value="Tuần 11 [Từ 09/11/2026 -- Đến 15/11/2026]">Tuần 11 [Từ 09/11/2026 -- Đến 15/11/2026]</option>
+
+		<option value="Tuần 12 [Từ 16/11/2026 -- Đến 22/11/2026]">Tuần 12 [Từ 16/11/2026 -- Đến 22/11/2026]</option>
+
+		<option value="Tuần 13 [Từ 23/11/2026 -- Đến 29/11/2026]">Tuần 13 [Từ 23/11/2026 -- Đến 29/11/2026]</option>
+
+		<option value="Tuần 14 [Từ 30/11/2026 -- Đến 06/12/2026]">Tuần 14 [Từ 30/11/2026 -- Đến 06/12/2026]</option>
+
+		<option value="Tuần 15 [Từ 07/12/2026 -- Đến 13/12/2026]">Tuần 15 [Từ 07/12/2026 -- Đến 13/12/2026]</option>
+
+		<option value="Tuần 16 [Từ 14/12/2026 -- Đến 20/12/2026]">Tuần 16 [Từ 14/12/2026 -- Đến 20/12/2026]</option>
+
+		<option value="Tuần 17 [Từ 21/12/2026 -- Đến 27/12/2026]">Tuần 17 [Từ 21/12/2026 -- Đến 27/12/2026]</option>
+
+		<option value="Tuần 18 [Từ 28/12/2026 -- Đến 03/01/2027]">Tuần 18 [Từ 28/12/2026 -- Đến 03/01/2027]</option>
+
+		<option value="Tuần 19 [Từ 04/01/2027 -- Đến 10/01/2027]">Tuần 19 [Từ 04/01/2027 -- Đến 10/01/2027]</option>
+
+		<option value="Tuần 20 [Từ 11/01/2027 -- Đến 17/01/2027]">Tuần 20 [Từ 11/01/2027 -- Đến 17/01/2027]</option>
+
+
+
+	</select>
+
+
+
+                    
+
+
+
+                    
+
+
+
+                    
+
+                    <input type="button" id="InTKB" onclick="InTKBClick()" value="In TKB"
+
+                        style="font-size: 11px; height: 20px;" />&nbsp;
+
+                
+
+
+
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td align="left">
+
+                    <span id="ContentPlaceHolder1_ctl00_lblNote" class="Label"><i>( Lưu ý: tuần 1 tương ứng với tuần 1 của học kỳ, bắt đầu từ ngày 31/08/2026)  </i></span>
+
+                    <span id="ContentPlaceHolder1_ctl00_lblNote2" class="Label">.</span>
+
+                    <br />
+
+                    <span id="ContentPlaceHolder1_ctl00_lblNoteUpdateDHQT" class="Label" style="text-align: right;"><b><i><font color="Blue">( Dữ liệu được cập nhật vào lúc: 15:27 Ngày: 24/9/2026)</font></i></b></span>
+
+
+
+                </td>
+
+            </tr>
+
+        </table>
+
+        
+
+
+
+        <div style="width: 100%; text-align: center;">
+
+            
+
+        </div>
+
+
+
+
+
+        
+
+        <div id="ContentPlaceHolder1_ctl00_pnlTuan">
+
+		
+
+
+
+            <table id="ContentPlaceHolder1_ctl00_Table1" class="classTable" cellspacing="0" cellpadding="1" bordercolor="#999999" height="100%" width="100%">
+
+			<thead>
+
+				<tr id="ContentPlaceHolder1_ctl00_TableRow7">
+
+					<td id="ContentPlaceHolder1_ctl00_TableCell123" align="center" height="18" width="50"></td><td id="ContentPlaceHolder1_ctl00_TableCell124" align="center" bgcolor="#6699CC" height="18" width="100" nowrap="nowrap"><font color="White"><span id="ContentPlaceHolder1_ctl00_lblt2" class="Label">THỨ HAI</span></font></td><td id="ContentPlaceHolder1_ctl00_TableCell125" align="center" bgcolor="#6699CC" width="100"><font color="White"><span id="ContentPlaceHolder1_ctl00_lblt3" class="Label">THỨ BA</span></font></td><td id="ContentPlaceHolder1_ctl00_TableCell126" align="center" bgcolor="#6699CC" width="100"><font color="White"><span id="ContentPlaceHolder1_ctl00_lblt4" class="Label">THỨ TƯ</span></font></td><td id="ContentPlaceHolder1_ctl00_TableCell127" align="center" bgcolor="#6699CC" width="100"><font color="White"><span id="ContentPlaceHolder1_ctl00_lblt5" class="Label">THỨ NĂM</span></font></td><td id="ContentPlaceHolder1_ctl00_TableCell128" align="center" bgcolor="#6699CC" width="100"><font color="White"><span id="ContentPlaceHolder1_ctl00_lblt6" class="Label">THỨ SÁU</span></font></td><td id="ContentPlaceHolder1_ctl00_TableCell129" align="center" bgcolor="#6699CC" width="100"><font color="White"><span id="ContentPlaceHolder1_ctl00_lblt7" class="Label">THỨ BẢY</span></font></td><td id="ContentPlaceHolder1_ctl00_TableCell130" align="center" bgcolor="#6699CC" width="100"><font color="White"><span id="ContentPlaceHolder1_ctl00_lbltcn" class="Label">CHỦ NHẬT</span></font></td><td id="ContentPlaceHolder1_ctl00_TableCell131" width="50"></td>
+
+				</tr>
+
+			</thead><tbody>
+
+				<tr>
+
+					<td title="Tiết 1 (từ 08:00 đến 08:50)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 1</font></td><td onmouseover="ddrivetip(&#39;ENEL25IU11&#39;,&#39;Writing AE2&#39;,&#39;EN011IU nhóm 03 &#39;,&#39;Thứ Hai&#39;,&#39;2&#39;,&#39;R112&#39;,&#39;1&#39;,&#39;2&#39;,&#39;Lecturer 16&#39;,&#39;07/09/2026&#39;,&#39;22/12/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="R112, 23456789 1234567,1,2" onmouseout="hideddrivetip()" rowspan="2" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Writing AE2</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>R112</span>
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td onmouseover="ddrivetip(&#39;ITIT24WE41&#39;,&#39;Web Application Development&#39;,&#39;IT093IU nhóm 02 &#39;,&#39;Thứ Ba&#39;,&#39;4&#39;,&#39;R110&#39;,&#39;1&#39;,&#39;3&#39;,&#39;Lecturer 14&#39;,&#39;08/09/2026&#39;,&#39;23/12/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="R110, 23456789 1234567,1,3" onmouseout="hideddrivetip()" rowspan="3" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Web Application Development</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>R110</span>
+
+
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td height="22" width="110"></td><td height="22" width="110"></td><td onmouseover="ddrivetip(&#39;PHSE25IU01&#39;,&#39;Physics 4&#39;,&#39;PH012IU nhóm 01 &#39;,&#39;Thứ Sáu&#39;,&#39;2&#39;,&#39;R107&#39;,&#39;1&#39;,&#39;2&#39;,&#39;Lecturer 19&#39;,&#39;11/09/2026&#39;,&#39;26/12/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="R107, 23456789 1234567,1,2" onmouseout="hideddrivetip()" rowspan="2" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Physics 4</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>R107</span>
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 1 (từ 08:00 đến 08:50)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 1</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 2 (từ 08:50 đến 09:40)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 2</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 2 (từ 08:50 đến 09:40)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 2</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 3 (từ 09:40 đến 10:30)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 3</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 3 (từ 09:40 đến 10:30)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 3</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 4 (từ 10:35 đến 11:25)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 4</font></td><td height="22" width="110"></td><td onmouseover="ddrivetip(&#39;ITIT244WE11&#39;,&#39;Object-Oriented Analysis and Design&#39;,&#39;IT090IU nhóm 01 &#39;,&#39;Thứ Ba&#39;,&#39;4&#39;,&#39;R111&#39;,&#39;4&#39;,&#39;3&#39;,&#39;Lecturer 13&#39;,&#39;08/09/2026&#39;,&#39;23/12/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="R111, 23456789 1234567,4,3" onmouseout="hideddrivetip()" rowspan="3" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Object-Oriented Analysis and Design</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>R111</span>
+
+
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td height="22" width="110"></td><td onmouseover="ddrivetip(&#39;ITIT24WE41&#39;,&#39;Algorithms &amp; Data Structures&#39;,&#39;IT013IU nhóm 02 &#39;,&#39;Thứ Năm&#39;,&#39;4&#39;,&#39;R102&#39;,&#39;4&#39;,&#39;3&#39;,&#39;Lecturer 12&#39;,&#39;10/09/2026&#39;,&#39;25/12/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="R102, 23456789 1234567,4,3" onmouseout="hideddrivetip()" rowspan="3" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Algorithms & Data Structures</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>R102</span>
+
+
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 4 (từ 10:35 đến 11:25)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 4</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 5 (từ 11:25 đến 12:15)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 5</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 5 (từ 11:25 đến 12:15)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 5</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 6 (từ 12:15 đến 13:05)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 6</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 6 (từ 12:15 đến 13:05)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 6</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 7 (từ 13:15 đến 14:05)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 7</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td onmouseover="ddrivetip(&#39;MAMA25IU01&#39;,&#39;Probability, Statistic &amp; Random Process&#39;,&#39;MA026IU nhóm 02 &#39;,&#39;Thứ Năm&#39;,&#39;3&#39;,&#39;R109&#39;,&#39;7&#39;,&#39;3&#39;,&#39;Lecturer 17&#39;,&#39;03/09/2026&#39;,&#39;25/12/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="R109,-23456789-1234567,7,3" onmouseout="hideddrivetip()" rowspan="3" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Probability, Statistic & Random Process</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>R109</span>
+
+
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td onmouseover="ddrivetip(&#39;ITIT23WE41&#39;,&#39;Entrepreneurship&#39;,&#39;IT120IU nhóm 01 &#39;,&#39;Thứ Sáu&#39;,&#39;3&#39;,&#39;ONLINE&#39;,&#39;7&#39;,&#39;3&#39;,&#39;Lecturer 15&#39;,&#39;11/09/2026&#39;,&#39;26/12/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="ONLINE, 234           67,7,3" onmouseout="hideddrivetip()" rowspan="3" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Entrepreneurship</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>ONLINE</span>
+
+
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td onmouseover="ddrivetip(&#39;ITIT23WE41&#39;,&#39;Skills for Communicating Information&#39;,&#39;IT007WE nhóm 01 &#39;,&#39;Thứ Bảy&#39;,&#39;3&#39;,&#39;R104&#39;,&#39;7&#39;,&#39;3&#39;,&#39;Lecturer 18&#39;,&#39;12/09/2026&#39;,&#39;11/10/2026&#39;,&#39;&#39;,&#39;420&#39;,&#39;Mã Môn Học-Tên Môn Học-Phòng Học-Thứ-Tiết Bắt Đầu-Số Tiết-Giảng Viên-Bắt Đầu Từ: - Đến -Lớp&#39;)" MaPH="R104, 23456,7,3" onmouseout="hideddrivetip()" rowspan="3" bgcolor="Beige" height="22" width="110"><table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;width:90px;cursor:pointer' class='textTable'><tr><td width='90px'>
+
+<span style='color:Teal'>Skills for Communicating Information</span>
+
+
+
+                                </td></tr>
+
+                                <tr><td width='90px'>
+
+<span style='font-style:italic; color:gray'>Phòng:</span>
+
+<span style='color:Teal'>R104</span>
+
+
+
+</td></tr>
+
+</td></tr></table>
+
+</td><td height="22" width="110"></td><td title="Tiết 7 (từ 13:15 đến 14:05)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 7</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 8 (từ 14:05 đến 14:55)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 8</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 8 (từ 14:05 đến 14:55)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 8</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 9 (từ 14:55 đến 15:45)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 9</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 9 (từ 14:55 đến 15:45)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 9</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 10 (từ 15:50 đến 16:40)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 10</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 10 (từ 15:50 đến 16:40)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 10</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 11 (từ 16:40 đến 17:30)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 11</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 11 (từ 16:40 đến 17:30)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 11</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 12 (từ 17:30 đến 18:15)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 12</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 12 (từ 17:30 đến 18:15)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 12</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 13 (từ 18:15 đến 19:00)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 13</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 13 (từ 18:15 đến 19:00)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 13</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 14 (từ 19:00 đến 19:45)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 14</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 14 (từ 19:00 đến 19:45)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 14</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 15 (từ 19:55 đến 20:40)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 15</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 15 (từ 19:55 đến 20:40)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 15</font></td>
+
+				</tr><tr>
+
+					<td title="Tiết 16 (từ 20:40 đến 21:25)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 16</font></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td height="22" width="110"></td><td title="Tiết 16 (từ 20:40 đến 21:25)" align="center" bgcolor="#6699cc" height="22" width="50"><font color="White">Tiết 16</font></td>
+
+				</tr><tr>
+
+					<td height="22"></td><td align="center" bgcolor="#6699cc" height="22" width="110"><font color="White">THỨ HAI</font></td><td align="center" bgcolor="#6699cc" height="22" width="110"><font color="White">THỨ BA</font></td><td align="center" bgcolor="#6699cc" height="22" width="110"><font color="White">THỨ TƯ</font></td><td align="center" bgcolor="#6699cc" height="22" width="110"><font color="White">THỨ NĂM</font></td><td align="center" bgcolor="#6699cc" height="22" width="110"><font color="White">THỨ SÁU</font></td><td align="center" bgcolor="#6699cc" height="22" width="110"><font color="White">THỨ BẢY</font></td><td align="center" bgcolor="#6699cc" height="22" width="110"><font color="White">CHỦ NHẬT</font></td>
+
+				</tr>
+
+			</tbody>
+
+		</table>
+
+            <table style="width: 100%; text-align: left">
+
+                <tr>
+
+                    <td align="center" width="20px">
+
+                        <div style="width: 15px; height: 15px; background-color: YellowGreen">
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        <span id="ContentPlaceHolder1_ctl00_lblmontrung" class="Label">Môn học chỉ trùng một vài tiết</span></td>
+
+                    <td align="left">
+
+                        <div style="text-align: left">
+
+                            <input type="submit" name="ctl00$ContentPlaceHolder1$ctl00$btnDt" value="Tuần Đầu" id="ContentPlaceHolder1_ctl00_btnDt" class="DefaultButton" />
+
+                            <input type="submit" name="ctl00$ContentPlaceHolder1$ctl00$btnTrangTruoc" value="Tuần Trước" id="ContentPlaceHolder1_ctl00_btnTrangTruoc" class="DefaultButton" />
+
+                            <input type="submit" name="ctl00$ContentPlaceHolder1$ctl00$btnTuanToi" value="Tuần Kế" id="ContentPlaceHolder1_ctl00_btnTuanToi" class="DefaultButton" />
+
+                            <input type="submit" name="ctl00$ContentPlaceHolder1$ctl00$btnTuanCuoi" value="Tuần Cuối" id="ContentPlaceHolder1_ctl00_btnTuanCuoi" class="DefaultButton" />
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td width="20px" align="center" class="auto-style1">
+
+                        <div style="width: 15px; height: 15px; background-color: #CCCCFF"></div>
+
+                    </td>
+
+                    <td class="auto-style1">
+
+                        <span id="ContentPlaceHolder1_ctl00_lbltrungtatca" class="Label">
+
+      Môn học trùng tất cả các tiết
+
+    </span></td>
+
+                    <td class="auto-style1"></td>
+
+                </tr>
+
+
+
+                <tr>
+
+                    <div id="ContentPlaceHolder1_ctl00_pnlDienGiaiMauTKBHKCu">
+
+			
+
+                        <td width="20px" align="center">
+
+                            <div style="width: 15px; height: 15px; background-color: yellow"></div>
+
+                        </td>
+
+                        <td>
+
+                            <span id="ContentPlaceHolder1_ctl00_Label3" class="Label">Thời khóa biểu học kỳ cũ</span></td>
+
+                        <td></td>
+
+                    
+
+		</div>
+
+                </tr>
+
+
+
+                <tr>
+
+                    
+
+                </tr>
+
+
+
+                <tr>
+
+                    <td colspan="3">
+
+                        <span id="ContentPlaceHolder1_ctl00_lblMonHocKhongXepTKB" class="Label"><b><font color="Red" size="4"></font></b></span>
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        
+
+	</div>
+
+
+
+        
+
+
+
+        
+
+
+
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+    
+
+
+
+
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>
+
+                            
+
+
+
+<style type="text/css">
+
+   
+
+    .style3
+
+    {
+
+        width: 70px;
+
+    }
+
+    .style4
+
+    {
+
+        width: 129px;
+
+    }
+
+    .style5
+
+    {
+
+        width: 1019px;
+
+    }
+
+   
+
+</style>
+
+
+
+<div class="footer">
+
+<table width="100%"><tr><td align="left" class="style5" >
+
+<img src="App_Themes/Standard/Images/icon_11c.gif" alt="" />
+
+<span class="LogoFooter"><span id="Footer1_lblCompany" class="Label">Copyright ©2009 Trường ĐH Quốc Tế - ĐHQG TP.HCM-Trường STUDENT Quốc tế. Quản lý bởi Phòng BĐCLGD&KT</span></span>
+
+</td>
+
+    
+
+        <td valign="top"  align="left" class="style4">
+
+        <img src="App_Themes/Standard/Images/iconHome.png" alt="" align="right"  />    
+
+        </td>
+
+        <td align="left" class="style3">
+
+        <a href="Default.aspx"><span id="Footer1_lbltrangchu" class="Label">Trang Chủ</span></a>
+
+        </td>
+
+        
+
+        
+
+</tr>
+
+<tr>
+
+<td class="style5" >
+
+    <img src="App_Themes/Standard/Images/icon_11c.gif" alt="" /> 
+
+    <a href="https://aqtech.vn/" target="_blank"><span id="Footer1_lblCopyRight" class="Label">Thiết kế bởi cty Phần mềm Anh Quân</span></a>
+
+    
+
+    
+
+     
+
+</td>
+
+<td align="right" valign="top" class="style4"> 
+
+    <img src="App_Themes/Standard/Images/topTen.gif" width="15px" alt="" />
+
+    </td>
+
+    <td class="style3">
+
+    <a href="#Top" title="Go to top" style="text-decoration: none; font-family:Tahoma;font-size:8pt">
+
+    <span id="Footer1_lbltop" class="Label">Đầu Trang</span>
+
+    </a>
+
+</td>
+
+<td align="right"><a href="Default.aspx?page=thongtinsp"><span id="Footer1_lblAbout" class="Label">About</span></a></td>
+
+</tr>
+
+
+
+</table></div>
+
+
+
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+
+        
+
+    
+
+
+
+<script type="text/javascript">
+
+//<![CDATA[
+
+Sys.Application.add_init(function() {
+
+    $create(AjaxControlToolkit.ModalPopupBehavior, {"BackgroundCssClass":"msgbox_messagemodalbackground","CancelControlID":"ContentPlaceHolder1_ctl00_MessageBox1_imgCloseButton","OkControlID":"ContentPlaceHolder1_ctl00_MessageBox1_btnOk","PopupControlID":"ContentPlaceHolder1_ctl00_MessageBox1_panelMessageBox","dynamicServicePath":"/default.aspx","id":"ContentPlaceHolder1_ctl00_MessageBox1_ajaxModal"}, null, null, $get("ContentPlaceHolder1_ctl00_MessageBox1_lbTarget"));
+
+});
+
+//]]>
+
+</script>
+
+</form>
+
+    
+
+</body>
+
+
+
+</html>
+

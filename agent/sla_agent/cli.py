@@ -5,7 +5,7 @@
     sla-agent sync-now               sync right away
     sla-agent status                 show the last result and whether sync is paused
     sla-agent fetch --save-html DIR  save your EduSoft pages on this laptop (for building the readers)
-    sla-agent import FILE --kind K   read a page you saved from your browser and upload it
+    sla-agent import FOLDER          read pages saved by `fetch` (or your browser) and upload them
     sla-agent forget                 delete the saved secrets and the scheduled task
 """
 
@@ -199,6 +199,11 @@ def cmd_sync_now(args):
 # ---- saved pages ----------------------------------------------------------------
 
 
+def _file_name(section, part):
+    """timetable + semester -> timetable-semester.html; tuition + tuition -> tuition.html."""
+    return f"{section}.html" if part == section else f"{section}-{part}.html"
+
+
 def cmd_fetch(args):
     loaded = _load()
     if loaded is None:
@@ -212,7 +217,11 @@ def cmd_fetch(args):
     edusoft = make_edusoft()
     try:
         edusoft.login(state.student_id, password)
-        pages = {name: edusoft.get_page(name) for name in ("home", *SECTION_NAMES)}
+        files = {"home.html": edusoft.get_page("home")}
+        for section in SECTION_NAMES:
+            for part, html in edusoft.read(section).items():
+                if part != "term":
+                    files[_file_name(section, part)] = html
     except (BadCredentials, ExtraVerification) as error:
         state.paused = error.code
         save_state(state)
@@ -222,12 +231,42 @@ def cmd_fetch(args):
         say(f"Couldn't read EduSoft: {error}")
         return 1
     folder.mkdir(parents=True, exist_ok=True)
-    for name, html in pages.items():
-        (folder / f"{name}.html").write_text(html, encoding="utf-8")
-    say(f"Saved {len(pages)} pages to {folder.resolve()}.\n"
+    for name, html in files.items():
+        (folder / name).write_text(html, encoding="utf-8")
+    say(f"Saved {len(files)} pages to {folder.resolve()}.\n"
         "They contain your personal data. Before sharing them, remove your name, student ID and "
         "date of birth. Never commit them to GitHub.")
     return 0
+
+
+def _read_folder(folder, term):
+    """Section results from pages saved by `fetch` (or from a browser, with the same file names)."""
+    def load(section, part):
+        path = folder / _file_name(section, part)
+        return path.read_text(encoding="utf-8") if path.exists() else None
+
+    found = {
+        "timetable": {"weekly": load("timetable", "weekly"), "semester": load("timetable", "semester")},
+        "exams": {"final": load("exams", "final"), "midterm": load("exams", "midterm")},
+        "tuition": {"tuition": load("tuition", "tuition")},
+    }
+    found["timetable"] = found["timetable"] if found["timetable"]["semester"] else None
+    found = {name: pages for name, pages in found.items() if pages and any(pages.values())}
+
+    results = {}
+    for name, pages in found.items():
+        try:
+            if name == "exams":
+                if term is None:
+                    timetable = results.get("timetable", {}).get("data")
+                    term = timetable.term_code if timetable else None
+                if term is None:
+                    raise ValueError("exams need the semester: add --term, e.g. --term 20261")
+                pages = {"term": term, **pages}
+            results[name] = {"status": "ok", "data": PARSERS[name](pages)}
+        except ParseError as error:
+            results[name] = {"status": "failed", "error_code": error.code, "error_message": str(error)[:500]}
+    return results
 
 
 def cmd_import(args):
@@ -236,20 +275,23 @@ def cmd_import(args):
     if not key:
         say(NOT_SET_UP)
         return 1
-    html = Path(args.file).read_text(encoding="utf-8")
+    folder = Path(args.folder)
     try:
-        data = PARSERS[args.kind](html)
-    except ParseError as error:
-        say(f"Couldn't read this page: {error}")
+        results = _read_folder(folder, args.term)
+    except ValueError as error:
+        say(f"Couldn't import: {error}")
+        return 1
+    if not results:
+        say(f"No saved EduSoft pages found in {folder}. Use the file names that `sla-agent fetch` saves.")
         return 1
     server = make_server(state.server_url, key)
     try:
         run_id = server.start("import")
-        status = server.finish(run_id, FinishRun.model_validate({args.kind: {"status": "ok", "data": data}}))
+        status = server.finish(run_id, FinishRun.model_validate(results))
     except ServerError as error:
         say(f"Couldn't upload: {error}")
         return 1
-    say(f"Imported your {args.kind} ({status}).")
+    say(f"Imported {', '.join(results)} ({status}).")
     return 0
 
 
@@ -304,9 +346,9 @@ def main(argv=None):
     commands.add_parser("status", help="show the last result and whether sync is paused")
     fetch = commands.add_parser("fetch", help="save your EduSoft pages on this laptop")
     fetch.add_argument("--save-html", metavar="FOLDER", required=True)
-    importer = commands.add_parser("import", help="upload a page you saved from your browser")
-    importer.add_argument("file")
-    importer.add_argument("--kind", choices=SECTION_NAMES, required=True)
+    importer = commands.add_parser("import", help="upload EduSoft pages saved in a folder")
+    importer.add_argument("folder")
+    importer.add_argument("--term", help="semester code for exam pages, e.g. 20261")
     commands.add_parser("forget", help="delete saved secrets and the scheduled task")
 
     args = parser.parse_args(argv)

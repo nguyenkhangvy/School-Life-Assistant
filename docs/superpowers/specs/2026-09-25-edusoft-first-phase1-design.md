@@ -86,7 +86,7 @@ YOUR LAPTOP                                   CLOUD (free)
 │        ▼                    │  HTTPS +      │  - School pages              │
 │ sla-agent (Python)          │  device key   │  - Sync API (device key only)│
 │  1. "is a sync due?" ───────┼──────────────►│        ▼                     │
-│  2. log in + read 3 pages   │               │ MySQL (Aiven): academic data │
+│  2. log in + read the pages │               │ MySQL (Aiven): academic data │
 │     from EduSoft (HTTPS)    │               │  + sync history. No passwords│
 │  3. parse → clean JSON ─────┼──────────────►└──────────────────────────────┘
 │ Windows Credential Manager: │                   ▲
@@ -100,7 +100,7 @@ YOUR LAPTOP                                   CLOUD (free)
 1. Every 15 minutes, and when you log in to Windows, Task Scheduler starts `sla-agent run`.
 2. The agent asks the web app whether a sync is due: `GET /api/school/sync/check`. The answer is "yes" if your interval (6/12/24 h) has passed or you pressed **Sync now** on any device.
 3. If it's due, the agent tells the web app it's starting (`POST /api/school/sync/runs`). The web app now shows **Syncing…**.
-4. The agent logs in to EduSoft once and reads the timetable, exam and tuition pages.
+4. The agent logs in to EduSoft once and reads the timetable (weekly view, then the whole-semester view), the final and midterm exam pages, and the tuition page.
 5. It turns each page into clean data **on the laptop**. Only the needed fields are kept.
 6. It sends the result for each part (success + data, or failure + reason) with `POST /api/school/sync/runs/<id>/finish`.
 7. The web app saves each part that succeeded, records what changed, and shows **Synced at 14:05** (or the failure reason).
@@ -139,7 +139,7 @@ These rules must hold in the code and be checked by tests.
 2. **Talking to EduSoft:**
    - The agent only connects to `https://edusoftweb.hcmiu.edu.vn`. It refuses redirects to any other site or to plain `http`.
    - It uses the honest user agent and a timeout on every request.
-   - One sync is about 4 requests. Scheduled syncs are at least 1 hour apart and manual syncs at least 5 minutes apart.
+   - One sync is about 8 requests (login 2, timetable 2, exams 2-3, tuition 1). Scheduled syncs are at least 1 hour apart and manual syncs at least 5 minutes apart.
 3. **The device key** (how the agent proves who it is to the web app):
    - It's created on the Devices page with `secrets.token_urlsafe(32)` and shown **once**.
    - The web app stores only its SHA-256 hash. A database leak therefore can't be used to send fake data.
@@ -150,7 +150,7 @@ These rules must hold in the code and be checked by tests.
    - Raw EduSoft pages never leave the laptop. The only exception is `sla-agent fetch --save-html`, which saves them to the laptop's own disk for building tests.
 5. **Stop instead of retrying:**
    - If EduSoft rejects the password, automatic sync **pauses** with no second attempt, so the EduSoft account can't be locked.
-   - If a CAPTCHA, a one-time code or a redirect to Microsoft login appears, sync **pauses** with a message. Nothing is bypassed. The fallback is `sla-agent import <file>`: you save the page from your own browser and the agent reads it.
+   - If a CAPTCHA, a one-time code or a redirect to Microsoft login appears, sync **pauses** with a message. Nothing is bypassed. The fallback is `sla-agent import <folder>`: you save the pages from your own browser (same file names as `fetch`) and the agent reads them.
 6. **Web app:**
    - Passwords are stored only as Werkzeug hashes.
    - Every form has CSRF protection. The JSON sync API uses the device key instead.
@@ -295,12 +295,12 @@ Each module is a **Flask Blueprint** in its own folder.
 | `sla-agent run` | What the scheduled task calls: asks the web app whether a sync is due, and syncs if it is |
 | `sla-agent sync-now` | Syncs immediately |
 | `sla-agent status` | Shows the last local result and whether sync is paused |
-| `sla-agent import <file>` | Reads a page you saved from your own browser and uploads it (fallback if automatic login stops working) |
+| `sla-agent import <folder> [--term 20261]` | Reads pages saved in a folder (by `fetch` or your browser) and uploads them (fallback if automatic login stops working) |
 | `sla-agent fetch --save-html` | Saves your EduSoft pages **on the laptop only**, used to build the parser tests |
 | `sla-agent forget` | Deletes the saved secrets and the scheduled task |
 
 - Local files live in `%LOCALAPPDATA%\SchoolLifeAssistant\`: the state file, and a rotating log with secrets scrubbed.
-- The parsers (`parsers/timetable.py`, `exams.py`, `tuition.py`) are written against **real, anonymized EduSoft pages**. The School owner saves them with `--save-html` and removes their name, student ID and date of birth. IU's class period times (when period 1 starts, and so on) are confirmed at the same time.
+- The parsers (`parsers/timetable.py`, `exams.py`, `tuition.py`) are written against **real, anonymized EduSoft pages** (in `agent/tests/fixtures/`: names, IDs, rooms and lecturers replaced). The School owner saves them with `--save-html` and removes their name, student ID and date of birth. IU's class period times (when period 1 starts, and so on) are confirmed at the same time.
 
 ---
 
@@ -360,7 +360,16 @@ EduSoft and the web app are replaced by fake responses in the agent tests. Real 
 | EduSoft changes a page layout | Parts fail separately and old data stays; the status names the broken part; parser tests make the fix quick |
 | IU adds a CAPTCHA or one-time code | Sync pauses, nothing is bypassed, `sla-agent import` still works |
 | Sync only runs while the laptop is on | Fine for data that changes a few times a semester; the web app shows the last check-in time |
-| Too many automated requests to IU | About 4 requests per sync, honest user agent, at least 1 hour between scheduled syncs |
+| Too many automated requests to IU | About 8 requests per sync, honest user agent, at least 1 hour between scheduled syncs |
 | Render free plan: sleeps after 15 min idle, 750 hours/month | The agent's 15-minute check keeps it awake while the laptop is on; one web service stays within 750 hours |
 | Aiven free MySQL switches off after long inactivity | Regular syncs keep it active; Aiven emails before switching it off |
 | Two teammates change the database at the same time | Team rules in section 9 (pull first, `flask db merge heads`) |
+
+---
+
+## 14. What we learned from the real EduSoft pages (2026-09-25)
+
+- **Timetable:** the default page is a *weekly* view that only lists courses meeting that week. The agent switches the form to the whole-semester view ("TKB học kỳ cá nhân", `ddlLoai=1`), which lists every course and every schedule line. Each line has a week code such as `-23456789-1234567`: one character per week, a digit when the class meets that week. Week 1's Monday comes from the page's note. Lecturer names come from the weekly view (the semester view only has codes).
+- **Exams:** finals (`xemlichthi`, with a semester list) and midterms (`xemlichthigk`, semester in the title) are separate pages with the same table. Only exams of the current semester are kept; before EduSoft publishes them the list is empty.
+- **Tuition:** `xemhocphi` is only a form for choosing a report; the report's location is still being found, so the tuition part currently reports "couldn't read".
+- **Periods** (confirmed by the student and EduSoft's labels): 1 08:00-08:50, 2 08:50-09:40, 3 09:40-10:30, 4 10:35-11:25, 5 11:25-12:15, 6 12:15-13:05, 7 13:15-14:05, 8 14:05-14:55, 9 14:55-15:45, 10 15:50-16:40, 11 16:40-17:30, 12 17:30-18:20.

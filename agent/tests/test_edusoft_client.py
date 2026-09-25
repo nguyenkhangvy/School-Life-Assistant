@@ -155,3 +155,69 @@ def test_network_errors_give_up_after_three_tries(client, sleeps):
         client.get_page("timetable")
 
     assert len(responses.calls) == 3
+
+
+# ---- Reading whole sections (several pages each) ---------------------------------
+
+from pathlib import Path  # noqa: E402
+
+FIXTURES = Path(__file__).parent / "fixtures"
+FINAL_URL = "https://edusoftweb.hcmiu.edu.vn/default.aspx?page=xemlichthi"
+MIDTERM_URL = "https://edusoftweb.hcmiu.edu.vn/default.aspx?page=xemlichthigk"
+
+
+def fixture(name):
+    return (FIXTURES / name).read_text(encoding="utf-8")
+
+
+@responses.activate
+def test_reading_the_timetable_asks_edusoft_for_the_semester_view(client):
+    responses.get(TIMETABLE_URL, body=fixture("timetable-weekly.html"))
+    responses.post(TIMETABLE_URL, body=fixture("timetable-semester.html"))
+
+    pages = client.read("timetable")
+
+    [call] = posts()
+    form = posted_form(call)
+    assert form["ctl00$ContentPlaceHolder1$ctl00$ddlLoai"] == "1"
+    assert form["__EVENTTARGET"] == "ctl00$ContentPlaceHolder1$ctl00$ddlLoai"
+    assert form["ctl00$ContentPlaceHolder1$ctl00$ddlChonNHHK"] == "20261"
+    assert form["__VIEWSTATE"] == "VIEWSTATE-REMOVED"
+    assert set(pages) == {"weekly", "semester"}
+    assert "grid-roll2" in pages["semester"]
+
+
+@responses.activate
+def test_reading_exams_uses_the_current_semester_and_both_exam_pages(client):
+    responses.get(TIMETABLE_URL, body=fixture("timetable-weekly.html"))
+    responses.get(FINAL_URL, body=fixture("exams-final-none.html"))
+    responses.get(MIDTERM_URL, body=fixture("exams-midterm.html"))
+
+    pages = client.read("exams")
+
+    assert pages["term"] == "20261"
+    assert "dropNHHK" in pages["final"]
+    assert "lblTitle" in pages["midterm"]
+    assert posts() == []  # 20261 isn't in the final exam list yet, so nothing to switch
+
+
+@responses.activate
+def test_reading_exams_switches_the_final_exam_page_to_the_current_semester(client):
+    client.current_term = "20251"
+    responses.get(FINAL_URL, body=fixture("exams-final.html"))  # shows 20252, lists 20251
+    responses.post(FINAL_URL, body=fixture("exams-final.html"))
+    responses.get(MIDTERM_URL, body=fixture("exams-midterm.html"))
+
+    client.read("exams")
+
+    [call] = posts()
+    assert posted_form(call)["ctl00$ContentPlaceHolder1$ctl00$dropNHHK"] == "20251"
+
+
+@responses.activate
+def test_a_form_answer_showing_the_login_form_means_the_session_expired(client):
+    responses.get(TIMETABLE_URL, body=fixture("timetable-weekly.html"))
+    responses.post(TIMETABLE_URL, body=LOGIN_PAGE)
+
+    with pytest.raises(SessionExpired):
+        client.read("timetable")
