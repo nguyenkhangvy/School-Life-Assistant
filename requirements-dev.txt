@@ -1,2 +1,11 @@
 -r requirements.txt
+
+# Laptop sync agent (see agent/) and its libraries
+-e ./agent
+requests==2.34.2
+beautifulsoup4==4.15.0
+keyring==25.7.0
+
+# Tests
 pytest==9.1.1
+responses==0.26.3
