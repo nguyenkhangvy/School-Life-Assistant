@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sla-contract"
+version = "0.1.0"
+description = "Data format shared by the School-Life-Assistant web app and the laptop sync agent"
+requires-python = ">=3.12"
+dependencies = ["pydantic>=2,<3"]
+
+[tool.setuptools]
+packages = ["sla_contract"]

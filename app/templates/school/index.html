@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}School · School-Life-Assistant{% endblock %}
+{% block content %}
+  <h1>School</h1>
+  {% include "school/_status_card.html" %}
+  <p class="subnav"><a href="{{ url_for('school.devices') }}">Devices</a></p>
+{% endblock %}

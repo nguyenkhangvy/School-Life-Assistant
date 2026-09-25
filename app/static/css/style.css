@@ -115,3 +115,52 @@ form.inline { display: inline; }
 
 .flash { padding: 10px 14px; border-radius: 8px; background: var(--ok-bg); }
 .flash-error { background: var(--error-bg); color: var(--error); }
+
+.muted { color: var(--muted); }
+.subnav { margin: 0 0 12px; }
+.card + .card, .card + .subnav { margin-top: 16px; }
+.card h2 { margin-top: 0; font-size: 1.1rem; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.link-button.danger { color: var(--error); }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
+
+/* School: sync status card */
+.status-card { border-left: 6px solid var(--muted); }
+.status-card.status-success { border-left-color: #2e8b57; }
+.status-card.status-syncing,
+.status-card.status-requested { border-left-color: var(--accent); }
+.status-card.status-partial,
+.status-card.status-paused { border-left-color: #c77700; }
+.status-card.status-failed { border-left-color: var(--error); }
+.status-headline { margin: 0 0 4px; font-size: 1.15rem; font-weight: 700; }
+.status-detail { margin: 0 0 8px; color: var(--muted); }
+.status-warning { margin: 0 0 8px; color: #c77700; font-weight: 600; }
+
+/* School: devices */
+.key-card { border: 2px solid var(--accent); }
+.key-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.key {
+  flex: 1 1 260px;
+  padding: 10px;
+  overflow-wrap: anywhere;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.device-list { list-style: none; margin: 0; padding: 0; }
+.device {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;
+  padding: 12px 0; border-top: 1px solid var(--border);
+}
+.device:first-child { border-top: 0; }
+.device .muted { display: block; font-size: 0.9rem; }
+.device.is-revoked strong { color: var(--muted); text-decoration: line-through; }
+.device-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.inline-form { display: flex; gap: 6px; align-items: center; }
+.inline-form input {
+  width: 150px; padding: 6px 8px; font: inherit; color: var(--text);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+}

@@ -24,9 +24,14 @@ def create_app(config=None):
 
     from app.auth.routes import bp as auth_bp
     from app.main.routes import bp as main_bp
+    from app.school.api import bp as school_api_bp
+    from app.school.routes import bp as school_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(school_bp)
+    app.register_blueprint(school_api_bp)
+    csrf.exempt(school_api_bp)  # the agent authenticates with its device key, not a cookie
 
     @app.context_processor
     def inject_nav_items():
