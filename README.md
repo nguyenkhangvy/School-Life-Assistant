@@ -14,15 +14,24 @@ Stack: Python 3.12, Flask, Jinja templates, MySQL 8, a little JavaScript.
 
 ## First-time setup (Windows)
 
-1. **Get the code and install the libraries.**
+1. **Get the code** (skip this if you already have the project folder):
 
    ```powershell
    git clone https://github.com/nguyenkhangvy/School-Life-Assistant.git
    cd School-Life-Assistant
+   ```
+
+   **Then, inside the project folder, install the libraries:**
+
+   ```powershell
    py -3.12 -m venv .venv
    .venv\Scripts\activate
    pip install -r requirements-dev.txt
    ```
+
+   If `activate` fails with "running scripts is disabled on this system", run
+   `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` first (it only affects that window).
+   Your prompt starts with `(.venv)` once it worked.
 
 2. **Create your local MySQL database.** Open a MySQL prompt with `mysql -u root -p`, then run the following, using a password of your own:
 
