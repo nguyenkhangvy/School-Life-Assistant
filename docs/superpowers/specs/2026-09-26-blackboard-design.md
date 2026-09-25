@@ -57,12 +57,14 @@ The same laptop agent (`sla-agent`), on the same schedule, syncs EduSoft first a
 
 About 40 to 60 requests per sync for 8 courses. With a sync every 6 to 12 hours this is a light load.
 
-**Which courses are "current"** is the one open decision. It is made in step B2 from real sample data, because the rule depends on how IU fills in Blackboard's course and term fields:
+**Which courses are "current"** (decided by the student on 2026-09-26): the courses registered this semester, as listed on EduSoft.
 
-- First choice: Blackboard's own term information for the course (the course's term, or its availability dates covering today).
-- Fallback: a course whose code matches a course in the current EduSoft timetable (e.g. `IT093IU`).
+1. Each sync, the agent opens EduSoft's course registration page (`default.aspx?page=dkmonhoc`) and reads the table under **"DANH SÁCH MÔN HỌC ĐÃ CHỌN"** (columns STT, Regis ID, Mã MH, Tên môn học, NMH, TTH, STC, STCHP, Học Phí, Miễn Giảm, Phải Đóng, Trạng Thái môn học). Rows with status **"Đã lưu vào CSDL"** are the registered courses; their `Mã MH` (e.g. `IT093IU`) and `NMH` (group, e.g. `02`) are kept.
+2. A Blackboard course is current when its course code is on that list. How the code appears in Blackboard's course ID or name is confirmed from the real samples in step B2.
+3. If several Blackboard courses share a code (e.g. a course taken again), the one whose group matches `NMH` wins; if that still ties, the most recently created one.
+4. If the registration page can't be read (e.g. EduSoft is overloaded during registration week), the agent uses the course codes of the current EduSoft timetable instead; they are the same courses.
 
-Whichever rule is chosen is written into this section in the same commit as the reader.
+**The registration page is where students register and cancel courses. The agent only ever sends a `GET` for it and never submits its form or presses any of its buttons.** (Checked 2026-09-26, outside the registration period: the page says "ngoài thời gian đăng ký" and lists the 8 registered courses, matching the timetable.)
 
 ---
 
@@ -170,7 +172,8 @@ Compared by `bb_id` before replacing:
   - Login: form fields including the nonce; one attempt on a wrong password; re-login once after a 401.
   - Independent pauses: an EduSoft login failure still uploads Blackboard, and the other way round; old single-value state files still load.
   - HTML to text: scripts, styles and tags removed, entities decoded, length limits.
-  - Current-course rule, due dates in Vietnam time, "What changed" lines, calendar feed entries, page ownership (404), links limited to the Blackboard host.
+  - Current-course rule: registered list read from an anonymized copy of the registration page (only "Đã lưu vào CSDL" rows), matching by code, the group tie-break, and the timetable fallback. The registration page is only ever fetched with `GET`.
+  - Due dates in Vietnam time, "What changed" lines, calendar feed entries, page ownership (404), links limited to the Blackboard host.
 - **Manual:** `sla-agent setup --blackboard`, `sla-agent sync-now`, then check the Courses pages, Overview boxes and calendar in Edge on laptop and phone widths.
 
 ---
@@ -180,7 +183,7 @@ Compared by `bb_id` before replacing:
 | Step | Work | Done when |
 |---|---|---|
 | B1 | Agent: Blackboard client (encryption setting, login, logout, session expiry), credentials, `setup --blackboard`, pause per system | Tests with fake Blackboard answers pass |
-| B2 | Student runs `sla-agent setup --blackboard`; save real samples on the laptop, anonymize them, choose the current-course rule, write the readers | Reader tests pass against the anonymized copies |
+| B2 | Student runs `sla-agent setup --blackboard`; save real samples on the laptop (Blackboard JSON and the registration page), anonymize them, write the readers and the current-course rule | Reader tests pass against the anonymized copies |
 | B3 | Server: data format, tables and migration, saving, "What changed" lines, status per system | Tests with fake uploads pass |
 | B4 | Pages: Courses and course pages, Overview boxes, deadlines in the calendar | Page tests pass; Edge screenshots look right |
 | B5 | Real sync end to end, docs (README, agent setup) | The student sees their real Blackboard data |
