@@ -117,7 +117,6 @@ form.inline { display: inline; }
 .flash-error { background: var(--error-bg); color: var(--error); }
 
 .muted { color: var(--muted); }
-.subnav { margin: 0 0 12px; }
 .card + .card, .card + .subnav { margin-top: 16px; }
 .card h2 { margin-top: 0; font-size: 1.1rem; }
 .visually-hidden {
@@ -163,3 +162,43 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
   width: 150px; padding: 6px 8px; font: inherit; color: var(--text);
   background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
 }
+
+/* School: sub-menu, schedule items, week grid */
+.subnav { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 16px; }
+.subnav a { text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent; }
+.subnav a[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.center { text-align: center; }
+.badge {
+  display: inline-block; padding: 1px 8px; font-size: 0.8rem; font-weight: 600;
+  color: var(--accent-text); background: var(--accent); border-radius: 999px;
+}
+.button.secondary { color: var(--accent); background: transparent; border: 1px solid var(--border); }
+.two-columns { display: grid; gap: 16px; margin-top: 16px; }
+@media (min-width: 800px) { .two-columns { grid-template-columns: 1fr 1fr; } }
+.two-columns .card + .card { margin-top: 0; }
+
+.items { list-style: none; margin: 0 0 8px; padding: 0; }
+.item {
+  display: grid; gap: 2px; padding: 8px 10px; margin-bottom: 8px;
+  background: var(--bg); border-left: 4px solid var(--accent); border-radius: 6px;
+}
+.item-exam { border-left-color: var(--error); }
+.item-time { font-weight: 700; font-variant-numeric: tabular-nums; }
+.item-meta { color: var(--muted); font-size: 0.9rem; }
+
+.week-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.week-nav h2 { margin: 0; font-size: 1.1rem; text-align: center; }
+.week { display: grid; gap: 12px; margin-top: 12px; }
+@media (min-width: 1000px) { .week { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.day { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; }
+.day h3 { margin: 0 0 8px; font-size: 1rem; }
+.day.is-today { border-color: var(--accent); border-width: 2px; }
+
+.changes { margin: 0; padding-left: 18px; }
+.change { margin-bottom: 6px; }
+.exam-list { margin: 0; padding-left: 18px; }
+.exam-list li { margin-bottom: 10px; }
+.exam-list.is-past { color: var(--muted); }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; }

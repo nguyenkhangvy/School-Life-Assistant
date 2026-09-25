@@ -1,7 +1,47 @@
 {% extends "base.html" %}
+{% from "school/_item.html" import schedule_item %}
 {% block title %}School · School-Life-Assistant{% endblock %}
 {% block content %}
   <h1>School</h1>
+  {% include "school/_subnav.html" %}
   {% include "school/_status_card.html" %}
-  <p class="subnav"><a href="{{ url_for('school.devices') }}">Devices</a></p>
+
+  <div class="two-columns">
+    <section class="card">
+      <h2>Today <span class="muted">{{ today | day_label }}</span></h2>
+      {% if today_items %}
+        <ul class="items">{% for item in today_items %}{{ schedule_item(item) }}{% endfor %}</ul>
+      {% else %}
+        <p class="muted">No classes or exams today.</p>
+      {% endif %}
+      <h2>Tomorrow</h2>
+      {% if tomorrow_items %}
+        <ul class="items">{% for item in tomorrow_items %}{{ schedule_item(item) }}{% endfor %}</ul>
+      {% else %}
+        <p class="muted">No classes or exams tomorrow.</p>
+      {% endif %}
+      <p><a href="{{ url_for('school.timetable') }}">Whole week →</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Next exam</h2>
+      {% if next_exam %}
+        <p><strong>{{ next_exam.course_name }}</strong> ({{ next_exam.exam_type }})<br>
+           {{ next_exam.start_at | vn_date }} at {{ next_exam.start_at | vn_clock }}{% if next_exam.room %} · {{ next_exam.room }}{% endif %}</p>
+      {% else %}
+        <p class="muted">No upcoming exams published yet.</p>
+      {% endif %}
+
+      <h2>What changed</h2>
+      {% if changes %}
+        <ul class="changes">
+          {% for change in changes %}
+            <li class="change change-{{ change.kind }}">{{ change.summary }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">Nothing yet. Changes appear here after each sync.</p>
+      {% endif %}
+    </section>
+  </div>
 {% endblock %}

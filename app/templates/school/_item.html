@@ -1,0 +1,14 @@
+{% macro schedule_item(item) %}
+  <li class="item item-{{ item.kind }}">
+    <span class="item-time">{{ item.start_at | vn_clock }}{% if item.end_at %}–{{ item.end_at | vn_clock }}{% endif %}</span>
+    <span class="item-title">
+      {% if item.label %}<strong>{{ item.label }}:</strong> {% endif %}{{ item.title }}
+    </span>
+    <span class="item-meta">
+      {{ item.code }}
+      {% if item.room %}
+        · {% if item.room.upper().startswith("ONLINE") %}<span class="badge">Online</span>{% else %}{{ item.room }}{% endif %}
+      {% endif %}
+    </span>
+  </li>
+{% endmacro %}

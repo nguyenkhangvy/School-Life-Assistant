@@ -1,11 +1,14 @@
-from flask import Blueprint, flash, redirect, render_template, url_for
+from datetime import date, timedelta
+
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import select
 
 from app.extensions import db
 from app.school.forms import DeviceForm
-from app.school.models import SchoolSyncDevice
-from app.school.services.changes import when
+from app.school.models import SchoolChange, SchoolExam, SchoolSyncDevice, SchoolTuition
+from app.school.services import schedule
+from app.school.services.changes import WEEKDAYS, to_vietnam, when
 from app.school.services.devices import create_device
 from app.school.services.sync_runs import get_settings, latest_run
 from app.school.services.sync_status import RunInfo, describe
@@ -17,6 +20,27 @@ bp = Blueprint("school", __name__, url_prefix="/school")
 @bp.app_template_filter("vn_time")
 def vn_time(moment):
     return when(moment) if moment else "never"
+
+
+@bp.app_template_filter("vn_clock")
+def vn_clock(moment):
+    """Naive UTC -> '08:00' in Vietnam."""
+    return to_vietnam(moment).strftime("%H:%M")
+
+
+@bp.app_template_filter("vn_date")
+def vn_date(moment):
+    return to_vietnam(moment).strftime("%d/%m/%Y")
+
+
+@bp.app_template_filter("day_label")
+def day_label(day):
+    return f"{WEEKDAYS[day.weekday()]} {day:%d/%m}"
+
+
+@bp.app_template_filter("money")
+def money(amount):
+    return f"{amount:,}"
 
 
 def _active_devices():
@@ -55,9 +79,68 @@ def _status(now):
 @bp.get("/")
 @login_required
 def index():
-    status = _status(utcnow())
+    now = utcnow()
+    status = _status(now)
     db.session.commit()
-    return render_template("school/index.html", status=status)
+    today = schedule.vietnam_date(now)
+    next_exam = db.session.execute(
+        select(SchoolExam).filter_by(user_id=current_user.id).where(SchoolExam.start_at >= now)
+        .order_by(SchoolExam.start_at).limit(1)
+    ).scalar_one_or_none()
+    changes = db.session.execute(
+        select(SchoolChange).filter_by(user_id=current_user.id).order_by(SchoolChange.id.desc()).limit(10)
+    ).scalars().all()
+    return render_template(
+        "school/index.html",
+        status=status,
+        today=today,
+        today_items=schedule.items_on(current_user.id, today),
+        tomorrow_items=schedule.items_on(current_user.id, today + timedelta(days=1)),
+        next_exam=next_exam,
+        changes=changes,
+    )
+
+
+@bp.get("/timetable")
+@login_required
+def timetable():
+    today = schedule.vietnam_date(utcnow())
+    try:
+        chosen = date.fromisoformat(request.args.get("week", ""))
+    except ValueError:
+        chosen = today
+    monday = schedule.monday_of(chosen)
+    return render_template(
+        "school/timetable.html",
+        days=schedule.week(current_user.id, monday),
+        monday=monday,
+        sunday=monday + timedelta(days=6),
+        previous_week=monday - timedelta(days=7),
+        next_week=monday + timedelta(days=7),
+        this_week=schedule.monday_of(today),
+        today=today,
+    )
+
+
+@bp.get("/exams")
+@login_required
+def exams():
+    now = utcnow()
+    mine = select(SchoolExam).filter_by(user_id=current_user.id)
+    upcoming = db.session.execute(mine.where(SchoolExam.start_at >= now).order_by(SchoolExam.start_at)).scalars().all()
+    past = db.session.execute(
+        mine.where(SchoolExam.start_at < now).order_by(SchoolExam.start_at.desc()).limit(20)
+    ).scalars().all()
+    return render_template("school/exams.html", upcoming=upcoming, past=past, labels=schedule.EXAM_LABELS)
+
+
+@bp.get("/tuition")
+@login_required
+def tuition():
+    rows = db.session.execute(
+        select(SchoolTuition).filter_by(user_id=current_user.id).order_by(SchoolTuition.term_code.desc())
+    ).scalars().all()
+    return render_template("school/tuition.html", rows=rows)
 
 
 @bp.post("/sync-now")

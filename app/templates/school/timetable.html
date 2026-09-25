@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "school/_item.html" import schedule_item %}
+{% block title %}Timetable · School-Life-Assistant{% endblock %}
+{% block content %}
+  <h1>Timetable</h1>
+  {% include "school/_subnav.html" %}
+
+  <div class="week-nav">
+    <a class="button secondary" href="{{ url_for('school.timetable', week=previous_week.isoformat()) }}">← Previous</a>
+    <h2>{{ monday.strftime("%d/%m") }} – {{ sunday.strftime("%d/%m/%Y") }}</h2>
+    <a class="button secondary" href="{{ url_for('school.timetable', week=next_week.isoformat()) }}">Next →</a>
+  </div>
+  {% if monday != this_week %}
+    <p class="center"><a href="{{ url_for('school.timetable') }}">Back to this week</a></p>
+  {% endif %}
+
+  <div class="week">
+    {% for day, items in days %}
+      <section class="day{% if day == today %} is-today{% endif %}">
+        <h3>{{ day | day_label }}{% if day == today %} <span class="badge">Today</span>{% endif %}</h3>
+        {% if items %}
+          <ul class="items">{% for item in items %}{{ schedule_item(item) }}{% endfor %}</ul>
+        {% else %}
+          <p class="muted">Free</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+{% endblock %}

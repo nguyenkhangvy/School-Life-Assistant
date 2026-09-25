@@ -2,8 +2,8 @@
 {% from "_form.html" import render_field %}
 {% block title %}Devices · School-Life-Assistant{% endblock %}
 {% block content %}
-  <p class="subnav"><a href="{{ url_for('school.index') }}">← School</a></p>
   <h1>Devices</h1>
+  {% include "school/_subnav.html" %}
   <p>A device is a laptop running <code>sla-agent</code>. It keeps your EduSoft password in Windows
      Credential Manager and uploads only your timetable, exams and tuition.</p>
 
