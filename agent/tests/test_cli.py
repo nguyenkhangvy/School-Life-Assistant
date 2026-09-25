@@ -210,7 +210,7 @@ def test_fetch_saves_the_pages_locally_with_a_privacy_warning(world, tmp_path, c
 
     saved = sorted(p.name for p in folder.iterdir())
     assert saved == [
-        "exams-final.html", "exams-midterm.html", "home.html",
+        "exams-final.html", "exams-midterm.html", "home.html", "registration.html",
         "timetable-semester.html", "timetable-weekly.html", "tuition-report.json",
     ]
     assert (folder / "timetable-semester.html").read_text(encoding="utf-8") == "<html>timetable semester</html>"

@@ -1,0 +1,2911 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<script language="javascript" type="text/javascript">
+
+    
+
+    var gv = 'False';
+
+</script>
+<script async="" defer="" src="https://apis.google.com/js/platform.js?hl=vn" type="text/javascript"></script>
+<head><meta content="profile email" name="google-signin-scope"/><meta id="metaGoogle" name="google-signin-client_id"/><link href="Images/Edusoft.gif" id="favicon" rel="shortcut icon" type="image/x-icon"/>
+<script src="JS/jquery-2.2.1.js" type="text/javascript"></script>
+<script src="JS/dialog.js" type="text/javascript"></script>
+<script src="JS/checkdate.js" type="text/javascript"></script>
+<script src="JS/balloontip.js" type="text/javascript"></script>
+<link href="JS/balloontip.css" rel="stylesheet" type="text/css"/><title>
+
+	Cổng Thông Tin Đào Tạo-Trường ĐH Quốc Tế - ĐHQG TP.HCM-Trường Đại học Quốc tế-DHQTDH
+
+</title>
+<script language="javascript" type="text/javascript">
+
+
+
+        function ShowMess() {
+
+            var url = location.href;
+
+            if (url.indexOf("err=serveroverload", 0) > 0)
+
+                alert('Server quá tải, vui lòng đăng nhập lại!');
+
+            else if (url.indexOf("err=sessionreuse", 0) > 0)
+
+                alert('Vui lòng tắt và mở lại trình duyệt!');
+
+        }
+
+
+
+        $(function () {
+
+            if (typeof AjaxPro != 'undefined' && AjaxPro && AjaxPro.Request && AjaxPro.Request.prototype) {
+
+                AjaxPro.Request.prototype.doStateChange = function () {
+
+                    this.onStateChanged(this.xmlHttp.readyState, this);
+
+                    if (this.xmlHttp.readyState != 4 || !this.isRunning) {
+
+                        return;
+
+                    }
+
+                    this.duration = new Date().getTime() - this.__start;
+
+                    if (this.timeoutTimer != null) {
+
+                        clearTimeout(this.timeoutTimer);
+
+                    }
+
+                    var res = this.getEmptyRes();
+
+                    if (this.xmlHttp.status == 200 && (this.xmlHttp.statusText == "OK" || !this.xmlHttp.statusText)) {
+
+                        res = this.createResponse(res);
+
+                    } else {
+
+                        res = this.createResponse(res, true);
+
+                        res.error = { Message: this.xmlHttp.statusText, Type: "ConnectFailure", Status: this.xmlHttp.status };
+
+                    }
+
+                    this.endRequest(res);
+
+                };
+
+            }
+
+            //gapi.load('auth2', function () {
+
+            //    gapi.auth2.GoogleUser(u => {
+
+            //        u.getAuthResponse(a => {
+
+            //            EduSoft.Web.DefaultMaster.CheckGoogle(a.id_token, x => {
+
+            //                if (x.value) {
+
+            //                    self.location = decodeURIComponent(x.value);
+
+            //                }
+
+            //            });
+
+            //        });
+
+            //    });
+
+            //}
+
+        });
+
+    </script>
+<link href="App_Themes/Standard/Standard.css" rel="stylesheet" type="text/css"/><link href="App_Themes/Standard/StyleSheet.css" rel="stylesheet" type="text/css"/></head>
+<body background="App_Themes/Standard/Images/background.png" onload="ShowMess()">
+<form action="./default.aspx?page=dkmonhoc" enctype="multipart/form-data" id="form1" method="post">
+<input id="__VIEWSTATE" name="__VIEWSTATE" type="hidden" value="VIEWSTATE-REMOVED"/>
+<script src="/ajaxpro/prototype.ashx" type="text/javascript"></script>
+<script src="/ajaxpro/core.ashx" type="text/javascript"></script>
+<script src="/ajaxpro/converter.ashx" type="text/javascript"></script>
+<script src="/ajaxpro/EduSoft.Web.UC.DangKyMonHoc,EduSoft.Web.ashx" type="text/javascript"></script>
+<script src="/ajaxpro/EduSoft.Web.DefaultMaster,EduSoft.Web.ashx" type="text/javascript"></script>
+<script src="/ajaxpro/EduSoft.Web.UC.Logout,EduSoft.Web.ashx" type="text/javascript"></script>
+<script src="/ajaxpro/EduSoft.Web.UC.Footer,EduSoft.Web.ashx" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=xJgLLhO_n6wCd_PKXaDuR64GIUSwRjKv2LjheqbWv0UlzqtNO0L_qzzVGScgPZCTaiwtUZt5EVP0UabHgiECenv--O68bq0LbOsgEWGAck7f99yWK22-hcDbFT2_DBB2EuPIbpkPrifyClrGBlMzdIU1rxUGiW8PxUSllIDH9_I1&amp;t=5c0e0825" type="text/javascript"></script>
+<input id="__VIEWSTATEGENERATOR" name="__VIEWSTATEGENERATOR" type="hidden" value="CA0B0334"/>
+<div align="center">
+<div class="base">
+<table>
+<tr>
+<td>
+<div style="background-image: url(Images/bg_heading_thongbao.png)">
+<table width="1000px">
+<tr>
+<td align="right" height="20px" style="padding-left: 50px" valign="bottom">
+<script language="javascript" type="text/javascript">
+
+
+
+    function changeLanguage_click(obj) {
+
+        EduSoft.Web.UC.Logout.ChangeLanguage(obj, changeLanguage_callback);
+
+    }
+
+    function changeLanguage_callback() {
+
+        var loc = window.location.href;
+
+        if (loc.endsWith("/")) loc = loc.substr(0, loc.length - 1);
+
+        if (loc.toLowerCase().indexOf("default.aspx") <= 0)
+
+            self.location = loc + "/default.aspx?pgtemp=x";
+
+        else if (loc.toLowerCase().indexOf("?") <= 0)
+
+            self.location = loc + "?lang=x";
+
+        else if (loc.endsWith("&lang=x"))
+
+            self.location = loc.replace("&lang=x", "&lang=y");
+
+        else if (loc.endsWith("&lang=y"))
+
+            self.location = loc.replace("&lang=y", "&lang=x");
+
+        else
+
+            self.location = loc + "&lang=x";
+
+    }
+
+    function selectFont_change() {
+
+        var selectmenu = document.getElementById("selectFont");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+        var font = chosenOption.value;
+
+        EduSoft.Web.UC.Logout.ChangeFont(font, ChangeFont_callback);
+
+    }
+
+    function ChangeFont_callback() {
+
+        //self.location=window.location;
+
+    }
+
+
+
+    function ConfirmChuaLuu(obj) {
+
+
+
+        alert(obj);
+
+        self.location = "default.aspx?page=dkmonhoc";
+
+    }
+
+
+
+    
+
+
+
+    function signOutGoogle(dest) {
+
+        var url = 'https://www.google.com/accounts/Logout?continue=https://appengine.google.com/_ah/logout?continue='
+
+            + decodeURIComponent(dest);
+
+        document.location = url;
+
+        
+
+        //gapi.load('auth2', function () {
+
+        //    gapi.auth2.init();
+
+        //    var auth = gapi.auth2.GoogleAuth;
+
+        //    auth.signOut().then(function () {
+
+        //        location = decodeURIComponent(dest) + 'page=gioithieu';
+
+        //    });
+
+        //});
+
+    }
+
+</script>
+<div class="logout" id="Header1_Logout1_dLog" style="text-align: right; margin-bottom: 0px">
+<img alt="English" id="imgUS" onclick="changeLanguage_click('_us')" src="App_Themes/Standard/Images/US.gif" title="English"/>
+<img alt="Vietnamese" id="imgVi" onclick="changeLanguage_click('_vi')" src="App_Themes/Standard/Images/VI.gif" title="Vietnamese"/>
+<span class="Label" id="Header1_Logout1_lblNguoiDung">Chào bạn STUDENT (STUDENT)</span> <a href="javascript:__doPostBack('ctl00$Header1$Logout1$lbtnThongBao','')" id="Header1_Logout1_lbtnThongBao" style="font-family: 'Tahoma', Times, serif"><i><font color="#FF3300">Xem thông báo</font></i></a><span class="Label" id="Header1_Logout1_lblXiet1"><font color="#FF3300"> | </font></span>
+<a href="javascript:__doPostBack('ctl00$Header1$Logout1$lbtnChangePass','')" id="Header1_Logout1_lbtnChangePass" style="font-family: 'Tahoma', Times, serif"><b><font color="#FF3300">Thay đổi mật khẩu</font></b></a>
+<span class="Label" id="Header1_Logout1_lblXiet2"><font color="#FF3300"> | </font></span>
+<a href="javascript:__doPostBack('ctl00$Header1$Logout1$lbtnLogOut','')" id="Header1_Logout1_lbtnLogOut" style="font-family: 'Tahoma', Times, serif"><b><font color="#FF3300" size="2">Thoát</font></b></a>
+
+     <select id="selectFont" onchange="selectFont_change()" style="font-size: 11px; width: 100px; color: #000080;">
+<option value="uni">-------Font-------</option>
+<option selected="" value="uni">Font Unicode</option>
+<option value="abc">Font ABC</option>
+<option value="vni">Font Vni</option>
+<option value="not">Text không
+
+            dấu</option>
+</select>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<style type="text/css">
+
+    .styleApplication {
+
+        font-size: 26;
+
+        font-weight: bold;
+
+    }
+
+
+
+    @font-face {
+
+        font-family: 'myriadpro';
+
+        src: url('js/myriadpro-bold.otf');
+
+    }
+
+
+
+    .menufontdhxd {
+
+        font-family: 'myriadpro';
+
+        font-size: 14px;
+
+    }
+
+</style>
+<div class="left-menu">
+<div class="right-menu">
+<div class="main-menu" style="height: 110px">
+<div class="out-menu" id="menu_pnlGioithieu">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=gioithieu">
+<span class="Label" id="menu_lblTrangChu">TRANG CHỦ</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_pnDangKyMonHoc">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=dkmonhoc">
+<span class="Label" id="menu_lblDangKyMonHoc">ĐĂNG KÝ MÔN HỌC</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_thoikhoabieu">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=thoikhoabieu">
+<span class="Label" id="menu_lblThoiKhoaBieu">XEM TKB</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_xemlichthi">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=xemlichthi">
+<span class="Label" id="menu_lblXemLichThi">LỊCH THI CUỐI KỲ</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_xemlichthigk">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=xemlichthigk">
+<span class="Label" id="menu_lblXemLichThiGK">LỊCH THI GIỮA KỲ</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_xemhocphi">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=xemhocphi">
+<span class="Label" id="menu_lblXemHocPhi">XEM HỌC PHÍ</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_xemdiemthi">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=xemdiemthi">
+<span class="Label" id="menu_lblXemDiem">XEM ĐIỂM</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_pnlXemCTDTKhoi">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=ctdtkhoisv">
+<span class="Label" id="menu_lblXemCTDTKhoiSV">XEM CTĐT</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_pnlXemMonTienQuyet">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=xemmontienquyet">
+<span class="Label" id="menu_lblXemMonTQ">XEM MÔN TQ</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_thaydoittcn">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=thaydoittcn">
+<span class="Label" id="menu_lblThayDoiTTCN">SỬA TT CÁ NHÂN</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_ykiensinhvien">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=ykiensinhvien">
+<span class="Label" id="menu_lblykiensinhvien">GÓP Ý KIẾN</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_pnlSinhVienDanhGia">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="javascript:__doPostBack('ctl00$menu$lkDanhgiaGV','')" id="menu_lkDanhgiaGV"><span class="Label" id="menu_lblDanhGiaTrucTuyen">ĐÁNH GIÁ GIẢNG DẠY</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div class="out-menu" id="menu_pnlHDDT">
+<div class="left"></div>
+<div class="center" style="white-space: nowrap">
+<a href="Default.aspx?page=hddt">
+<span class="Label" id="menu_lblHoaDonDT">HÓA ĐƠN ĐIỆN TỬ</span></a>
+</div>
+<div class="right"></div>
+</div>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td height="500px" valign="top">
+<style type="text/css">
+
+    #dhtmltooltip {
+
+        position: absolute;
+
+        padding: 2px;
+
+        visibility: hidden;
+
+        z-index: 100;
+
+    }
+
+
+
+    .style1 {
+
+        width: 814px;
+
+    }
+
+
+
+    .style2 {
+
+        width: 68px;
+
+    }
+
+
+
+    .style3 {
+
+        width: 1252px;
+
+    }
+
+
+
+    #Select1 {
+
+        height: 66px;
+
+        width: 238px;
+
+    }
+
+
+
+    #selectMonHoc1 {
+
+        width: 352px;
+
+        height: 63px;
+
+    }
+
+</style>
+<div id="dhtmltooltip" style="background-image: url(App_Themes/Standard/Images/tooltip.png); text-align: center"></div>
+<script type="text/javascript">
+
+
+
+    var offsetxpoint = -60 //Customize x offset of tooltip
+
+    var offsetypoint = 20 //Customize y offset of tooltip
+
+    var ie = document.all
+
+    var ns6 = document.getElementById && !document.all
+
+    var enabletip = false
+
+    if (ie || ns6)
+
+        var tipobj = document.all ? document.all["dhtmltooltip"] : document.getElementById ? document.getElementById("dhtmltooltip") : ""
+
+
+
+    function ietruebody() {
+
+        return (document.compatMode && document.compatMode != "BackCompat") ? document.documentElement : document.body
+
+    }
+
+
+
+    function ddrivetip(NgayGioiHanHoc) {
+
+        if (ns6 || ie) {
+
+            var thewidth = 170;
+
+            if (typeof thewidth != "undefined") tipobj.style.width = thewidth + "px"
+
+            tipobj.innerHTML = "<table CellPadding='0' border='0' CellSpacing='0' style='text-align:left;font-size:10pt;font-family:tahoma;background-color:#2E6C92; color:White; '><tr height='20px'><td align='center' >" + NgayGioiHanHoc.split('_').join(' ') + "</td></tr></table>";
+
+            enabletip = true
+
+            return false
+
+        }
+
+    }
+
+    function positiontip(e) {
+
+        if (enabletip) {
+
+            var curX = (ns6) ? e.pageX : event.clientX + ietruebody().scrollLeft;
+
+            var curY = (ns6) ? e.pageY : event.clientY + ietruebody().scrollTop;
+
+            //Find out how close the mouse is to the corner of the window
+
+            var rightedge = ie && !window.opera ? ietruebody().clientWidth - event.clientX - offsetxpoint : window.innerWidth - e.clientX - offsetxpoint - 20
+
+            var bottomedge = ie && !window.opera ? ietruebody().clientHeight - event.clientY - offsetypoint : window.innerHeight - e.clientY - offsetypoint - 20
+
+
+
+            var leftedge = (offsetxpoint < 0) ? offsetxpoint * (-1) : -1000
+
+
+
+            //if the horizontal distance isn't enough to accomodate the width of the context menu
+
+            if (rightedge < tipobj.offsetWidth)
+
+                //move the horizontal position of the menu to the left by it's width
+
+                tipobj.style.left = ie ? ietruebody().scrollLeft + event.clientX - tipobj.offsetWidth + "px" : window.pageXOffset + e.clientX - tipobj.offsetWidth + "px"
+
+            else if (curX < leftedge)
+
+                tipobj.style.left = "5px"
+
+            else
+
+                //position the horizontal position of the menu where the mouse is positioned
+
+                tipobj.style.left = curX + offsetxpoint + "px"
+
+
+
+            //same concept with the vertical position
+
+            if (bottomedge < tipobj.offsetHeight)
+
+                tipobj.style.top = ie ? ietruebody().scrollTop + event.clientY - tipobj.offsetHeight - offsetypoint + "px" : window.pageYOffset + e.clientY - tipobj.offsetHeight - offsetypoint + "px"
+
+            else
+
+                tipobj.style.top = curY + offsetypoint + "px"
+
+            tipobj.style.visibility = "visible"
+
+        }
+
+    }
+
+
+
+    function hideddrivetip() {
+
+        if (ns6 || ie) {
+
+            enabletip = false
+
+            tipobj.style.visibility = "hidden"
+
+            tipobj.style.left = "-1000px"
+
+            tipobj.style.backgroundColor = ''
+
+            tipobj.style.width = ''
+
+        }
+
+    }
+
+
+
+    document.onmousemove = positiontip
+
+</script>
+<script language="javascript" type="text/javascript">
+
+
+
+    function MessUpdate(mess) {
+
+        var mes = mess
+
+        alert(mes)
+
+    }
+
+
+
+    function disableSelection(target) {
+
+        if (typeof target.onselectstart != "undefined") //IE route
+
+            target.onselectstart = function () { return false }
+
+        else if (typeof target.style.MozUserSelect != "undefined") //Firefox route
+
+            target.style.MozUserSelect = "none"
+
+        else //All other route (ie: Opera)
+
+            target.onmousedown = function () { return false }
+
+        target.style.cursor = "default"
+
+    }
+
+
+
+
+
+    // declare variable
+
+    var sumCheck = 0;
+
+    var checkflag = "false";
+
+    var vuotTC;
+
+    var trungTKBChoPhep;
+
+    var trungTKBKChoPhep;
+
+    var xoaKhongHopLe;
+
+    var confirmXoa;
+
+    var confirmXoaTatCa;
+
+    var nhapDKLoc;
+
+    var serverBusy;
+
+    var hinhThucDongHP;
+
+    var hoiDongHP;
+
+    var trungMonNC;
+
+    var waitingCheck;
+
+    var errorOutOffTime;
+
+    var errorChuyenNganhChinh;
+
+    var errorChuyenNganhChuyenSau;
+
+    var errorCaiThienDiemD;
+
+    var errorCaiThienHocKy;
+
+    var errorMucDoTrungTKB0;
+
+    var errorMucDoTrungTKB1;
+
+    var errorTrungLichThiCam;
+
+    var errorTrungLichThiLuaChon;
+
+    var errorTrungLichThiVuot;
+
+    var textKhongTheXoa;
+
+    var textKhongMoMH;
+
+    var errorGioiHanSTC;
+
+    var errorGioiHanSoTCThayDoi;
+
+    var isProcessing = false;
+
+    function toDKSelectedChange(o) {
+
+        document.body.disabled = "false";
+
+        document.body.style.cursor = "wait";
+
+        document.getElementById("IDchk_all").checked = false;
+
+        var arr = o.value.split("|");
+
+        if (!isProcessing) {
+
+
+
+            isProcessing = true;
+
+            EduSoft.Web.UC.DangKyMonHoc.DangKySelectedChange(o.checked, arr[0], arr[1], arr[2], arr[3], arr[4], arr[5],
+
+                arr[6], arr[7], arr[8], arr[9], arr[10], arr[11], arr[12],
+
+                toDKSelectedChange_callback);
+
+        }
+
+        else {
+
+            isProcessing = false;
+
+            alert(waitingCheck);
+
+            toggleSelectRow(arr[0], false);
+
+        }
+
+    }
+
+    function toDKSelectedChange_callback(res) {
+
+        if (res.value == "") {
+
+            self.location = "Default.aspx?page=gioithieu";
+
+        }
+
+        else {
+
+
+
+            var isValidCoso = false;
+
+            var isValidTKB = false;
+
+            var isValidCTDTKhoi = false;
+
+
+
+            var resArr = res.value.split("|");
+
+            var maDK = resArr[1];
+
+            if (resArr.length == 2) {
+
+                alert(resArr[0]);
+
+                toggleSelectRow(maDK, false);
+
+                document.body.disabled = "";
+
+                document.body.style.cursor = "default";
+
+                isProcessing = false;
+
+            }
+
+
+
+            else if (resArr[0] == "IsCheckDangKyTuDong") {
+
+                alert(resArr[2]);
+
+                toggleSelectRow(maDK, false);
+
+                document.body.disabled = "";
+
+                document.body.style.cursor = "default";
+
+                isProcessing = false;
+
+            }
+
+            else {
+
+
+
+                var isChecked = resArr[2] == 1;
+
+                var oldMaDK = resArr[4];
+
+                var isVuotTC = resArr[5];
+
+                var isVuotTCNganh2 = resArr[34];
+
+                var isMHDangKyCungKhoiSV = resArr[35];
+
+                var MonTQ = resArr[6];
+
+                var MonSH = resArr[7];
+
+                var MonDPH = resArr[8];
+
+                var isTGDK = resArr[28];
+
+                var xetDienDK = resArr[29];
+
+                var chuyenNganh1HopLe = resArr[30];
+
+                var chuyenNganh2HopLe = resArr[31];
+
+                var monHocRangBuocSTC = resArr[32];
+
+                var HopLeSTCDuocPhepThayDoi = resArr[33];
+
+                var hopLeNhomMHTuChon = resArr[36];
+
+
+
+                var strCanhBaoCTDTKhoi = resArr[38];
+
+
+
+                if (resArr[0] == 'dhmxhetx') {
+
+                    if (confirm('Môn học học trực tuyến, tiếp tục đăng ký?')) {
+
+                        isValidTKB = true;
+
+                        toggleSelectRow(maDK, isChecked);
+
+                        if (oldMaDK)
+
+                            toggleSelectRow(oldMaDK, false);
+
+                        EduSoft.Web.UC.DangKyMonHoc.LuuVaoKetQuaDangKy(isValidCoso, isValidTKB, resArr[1], resArr[12], resArr[13], resArr[14], resArr[15], resArr[16], isChecked.toString(), oldMaDK, resArr[25], resArr[26], resArr[27], isMHDangKyCungKhoiSV, toDKSelectedChange_callback2);
+
+                    }
+
+                }
+
+                // edit 6.5.12, nếu số tc thay đổi quá giới hạn stc cho phép, không cho chọn và bỏ chọn
+
+                else if (!isChecked && HopLeSTCDuocPhepThayDoi == 0) {
+
+                    alert(errorGioiHanSoTCThayDoi);
+
+                    toggleSelectRow(maDK, true);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (isTGDK == 0) // Ngoai thoi gian dang ky
+
+                {
+
+                    alert(errorOutOffTime);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (isVuotTC == 1) //vuot tin chi max
+
+                {
+
+                    alert(vuotTC);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (isVuotTCNganh2 == 1) //vuot tin chi max nganh 2
+
+                {
+
+                    alert("Vượt số tín chỉ tối đa ngoài ngành cho phép!");
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (chuyenNganh1HopLe == 0) {
+
+                    alert(errorChuyenNganhChinh);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (chuyenNganh2HopLe == 0) {
+
+                    alert(errorChuyenNganhChuyenSau);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (monHocRangBuocSTC == 0) {
+
+                    alert(errorGioiHanSTC + maDK);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (HopLeSTCDuocPhepThayDoi == 0) {
+
+                    alert(errorGioiHanSoTCThayDoi);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (hopLeNhomMHTuChon == 0) {
+
+                    alert("Không được đăng ký môn học thuộc nhóm tự chọn khác nhóm " + resArr[37].toString());
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (resArr[21] == 1 && resArr[22] == 0) // co phai la mon hoc cai thien, neu cai thien, co phai la mon cai thien hop le 
+
+                {
+
+                    var mess = resArr[23] == "0" ? errorCaiThienDiemD : errorCaiThienHocKy + resArr[23];
+
+                    alert(mess);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (xetDienDK) {
+
+                    alert(xetDienDK);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (MonDPH) //xem co phai la mon duoc phep hoc theo chương trinh dao tao he nganh hoac khoi lop
+
+                {
+
+                    alert(MonDPH);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (MonTQ) // co vi pham tien quyet
+
+                {
+
+                    alert(MonTQ);
+
+                    toggleSelectRow(maDK, false);
+
+                    document.body.disabled = "";
+
+                    document.body.style.cursor = "default";
+
+                    isProcessing = false;
+
+                }
+
+                else if (strCanhBaoCTDTKhoi != "") //Canh báo ngoài CTĐT khối
+
+                {
+
+                    if (confirm(strCanhBaoCTDTKhoi)) {
+
+
+
+                        toggleSelectRow(maDK, true);
+
+                        EduSoft.Web.UC.DangKyMonHoc.LuuVaoKetQuaDangKy(isValidCoso, isValidTKB, resArr[1], resArr[12], resArr[13], resArr[14], resArr[15], resArr[16], isChecked.toString(), oldMaDK, resArr[25], resArr[26], resArr[27], isMHDangKyCungKhoiSV, toDKSelectedChange_callback2);
+
+                    }
+
+                    else {
+
+                        toggleSelectRow(maDK, false);
+
+                        document.body.disabled = "";
+
+                        document.body.style.cursor = "default";
+
+                        isProcessing = false;
+
+                    }
+
+                }
+
+                else if (resArr[9] == 1)// xet trung thoi khoa bieu
+
+                {
+
+                    if (resArr[17] == 1 || resArr[17] == 3) // canh bao khi trung thoi khoa bieu
+
+                    {
+
+                        var strAlert;
+
+                        if (resArr[17] == 3) // bao luon ca so tiet bi trung
+
+                        {
+
+                            strAlert = errorMucDoTrungTKB0 + resArr[19] + ", " + resArr[20] + "% " + errorMucDoTrungTKB1;
+
+                        }
+
+                        else {
+
+                            strAlert = trungTKBChoPhep;
+
+                        }
+
+                        if (confirm(strAlert)) {
+
+                            isValidTKB = true;
+
+                            toggleSelectRow(maDK, true);
+
+                            if (oldMaDK)
+
+                                toggleSelectRow(oldMaDK, false);
+
+                            EduSoft.Web.UC.DangKyMonHoc.LuuVaoKetQuaDangKy(isValidCoso, isValidTKB, resArr[1], resArr[12], resArr[13], resArr[14], resArr[15], resArr[16], isChecked.toString(), oldMaDK, resArr[25], resArr[26], resArr[27], isMHDangKyCungKhoiSV, toDKSelectedChange_callback2);
+
+                        }
+
+                        else {
+
+                            toggleSelectRow(maDK, false);
+
+                            document.body.disabled = "";
+
+                            document.body.style.cursor = "default";
+
+                            isProcessing = false;
+
+                        }
+
+                    }
+
+                    else // cam khong cho trung tkb
+
+                    {
+
+                        alert(trungTKBKChoPhep);
+
+                        toggleSelectRow(maDK, false);
+
+                        document.body.disabled = "";
+
+                        document.body.style.cursor = "default";
+
+                        isProcessing = false;
+
+                    }
+
+                }
+
+                else if (resArr[10]) // Warning co so
+
+                {
+
+                    if (resArr[11]) // Xet khac co so, 0 la chi canh bao
+
+                    {
+
+                        if (confirm(resArr[10])) {
+
+                            isValidCoso = true;
+
+                            toggleSelectRow(maDK, true);
+
+                            EduSoft.Web.UC.DangKyMonHoc.LuuVaoKetQuaDangKy(isValidCoso, isValidTKB, resArr[1], resArr[12], resArr[13], resArr[14], resArr[15], resArr[16], isChecked.toString(), oldMaDK, resArr[25], resArr[26], resArr[27], isMHDangKyCungKhoiSV, toDKSelectedChange_callback2);
+
+                        }
+
+                        else {
+
+                            toggleSelectRow(maDK, false);
+
+                            document.body.disabled = "";
+
+                            document.body.style.cursor = "default";
+
+                            isProcessing = false;
+
+                        }
+
+                    }
+
+                    else if (resArr[11] == "1") // 1 la cam dang ky ko cho luu
+
+                    {
+
+                        toggleSelectRow(maDK, false);
+
+                        alert(resArr[10]);
+
+                        document.body.disabled = "";
+
+                        document.body.style.cursor = "default";
+
+                        isProcessing = false;
+
+                    }
+
+                }
+
+                // edit 26.7.2010
+
+                else if (resArr[24] != "") // trung thoi khoa bieu trong lich thi
+
+                {
+
+                    if (resArr[24] == "khongchotrung") {
+
+                        alert(errorTrungLichThiCam);
+
+                        toggleSelectRow(maDK, false);
+
+                        document.body.disabled = "";
+
+                        document.body.style.cursor = "default";
+
+                        isProcessing = false;
+
+                    }
+
+                    else if (resArr[24] == "choluachon") {
+
+                        var strAlert = errorTrungLichThiLuaChon;
+
+                        if (confirm(strAlert)) {
+
+                            toggleSelectRow(maDK, true);
+
+                            if (oldMaDK)
+
+                                toggleSelectRow(oldMaDK, false);
+
+                            EduSoft.Web.UC.DangKyMonHoc.LuuVaoKetQuaDangKy(isValidCoso, isValidTKB, resArr[1], resArr[12], resArr[13], resArr[14], resArr[15], resArr[16], isChecked.toString(), oldMaDK, resArr[25], resArr[26], resArr[27], isMHDangKyCungKhoiSV, toDKSelectedChange_callback2);
+
+                        }
+
+                        else {
+
+                            toggleSelectRow(maDK, false);
+
+                            document.body.disabled = "";
+
+                            document.body.style.cursor = "default";
+
+                            isProcessing = false;
+
+                        }
+
+                    }
+
+                    else {
+
+
+
+                        alert(errorTrungLichThiVuot + resArr[24]);
+
+                        toggleSelectRow(maDK, false);
+
+                        document.body.disabled = "";
+
+                        document.body.style.cursor = "default";
+
+                        isProcessing = false;
+
+                    }
+
+                }
+
+
+
+                else {
+
+                    if (resArr[0] == 0) {
+
+                        if (MonSH) {
+
+                            alert(MonSH);
+
+                        }
+
+                        toggleSelectRow(maDK, isChecked);
+
+                        EduSoft.Web.UC.DangKyMonHoc.LuuVaoKetQuaDangKy(isValidCoso, isValidTKB, resArr[1], resArr[12], resArr[13], resArr[14], resArr[15], resArr[16], isChecked.toString(), oldMaDK, resArr[25], resArr[26], resArr[27], isMHDangKyCungKhoiSV, toDKSelectedChange_callback2);
+
+                    }
+
+                    else {
+
+                        toggleSelectRow(maDK, true);
+
+                        toggleSelectRow(oldMaDK, false);
+
+                        EduSoft.Web.UC.DangKyMonHoc.LuuVaoKetQuaDangKy(isValidCoso, isValidTKB, resArr[1], resArr[12], resArr[13], resArr[14], resArr[15], resArr[16], isChecked.toString(), oldMaDK, resArr[25], resArr[26], resArr[27], isMHDangKyCungKhoiSV, toDKSelectedChange_callback2);
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+    function EndProcessing_Callback(data) { }
+
+    function toDKSelectedChange_callback2(data) {
+
+        var resArr = data.value.split("|");
+
+        if (resArr[1] != "")// xet song hanh
+
+        {
+
+            alert(resArr[1]);
+
+        }
+
+        document.getElementById("divKQ").innerHTML = resArr[0];
+
+        document.body.disabled = "";
+
+        document.body.style.cursor = "default";
+
+        isProcessing = false;
+
+    }
+
+
+
+    function toggleSelectRow(maDK, isSelect) {
+
+        var chk = document.getElementById("chk_" + maDK);
+
+        chk.checked = isSelect;
+
+        var row = chk.parentNode.parentNode;
+
+        row.style.backgroundColor = (isSelect ? "#CCCCCC" : "White");
+
+    }
+
+    function toggleSelectRow1(maDK, isSelect) {
+
+        var chk = document.getElementById(maDK);
+
+        chk.checked = isSelect;
+
+        var row = chk.parentNode.parentNode;
+
+        row.style.backgroundColor = (isSelect ? "#CCCCCC" : "White");
+
+    }
+
+
+
+    function CheckToDelete_CheckedChanged(maDK) {
+
+        if (maDK.checked == true)
+
+            sumCheck = sumCheck + 1;
+
+        else {
+
+            if (checkflag == "true") {
+
+                document.getElementById("IDchk_all").checked = false;
+
+            }
+
+            sumCheck = sumCheck - 1;
+
+        }
+
+    }
+
+
+
+    function check(field) {
+
+        checkflag = document.getElementById("IDchk_all").checked.toString();
+
+        try {
+
+            if (checkflag == "false" && field.name == "chk_xoa") {
+
+                field.checked = false;
+
+                sumCheck = sumCheck - 1;
+
+            }
+
+            else if (checkflag == "true" && field.name == "chk_xoa") {
+
+                field.checked = true;
+
+                sumCheck = sumCheck + 1;
+
+            }
+
+            else if (checkflag == "false") {
+
+                for (i = 0; i < field.length; i++) {
+
+                    field[i].checked = false;
+
+                    sumCheck = sumCheck - 1;
+
+                }
+
+            }
+
+            else {
+
+                for (i = 0; i < field.length; i++) {
+
+                    field[i].checked = true;
+
+                    sumCheck = sumCheck + 1;
+
+                }
+
+            }
+
+        }
+
+        catch (e) { }
+
+    }
+
+
+
+    function xoaTuDanhSach(field, isRut) {
+
+        checkflag = document.getElementById("IDchk_all").checked.toString();
+
+        if (sumCheck == 0) {
+
+            alert(xoaKhongHopLe);
+
+            document.getElementById("IDchk_all").checked = false;
+
+            return false;
+
+        }
+
+        else {
+
+            var question = confirmXoa;
+
+            if (checkflag == "true")
+
+                question = confirmXoaTatCa;
+
+            if (isRut || confirm(question)) {
+
+                document.body.style.cursor = 'wait';
+
+                var lr = "";
+
+                var lh = "";
+
+                var danhSachBiXoa = "";
+
+                if (field.name == "chk_xoa" && field.checked == true)// chi dang ky mot mon hoc
+
+                {
+
+                    toggleSelectRow1(field.id, false);
+
+                    sumCheck = sumCheck - 1;
+
+                    danhSachBiXoa = danhSachBiXoa + "," + field.id.substr(4);
+
+                }
+
+                else// dang ky nhieu mon hoc
+
+                {
+
+
+
+                    for (i = 0; i < field.length; i++) {
+
+                        if (field[i].checked == true) {
+
+
+
+                            toggleSelectRow1(field[i].id, false);
+
+                            sumCheck = sumCheck - 1;
+
+                            danhSachBiXoa = danhSachBiXoa + "," + field[i].id.substr(4);
+
+                        }
+
+                    }
+
+                }
+
+                if (lr != "")
+
+                    lr = "Rút môn học: " + lr.substr(1, lr.length - 1) + "\n";
+
+                if (lh != "")
+
+                    lr += "Hủy rút môn học đã rút: " + lh.substr(1, lh.length - 1) + "\n";
+
+                lr += 'Đồng ý?';
+
+                if (!isRut || confirm(lr))
+
+                    EduSoft.Web.UC.DangKyMonHoc.XoaKQDKTheoMaDK(danhSachBiXoa, XoaKQDKTheoMaDK_CallBack);
+
+                else
+
+                    document.body.style.cursor = 'default';
+
+            }
+
+            return false;
+
+        }
+
+    }
+
+    function XoaKQDKTheoMaDK_CallBack(doituong) {
+
+        var x = doituong.value;
+
+        if (x == "1") {
+
+            document.body.style.cursor = 'default';
+
+            window.location = "default.aspx?page=dkmonhoc";
+
+            return false;
+
+        }
+
+        if (x == "0") {
+
+            alert(textKhongTheXoa);
+
+            document.body.style.cursor = 'default';
+
+            return false;
+
+        }
+
+        else {
+
+
+
+            // kiem tra có những môn xóa kèm (bắt buộc song hành)
+
+            var dsXoaKem = x.split("MonXoaKem")[1];
+
+            if (dsXoaKem == "1") {
+
+                alert(errorGioiHanSoTCThayDoi);
+
+            }
+
+            else if (dsXoaKem) {
+
+                var lstXoaKem = dsXoaKem.split("|");
+
+                for (var i = 0; i < lstXoaKem.length; i++) {
+
+                    toggleSelectRow(lstXoaKem[i], false);
+
+                }
+
+            }
+
+            var dsDaChon = x.split("MonXoaKem")[0];
+
+            if (dsDaChon.length > 23) {
+
+                //            edit 14.1.2010, code cu: doituong.value=x.substring(19,x.length- 26);
+
+                doituong.value = dsDaChon.substring(19, x.length - 6);
+
+                document.getElementById("divKQ").innerHTML = doituong.value;
+
+            }
+
+            else {
+
+                document.getElementById("divKQ").innerHTML = "";
+
+            }
+
+            document.getElementById("IDchk_all").checked = false;
+
+            document.body.style.cursor = 'default';
+
+        }
+
+    }
+
+    function deselectAll() {
+
+        var ctrls = document.getElementsByTagName("input");
+
+        for (var i = 0; i < ctrls.length; i++) {
+
+            if (ctrls[i].type == "checkbox" && ctrls[i].checked && ctrls[i].disabled == false) {
+
+                var chk = ctrls[i];
+
+                var maDK = chk.id.split("_")[1];
+
+                toggleSelectRow(maDK, false);
+
+            }
+
+        }
+
+    }
+
+
+
+    function LuuNguyenVong_Click() {
+
+        var maMH = document.getElementById("IDtxtMonNV").value;
+
+        var buoi = '0';
+
+        var maNh = "";
+
+        var maTo = "";
+
+        if (document.getElementById("selectToNhom")) {
+
+            var selectmenu = document.getElementById("selectToNhom");
+
+            var chosenOption = selectmenu.options[selectmenu.selectedIndex].value;
+
+            var nhomto = chosenOption.split('|');
+
+            if (nhomto.length > 0)
+
+                maNh = nhomto[0];
+
+            if (nhomto.length > 1)
+
+                maTo = nhomto[1];
+
+        }
+
+        if (document.getElementById("selectBuoi")) {
+
+            var cbo = document.getElementById("selectBuoi");
+
+            buoi = cbo.options[cbo.selectedIndex].value;
+
+        }
+
+        EduSoft.Web.UC.DangKyMonHoc.LuuNguyenVong(maMH, maNh, maTo, buoi, LuuNguyenVong_callback);
+
+    }
+
+    function LuuNguyenVong_callback(valueReturn) {
+
+        alert(valueReturn.value);
+
+    }
+
+
+
+    function getValue(v) {
+
+        myVariable = v
+
+        alert(myVariable)
+
+    }
+
+
+
+
+
+    function ShowTatCaTDK_callback(doituongTDK) {
+
+        if (doituongTDK == null)
+
+            document.getElementById("divTDK").innerHTML = textKhongMoMH;
+
+        else
+
+            document.getElementById("divTDK").innerHTML = doituongTDK.value;
+
+        var monHocLoc = document.getElementById("txtMaMH1");
+
+        if (monHocLoc != null)
+
+            monHocLoc.value = "";
+
+        var txtKhoa = document.getElementById("txtKhoa");
+
+        if (txtKhoa != null)
+
+            txtKhoa.value = "";
+
+        var txtLop = document.getElementById("txtLop");
+
+        if (txtLop != null)
+
+            txtLop.value = "";
+
+        document.body.style.cursor = 'default';
+
+    }
+
+
+
+    function btnLocTheoMaMH1_click() {
+
+        var monHocLoc = document.getElementById("txtMaMH1");
+
+        if (monHocLoc.value == "") {
+
+            alert(nhapDKLoc);
+
+            return false;
+
+        }
+
+        else {
+
+
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoMonHoc(monHocLoc.value, ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+
+
+    function chkHienThiDieuKien(obj) {
+
+        try {
+
+            var divChonKhoa = document.getElementById("divKhoa");
+
+            var divChonNganh = document.getElementById("divNganh");
+
+
+
+            if (obj.checked) {
+
+
+
+                if (mondphoc == 1) {
+
+                    EduSoft.Web.UC.DangKyMonHoc.LoadChuongTrinhDaoTaoHeNganh(LoadDanhSachKhoaLop_callback);
+
+                }
+
+                else if (mondphoc == 2) {
+
+                    EduSoft.Web.UC.DangKyMonHoc.LoadChuongTrinhDaoTaoKhoiLop(LoadDanhSachKhoaLop_callback);
+
+                }
+
+                else {
+
+                    if (divChonKhoa != null) {
+
+                        divChonKhoa.style.display = "none";
+
+                        divChonNganh.style.display = "none";
+
+                    }
+
+                    EduSoft.Web.UC.DangKyMonHoc.LoadDanhSachKhoaLop(LoadDanhSachKhoaLop_callback);
+
+                }
+
+            }
+
+        }
+
+        catch (e) {
+
+        }
+
+    }
+
+
+
+    function selectDKLoc_change() {
+
+
+
+        var selectmenu = document.getElementById("selectDKLoc");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+
+
+        var divChonKhoa = document.getElementById("divKhoa");
+
+        var divChonLop = document.getElementById("divLop");
+
+        var divChonNganh = document.getElementById("divNganh");
+
+
+
+
+
+        if (chosenOption.value == "khoa") {
+
+            //            var divChonKhoa=document.getElementById("divKhoa");
+
+            //            var divChonLop = document.getElementById("divLop");
+
+            if (divChonKhoa != null) {
+
+                divChonKhoa.style.display = "block";
+
+                divChonLop.style.display = "none";
+
+                divChonNganh.style.display = "none";
+
+            }
+
+
+
+        }
+
+        else if (chosenOption.value == "lop") {
+
+            if (divChonKhoa != null) {
+
+                divChonKhoa.style.display = "none";
+
+                divChonLop.style.display = "block";
+
+                divChonNganh.style.display = "none";
+
+            }
+
+        }
+
+        else if (chosenOption.value == "nganh") {
+
+            if (divChonKhoa != null) {
+
+                divChonKhoa.style.display = "none";
+
+                divChonNganh.style.display = "block";
+
+                divChonLop.style.display = "none";
+
+            }
+
+        }
+
+
+
+    }
+
+    var mondphoc = 0;
+
+    function LoadDSKhoaLop_load(ressControl) {
+
+
+
+        var resArr = ressControl;
+
+
+
+        if (ressControl != "") {
+
+            resArr = ressControl.split("|");
+
+
+
+            vuotTC = resArr[5];
+
+            trungTKBChoPhep = resArr[6];
+
+            trungTKBKChoPhep = resArr[7];
+
+            xoaKhongHopLe = resArr[8];
+
+            confirmXoa = resArr[9];
+
+            confirmXoaTatCa = resArr[10];
+
+            nhapDKLoc = resArr[11];
+
+            serverBusy = resArr[12];
+
+            hinhThucDongHP = resArr[13];
+
+            hoiDongHP = resArr[14];
+
+            trungMonNC = resArr[15];
+
+            waitingCheck = resArr[16];
+
+            errorOutOffTime = resArr[17];
+
+            errorChuyenNganhChinh = resArr[18];
+
+            errorChuyenNganhChuyenSau = resArr[19];
+
+            errorCaiThienDiemD = "Môn học cải thiện không thỏa quy chế";//resArr[20];
+
+            errorCaiThienHocKy = resArr[21];
+
+            errorMucDoTrungTKB0 = resArr[22];
+
+            errorMucDoTrungTKB1 = resArr[23];
+
+            errorTrungLichThiCam = resArr[24];
+
+            errorTrungLichThiLuaChon = resArr[25];
+
+            errorTrungLichThiVuot = resArr[26];
+
+            textKhongTheXoa = resArr[27];
+
+            textKhongMoMH = resArr[28];
+
+            errorGioiHanSTC = resArr[29];
+
+            errorGioiHanSoTCThayDoi = resArr[30];
+
+        }
+
+        mondphoc = resArr[31];
+
+
+
+    }
+
+    function LoadDanhSachKhoaLop_callback(doituong) {
+
+        if (doituong != null) {
+
+
+
+            if (doituong.value && doituong.value.length > 8 && doituong.value.substring(0, 8) == "BCVTVTHN") {
+
+                doituong = doituong.value.replace("BCVTVTHN", "");
+
+                if (document.getElementById("divMonHoc") != null) {
+
+                    document.getElementById("divMonHoc").innerHTML = doituong;
+
+                    document.getElementById("divfilters").style.height = "180px";
+
+                }
+
+            }
+
+            else {
+
+                if (mondphoc == 0 || mondphoc == 3 || mondphoc == 5 || mondphoc == 6) // 2-2-2010 , mdph = 3 => gioi han theo he dao tao
+
+                {
+
+                    var ress = doituong.value.split("|||||");
+
+                    if (document.getElementById("divKhoa") != null)
+
+                        document.getElementById("divKhoa").innerHTML = ress[0];
+
+                    if (document.getElementById("divLop") != null)
+
+                        document.getElementById("divLop").innerHTML = ress[1];
+
+
+
+
+
+                    if (ress[2]) {
+
+                        var resArr = ress[2].split("|");
+
+                        var btnLocMH = document.getElementById("btnLocTheoMaMH1");
+
+                        btnLocMH.value = resArr[0];
+
+                        var btnLocKhoa = document.getElementById("btnKhoa");
+
+                        if (btnLocKhoa != null)
+
+                            btnLocKhoa.value = resArr[1];
+
+                        var btnLocLop = document.getElementById("btnLop");
+
+                        if (btnLocLop != null)
+
+                            btnLocLop.value = resArr[1];
+
+                        var btnLuuDK = document.getElementById("btnLuu");
+
+                        btnLuuDK.value = resArr[2];
+
+                        var btnXoaDK = document.getElementById("bntXoaChon");
+
+                        btnXoaDK.value = resArr[3];
+
+                        if (document.getElementById("butLuuNV") != null) {
+
+                            var btnLuuNV = document.getElementById("butLuuNV");
+
+                            btnLuuNV.value = resArr[4];
+
+                        }
+
+                    }
+
+
+
+                    // edit 10/2/2011 , DHNL bổ sung thêm điều kiện lọc theo ngành
+
+                    if (document.getElementById("divDanhSachDieuKienLoc") != null) {
+
+                        document.getElementById("divDanhSachDieuKienLoc").innerHTML = ress[3];
+
+                        selectDKLoc_change();
+
+                    }
+
+
+
+                    if (document.getElementById("divNganh") != null)
+
+                        document.getElementById("divNganh").innerHTML = ress[4];
+
+
+
+                    //end edit
+
+                }
+
+                else if (mondphoc == 1) // loc theo ctdt he nganh
+
+                {
+
+                    var ress = doituong.value.split("|||||");
+
+                    document.getElementById("divLTCTHN1").innerHTML = ress[0];
+
+                    document.getElementById("divLTCTHN2").innerHTML = ress[1];
+
+                }
+
+                else if (mondphoc == 2) {
+
+                    document.getElementById("divLTCTKhoi").innerHTML = doituong.value;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+
+
+
+    function selectMonHoc_changed() {
+
+        var selectmenu = document.getElementById("selectMonHoc");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+        if (chosenOption.value) {
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoMonHoc(chosenOption.value, ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+
+
+    /*
+
+    function selectKhoa_changed() {
+
+        var selectmenu = document.getElementById("selectKhoa");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+        if (!string.IsNullOrEmpty(chosenOption.value)) {
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoMaKhoa(true, chosenOption.value, "", ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+    */
+
+
+
+    function selectKhoa_changed() {
+
+        var selectmenu = document.getElementById("selectKhoa");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+        if (chosenOption.value != "") {
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoMaKhoa(true, chosenOption.value, "", ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+    function selectLop_changed() {
+
+        document.body.style.cursor = 'wait';
+
+        var selectmenu = document.getElementById("selectLop");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+        EduSoft.Web.UC.DangKyMonHoc.LocTheoMaKhoa(false, chosenOption.value, "", ShowTatCaTDK_callback);
+
+    }
+
+    function btnLop_click() {
+
+        var maLop = document.getElementById("txtLop");
+
+        if (maLop.value == "") {
+
+            alert(nhapDKLoc);
+
+            return false;
+
+        }
+
+        else {
+
+            var selectmenu = document.getElementById("selectKhoa");
+
+            var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+            var kh = "";
+
+            if (chosenOption.visibility == 'visible')
+
+                kh = chosenOption.value;
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoMaKhoa(false, kh, maLop.value, ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+    function btnKhoa_click() {
+
+        var maKhoa = document.getElementById("txtKhoa");
+
+        if (maKhoa.value == "") {
+
+            alert(nhapDKLoc);
+
+            return false;
+
+        }
+
+        else {
+
+            var selectmenu = document.getElementById("selectKhoa");
+
+            var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+            var kh = "";
+
+            if (chosenOption.visibility == 'visible')
+
+                kh = chosenOption.value;
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoMaKhoa(true, kh, maKhoa.value, ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+    function LuuDanhSachDangKy() {
+
+        document.body.style.cursor = 'wait';
+
+        EduSoft.Web.UC.DangKyMonHoc.KiemTraTrungNhom(KiemTraTrungNhom_callback)
+
+    }
+
+    function KiemTraTrungNhom_callback(trungnhom) {
+
+        if (trungnhom.value == "") {
+
+            EduSoft.Web.UC.DangKyMonHoc.LuuDanhSachDangKy(LuuDanhSachDangKy_callback)
+
+        }
+
+        else {
+
+            alert(trungnhom.value);
+
+            document.body.style.cursor = 'default';
+
+            return false;
+
+        }
+
+    }
+
+    function LuuDanhSachDangKy_callback(songhanh) {
+
+        var ans = false;
+
+        if (songhanh.value == "") {
+
+            EduSoft.Web.UC.DangKyMonHoc.LuuDanhSachDangKy_HopLe(false, ans, LuuDanhSachDangKy_HopLe_callback);
+
+        }
+
+        else {
+
+            if (confirm(songhanh.value)) {
+
+                EduSoft.Web.UC.DangKyMonHoc.LuuDanhSachDangKy_HopLe(true, ans, LuuDanhSachDangKy_HopLe_callback);
+
+            }
+
+            else {
+
+                document.body.style.cursor = 'default';
+
+                return false;
+
+
+
+            }
+
+        }
+
+    }
+
+    function LuuDanhSachDangKy_HopLe_callback(monHetCho) {
+
+        var arr = monHetCho.value.split("||");
+
+        if (arr.length == 1) {
+
+            document.body.style.cursor = 'default';
+
+            alert(monHetCho.value);
+
+            return false;
+
+        }
+
+        if (arr[0] != "" && arr[0] != null) {
+
+            if (arr[0] == "false") {
+
+                document.body.style.cursor = 'default';
+
+                alert(serverBusy);
+
+                return false;
+
+            }
+
+            else {
+
+                document.body.style.cursor = 'default';
+
+                alert(arr[0]);
+
+            }
+
+        }
+
+        self.location = arr[1];
+
+        //self.location="default.aspx?page=xemhocphi";   
+
+        //      
+
+    }
+
+    function ShowDSDaDangKy_Callback(obj) {
+
+        document.getElementById("divKQ").innerHTML = obj.value;
+
+        document.body.style.cursor = 'default';
+
+        return false;
+
+
+
+    }
+
+    function txtMaMH1_keypress(e) {
+
+        var keyCode = (window.Event) ? e.which : e.keyCode;
+
+        if (keyCode == 13) {
+
+            document.body.style.cursor = 'wait';
+
+            //document.getElementById("btnLocTheoMaMH1").click();
+
+            btnLocTheoMaMH1_click();
+
+        }
+
+    }
+
+    function txtLop_keypress(e) {
+
+        var keyCode = (window.Event) ? e.which : e.keyCode;
+
+        if (keyCode == 13) {
+
+            document.body.style.cursor = 'wait';
+
+            //document.getElementById("btnLop").click();
+
+            btnLop_click();
+
+        }
+
+    }
+
+    function txtKhoa_keypress(e) {
+
+        var keyCode = (window.Event) ? e.which : e.keyCode;
+
+        if (keyCode == 13) {
+
+            document.body.style.cursor = 'wait';
+
+            //document.getElementById("btnKhoa").click();
+
+            btnKhoa_click();
+
+        }
+
+    }
+
+    function IDtxtMonNV_keypress(e) {
+
+        var keyCode = (window.Event) ? e.which : e.keyCode;
+
+        if (keyCode == 13) {
+
+            if (document.getElementById("butLuuNV") != null) {
+
+                //document.getElementById("butLuuNV").click();
+
+                LuuNguyenVong_Click();
+
+            }
+
+        }
+
+    }
+
+
+
+    function IDtxtMonNV_blur(textBox) {
+
+        var maMH = textBox.value;
+
+        if (maMH)
+
+            EduSoft.Web.UC.DangKyMonHoc.LoadNhomTo(maMH, IDtxtMonNV_blur_callback);
+
+    }
+
+
+
+    function IDtxtMonNV_blur_callback(doituong) {
+
+
+
+
+
+        if (doituong != null) {
+
+            if (document.getElementById("divToNhomNguyenVong") != null)
+
+                document.getElementById("divToNhomNguyenVong").innerHTML = doituong.value;
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+    function selectCTDTKL_changed() {
+
+        var selectmenu = document.getElementById("selectCTDTKL");
+
+        var chosenOption = selectmenu.options[selectmenu.selectedIndex];
+
+        if (chosenOption.value != "") {
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoCTDTKhoiLop(chosenOption.value, ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+
+
+    function LocTheoMonTuChon() {
+
+        var selectmenu = document.getElementById("selectCTDTKL");
+
+        document.body.style.cursor = 'wait';
+
+        EduSoft.Web.UC.DangKyMonHoc.LocTheoMHTuChon(ShowTatCaTDK_callback);
+
+    }
+
+
+
+    function LocMonChuaHoc() {
+
+        document.body.style.cursor = 'wait';
+
+        EduSoft.Web.UC.DangKyMonHoc.LocTheoCTDTHeNganh(null, null, ShowTatCaTDK_callback);
+
+    }
+
+
+
+    function LocMonHoclai() {
+
+        document.body.style.cursor = 'wait';
+
+        EduSoft.Web.UC.DangKyMonHoc.LocTheoMonHoclai(null, null, ShowTatCaTDK_callback);
+
+    }
+
+
+
+    function selectCTDTHN2_changed() {
+
+        var selectmenu1 = document.getElementById("selectCTDTHN1");
+
+        var selectmenu2 = document.getElementById("selectCTDTHN2");
+
+        var chosenOption1 = selectmenu1 != null ? selectmenu1.options[selectmenu1.selectedIndex] : "";
+
+        var chosenOption2 = selectmenu2 != null ? selectmenu2.options[selectmenu2.selectedIndex] : "";
+
+        if (chosenOption2.value != "") {
+
+            document.body.style.cursor = 'wait';
+
+            EduSoft.Web.UC.DangKyMonHoc.LocTheoCTDTHeNganh(chosenOption1.value, chosenOption2.value, ShowTatCaTDK_callback);
+
+        }
+
+    }
+
+
+
+    function LoadKhongHopLe(thongbao) {
+
+
+
+        alert(thongbao);
+
+        self.location = "Default.aspx?page=dangnhap";
+
+    }
+
+    function XemMonNV() {
+
+        self.location = "Default.aspx?page=monnguyenvong";
+
+    }
+
+
+
+    function changeLoaiDK(cbo) {
+
+        var madk = cbo.id.substring(2);
+
+        EduSoft.Web.UC.DangKyMonHoc.ThayDoiLoaiDK(madk, cbo.value, changeLoaiDK_Callback);
+
+    }
+
+
+
+    function changeLoaiDK_Callback(obj) {
+
+        if (obj.value == true)
+
+            location.reload();
+
+    }
+
+
+
+    function setDefLoaiDK(idx, cbo) {
+
+        if (idx > 0)
+
+            cbo.selectedIndex = idx - 1;
+
+    }
+
+</script>
+<div id="ContentPlaceHolder1_ctl00_UpdatePanel2">
+<div class="filters" id="divfilters" visible="false">
+<table>
+<tr>
+<td>
+<div id="ContentPlaceHolder1_ctl00_pnlLocMonHoc">
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td style="width: 110px">
+<span id="ContentPlaceHolder1_ctl00_lblLocMH" style="display:inline-block;">Lọc theo môn học: </span>
+</td>
+<td>
+<input id="txtMaMH1" onkeypress="txtMaMH1_keypress(event)" type="text"/>
+<input id="btnLocTheoMaMH1" onclick="btnLocTheoMaMH1_click()" type="button" value="Lọc &gt;&gt;"/>
+</td>
+</tr>
+</table>
+</div>
+</td>
+</tr>
+<tr>
+<td valign="top">
+<div id="ContentPlaceHolder1_ctl00_pnlLocDK">
+<table cellpadding="0" cellspacing="0">
+<tr>
+<td style="width: 140px">
+<input onclick="chkHienThiDieuKien(this);" type="checkbox"/>Hiển thị điều kiện lọc
+
+                                    </td>
+<td align="left" valign="top">
+<div id="divMonHoc"></div>
+<div id="divDanhSachDieuKienLoc"></div>
+</td>
+<td align="left" width="790px">
+<div id="divKhoa"></div>
+<div id="divLop"></div>
+<div id="divNganh"></div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="ContentPlaceHolder1_ctl00_pnlThongbao">
+<span class="Label" id="ContentPlaceHolder1_ctl00_lblThongBaoNgoaiTGDK"><b><font color="Red">Thông báo: ngoài thời gian đăng ký. Sinh viên không được chọn hoặc hiệu chỉnh môn học.</font></b></span>
+</div>
+<table id="pnlDSMonhocDK">
+<tr>
+<td align="center">
+<div align="left">
+<table cellpadding="0" cellspacing="0" class="title-table">
+<tr align="center" height="30px">
+<td width="25px"><asp:label id="lblG1DK" runat="server"> </asp:label> </td><td width="60px"><asp:label id="lblG1MMHBD" runat="server">Mã MHBĐ</asp:label></td><td width="60px"><asp:label id="lblG1MMH" runat="server">Mã MH</asp:label></td>
+<td width="150x"><asp:label id="lblG1TMH" runat="server">Tên môn học </asp:label></td><td width="35px"><asp:label id="lblG1NMM" runat="server">NMH</asp:label></td><td width="30px"><asp:label id="lblG1TTH" runat="server">TTH</asp:label></td>
+<td width="25px"><asp:label id="lblG1STC" runat="server">STC</asp:label></td>
+<td width="35px"><asp:label id="lblG1STCHP" runat="server">STCHP</asp:label></td><td width="84px"><asp:label id="lblG1MaLop" runat="server">Mã lớp</asp:label></td><td width="28px"><asp:label id="lblG1SCP" runat="server">Sĩ số</asp:label></td>
+<td width="28px"><asp:label id="lblG1CL" runat="server">CL</asp:label></td><td width="20px"><asp:label id="lblG1TH" runat="server">TH</asp:label></td>
+<td width="35px"><asp:label id="lblG1Thu" runat="server">Thứ </asp:label></td>
+<td width="40px"><asp:label id="lblG1TBD" runat="server">Tiết BD</asp:label></td>
+<td width="30px"><asp:label id="lblG1ST" runat="server">ST</asp:label></td>
+<td width="60px"><asp:label id="lblG1Phong" runat="server">Phòng</asp:label> </td><td width="35px"><asp:label id="lblG1TenGV" runat="server">Giảng viên</asp:label> </td> <td><asp:label id="lblG1Tuan" runat="server">TG học</asp:label></td></tr></table>
+</div>
+<div class="grid-roll" style="height: 320px">
+<div id="divTDK"><table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="color:Navy">
+<tr style="">
+<td align="center" width="25px"><input disabled="" id="chk_IT017IU01  01" onclick="toDKSelectedChange(this)" type="checkbox" value="IT017IU01  01|IT017IU|Operating Systems|01|4|4|01/01/0001|0|0|0| |0|ITIT244WE31"/></td>
+<td align="center" width="60px">IT017WE</td>
+<td align="center" width="60px">IT017IU</td>
+<td align="left" width="150x"> Operating Systems</td> <td align="center" width="35px">01</td><td align="center" width="30px">01</td><td align="center" width="25px">4</td><td align="center" width="35px">4</td><td align="center" width="84px">ITIT244WE31</td><td align="center" width="28px">37</td> <td align="center" width="28px">Hết</td>
+<td align="center" width="20px"><div class="top-fline">*</div><div class="fline"> </div><div class="top-fline"></div></td>
+<td align="center" width="35px"><div class="top-fline">Sáu</div><div class="fline"> </div><div class="top-fline">Tư</div> </td>
+<td align="center" width="40px"><div class="top-fline">7</div><div class="fline"> </div><div class="top-fline">4</div></td>
+<td align="center" width="30px"><div class="top-fline">3</div><div class="fline"> </div><div class="top-fline">3</div></td>
+<td align="center" width="60px"><div class="top-fline">LA1.605</div><div class="fline"> </div><div class="top-fline">A1.208</div></td><td align="center" width="35px"><div class="top-fline">L.H.Dương</div><div class="fline"> </div><div class="top-fline">L.H.Dương</div></td> <td align="center"><div class="top-fline"><label id="----56789-12345" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">28/09/2026--13/12/2026</label></div><div class="fline"> </div><div class="top-fline"><label id="-23456789-1234567" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">07/09/2026--27/12/2026</label></div></td></tr></table>
+<table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="color:Navy">
+<tr style="">
+<td align="center" width="25px"><input disabled="" id="chk_IT017IU01  02" onclick="toDKSelectedChange(this)" type="checkbox" value="IT017IU01  02|IT017IU|Operating Systems|01|4|4|01/01/0001|0|0|0| |0|ITIT244WE31"/></td>
+<td align="center" width="60px">IT017WE</td>
+<td align="center" width="60px">IT017IU</td>
+<td align="left" width="150x"> Operating Systems</td> <td align="center" width="35px">01</td><td align="center" width="30px">02</td><td align="center" width="25px">4</td><td align="center" width="35px">4</td><td align="center" width="84px">ITIT244WE31</td><td align="center" width="28px">38</td> <td align="center" width="28px">Hết</td>
+<td align="center" width="20px"><div class="top-fline">*</div><div class="fline"> </div><div class="top-fline"></div></td>
+<td align="center" width="35px"><div class="top-fline">Bảy</div><div class="fline"> </div><div class="top-fline">Tư</div> </td>
+<td align="center" width="40px"><div class="top-fline">1</div><div class="fline"> </div><div class="top-fline">4</div></td>
+<td align="center" width="30px"><div class="top-fline">3</div><div class="fline"> </div><div class="top-fline">3</div></td>
+<td align="center" width="60px"><div class="top-fline">LA1.608</div><div class="fline"> </div><div class="top-fline">A1.208</div></td><td align="center" width="35px"><div class="top-fline">L.H.Dương</div><div class="fline"> </div><div class="top-fline">L.H.Dương</div></td> <td align="center"><div class="top-fline"><label id="----56789-12345" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">28/09/2026--13/12/2026</label></div><div class="fline"> </div><div class="top-fline"><label id="-23456789-1234567" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">07/09/2026--27/12/2026</label></div></td></tr></table>
+<table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="color:Navy">
+<tr style="">
+<td align="center" width="25px"><input id="chk_IT091IU01  02" onclick="toDKSelectedChange(this)" type="checkbox" value="IT091IU01  02|IT091IU|Computer Networks|01|4|4|01/01/0001|0|0|0| |0|ITIT244WE31"/></td>
+<td align="center" width="60px">IT091WE</td>
+<td align="center" width="60px">IT091IU</td>
+<td align="left" width="150x"> Computer Networks</td> <td align="center" width="35px">01</td><td align="center" width="30px">02</td><td align="center" width="25px">4</td><td align="center" width="35px">4</td><td align="center" width="84px">ITIT244WE31</td><td align="center" width="28px">60</td> <td align="center" width="28px">22</td>
+<td align="center" width="20px"><div class="top-fline">*</div><div class="fline"> </div><div class="top-fline"></div></td>
+<td align="center" width="35px"><div class="top-fline">Hai</div><div class="fline"> </div><div class="top-fline">Sáu</div> </td>
+<td align="center" width="40px"><div class="top-fline">7</div><div class="fline"> </div><div class="top-fline">1</div></td>
+<td align="center" width="30px"><div class="top-fline">3</div><div class="fline"> </div><div class="top-fline">3</div></td>
+<td align="center" width="60px"><div class="top-fline">LA1.302</div><div class="fline"> </div><div class="top-fline">A2.601</div></td><td align="center" width="35px"><div class="top-fline">L.D.Tân</div><div class="fline"> </div><div class="top-fline">V.T.L.Phương</div></td> <td align="center"><div class="top-fline"><label id="----56789-12345" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">28/09/2026--13/12/2026</label></div><div class="fline"> </div><div class="top-fline"><label id="-23456789-1234567" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">07/09/2026--27/12/2026</label></div></td></tr></table>
+<table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="color:Navy">
+<tr style="">
+<td align="center" width="25px"><input disabled="" id="chk_IT091IU01  01" onclick="toDKSelectedChange(this)" type="checkbox" value="IT091IU01  01|IT091IU|Computer Networks|01|4|4|01/01/0001|0|0|0| |0|ITIT244WE31"/></td>
+<td align="center" width="60px">IT091WE</td>
+<td align="center" width="60px">IT091IU</td>
+<td align="left" width="150x"> Computer Networks</td> <td align="center" width="35px">01</td><td align="center" width="30px">01</td><td align="center" width="25px">4</td><td align="center" width="35px">4</td><td align="center" width="84px">ITIT244WE31</td><td align="center" width="28px">30</td> <td align="center" width="28px">Hết</td>
+<td align="center" width="20px"><div class="top-fline">*</div><div class="fline"> </div><div class="top-fline"></div></td>
+<td align="center" width="35px"><div class="top-fline">Năm</div><div class="fline"> </div><div class="top-fline">Sáu</div> </td>
+<td align="center" width="40px"><div class="top-fline">4</div><div class="fline"> </div><div class="top-fline">1</div></td>
+<td align="center" width="30px"><div class="top-fline">3</div><div class="fline"> </div><div class="top-fline">3</div></td>
+<td align="center" width="60px"><div class="top-fline">LA1.606</div><div class="fline"> </div><div class="top-fline">A2.601</div></td><td align="center" width="35px"><div class="top-fline">V.T.L.Phương</div><div class="fline"> </div><div class="top-fline">V.T.L.Phương</div></td> <td align="center"><div class="top-fline"><label id="----56789-12345" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">28/09/2026--13/12/2026</label></div><div class="fline"> </div><div class="top-fline"><label id="-23456789-1234567" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">07/09/2026--27/12/2026</label></div></td></tr></table>
+<table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="color:Navy">
+<tr style="">
+<td align="center" width="25px"><input disabled="" id="chk_IT094IU01  01" onclick="toDKSelectedChange(this)" type="checkbox" value="IT094IU01  01|IT094IU|Information System Management|01|4|4|01/01/0001|0|0|0| |0|ITIT244WE31"/></td>
+<td align="center" width="60px">IT094WE</td>
+<td align="center" width="60px">IT094IU</td>
+<td align="left" width="150x"> Information System Management</td> <td align="center" width="35px">01</td><td align="center" width="30px">01</td><td align="center" width="25px">4</td><td align="center" width="35px">4</td><td align="center" width="84px">ITIT244WE31</td><td align="center" width="28px">38</td> <td align="center" width="28px">Hết</td>
+<td align="center" width="20px"><div class="top-fline">*</div><div class="fline"> </div><div class="top-fline"></div></td>
+<td align="center" width="35px"><div class="top-fline">Ba</div><div class="fline"> </div><div class="top-fline">Sáu</div> </td>
+<td align="center" width="40px"><div class="top-fline">1</div><div class="fline"> </div><div class="top-fline">1</div></td>
+<td align="center" width="30px"><div class="top-fline">3</div><div class="fline"> </div><div class="top-fline">3</div></td>
+<td align="center" width="60px"><div class="top-fline">LA1.605</div><div class="fline"> </div><div class="top-fline">A2.409</div></td><td align="center" width="35px"><div class="top-fline">T.K.Minh</div><div class="fline"> </div><div class="top-fline">H.L.Vân</div></td> <td align="center"><div class="top-fline"><label id="----56789-12345" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">28/09/2026--13/12/2026</label></div><div class="fline"> </div><div class="top-fline"><label id="-23456789-1234567" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">07/09/2026--27/12/2026</label></div></td></tr></table>
+<table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="color:Navy">
+<tr style="">
+<td align="center" width="25px"><input id="chk_IT096IU01  01" onclick="toDKSelectedChange(this)" type="checkbox" value="IT096IU01  01|IT096IU|Net-Centric Programming|01|4|4|01/01/0001|0|0|0| |0|ITIT244WE31"/></td>
+<td align="center" width="60px">IT096WE</td>
+<td align="center" width="60px">IT096IU</td>
+<td align="left" width="150x"> Net-Centric Programming</td> <td align="center" width="35px">01</td><td align="center" width="30px">01</td><td align="center" width="25px">4</td><td align="center" width="35px">4</td><td align="center" width="84px">ITIT244WE31</td><td align="center" width="28px">60</td> <td align="center" width="28px">21</td>
+<td align="center" width="20px"><div class="top-fline">*</div><div class="fline"> </div><div class="top-fline"></div></td>
+<td align="center" width="35px"><div class="top-fline">Sáu</div><div class="fline"> </div><div class="top-fline">Tư</div> </td>
+<td align="center" width="40px"><div class="top-fline">4</div><div class="fline"> </div><div class="top-fline">1</div></td>
+<td align="center" width="30px"><div class="top-fline">3</div><div class="fline"> </div><div class="top-fline">3</div></td>
+<td align="center" width="60px"><div class="top-fline">LA1.302</div><div class="fline"> </div><div class="top-fline">A2.508</div></td><td align="center" width="35px"><div class="top-fline">N.T.Nghĩa</div><div class="fline"> </div><div class="top-fline">L.T.Sơn</div></td> <td align="center"><div class="top-fline"><label id="----56789-12345" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">28/09/2026--13/12/2026</label></div><div class="fline"> </div><div class="top-fline"><label id="-23456789-1234567" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">07/09/2026--27/12/2026</label></div></td></tr></table>
+<table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="color:Navy">
+<tr style="">
+<td align="center" width="25px"><input id="chk_IT096IU01  02" onclick="toDKSelectedChange(this)" type="checkbox" value="IT096IU01  02|IT096IU|Net-Centric Programming|01|4|4|01/01/0001|0|0|0| |0|ITIT244WE31"/></td>
+<td align="center" width="60px">IT096WE</td>
+<td align="center" width="60px">IT096IU</td>
+<td align="left" width="150x"> Net-Centric Programming</td> <td align="center" width="35px">01</td><td align="center" width="30px">02</td><td align="center" width="25px">4</td><td align="center" width="35px">4</td><td align="center" width="84px">ITIT244WE31</td><td align="center" width="28px">30</td> <td align="center" width="28px">2</td>
+<td align="center" width="20px"><div class="top-fline">*</div><div class="fline"> </div><div class="top-fline"></div></td>
+<td align="center" width="35px"><div class="top-fline">Năm</div><div class="fline"> </div><div class="top-fline">Tư</div> </td>
+<td align="center" width="40px"><div class="top-fline">1</div><div class="fline"> </div><div class="top-fline">1</div></td>
+<td align="center" width="30px"><div class="top-fline">3</div><div class="fline"> </div><div class="top-fline">3</div></td>
+<td align="center" width="60px"><div class="top-fline">LA1.606</div><div class="fline"> </div><div class="top-fline">A2.508</div></td><td align="center" width="35px"><div class="top-fline">T.K.Minh</div><div class="fline"> </div><div class="top-fline">L.T.Sơn</div></td> <td align="center"><div class="top-fline"><label id="----56789-12345" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">28/09/2026--13/12/2026</label></div><div class="fline"> </div><div class="top-fline"><label id="-23456789-1234567" onmouseout="hideddrivetip()" onmouseover="ddrivetip(this.id)" style="cursor:pointer">07/09/2026--27/12/2026</label></div></td></tr></table>
+</div>
+</div>
+</td>
+</tr>
+</table>
+<div id="ContentPlaceHolder1_ctl00_pnlDaChon">
+<div id="titleDSDK" style="margin-top: 5px;">
+<span class="Label" id="ContentPlaceHolder1_ctl00_lblDaChon"><b>DANH SÁCH MÔN HỌC ĐÃ CHỌN</b></span>
+<table cellpadding="0" cellspacing="0" class="title-table"><tr><td align="right" colspan="11" style="background-color:#6699FF;height:5px;"><input disabled="" id="btnLuu" onclick="LuuDanhSachDangKy()" type="button" value="Lưu Đăng Ký"/>
+</td>
+<td align="center" style="background-color:#6699FF;height:5px;">
+<input disabled="" id="bntXoaChon" onclick="xoaTuDanhSach(this.form.chk_xoa, false)" type="button" value="Xóa"/>
+</td>
+</tr>
+<tr align="center">
+<td style="width: 30px;"><asp:label id="lblG2STT" runat="server">STT</asp:label></td>
+<td style="display:none"><asp:label id="lblG2MaDK" runat="server">Regis ID </asp:label></td>
+<td style="width: 60px;"><asp:label id="lblG2MMH" runat="server">Mã MH </asp:label></td>
+<td style="width: 180px;"><asp:label id="lblG2TMH" runat="server">Tên môn học </asp:label></td>
+<td style="width: 35px;"><asp:label id="lblG2NMH" runat="server">NMH </asp:label></td>
+<td style="width: 45px;"><asp:label id="lblG2TTH" runat="server">TTH </asp:label></td>
+<td style="width: 35px;"><asp:label id="lblG2STC" runat="server">STC </asp:label></td>
+<td style="width: 35px;"><asp:label id="lblG2STCHP" runat="server">STCHP </asp:label></td> <td style="width: 80px;"><asp:label id="lblG2HP" runat="server">Học Phí</asp:label></td>
+<td style="width: 80px;"><asp:label id="lblG2MG" runat="server">Miễn Giảm</asp:label></td>
+<td style="width: 80px;"><asp:label id="lblG2PD" runat="server">Phải Đóng</asp:label></td><td><asp:label id="lblG2TrangThai" runat="server">Trạng Thái môn học </asp:label></td><td align="left" style="width:50px;"><input disabled="disabled" id="IDchk_all" name="chk_all" onclick="check(this.form.chk_xoa);" type="checkbox"/></td></tr></table>
+</div>
+<div class="grid-roll" id="divTemp" style="height: 240px">
+<div id="divKQ"><table border="1" cellpadding="0" cellspacing="0" class="body-table" rules="all" style="border-collapse: collapse; color:Navy;">
+<tr>
+<td align="center" style="width: 30px;" valign="middle">1</td>
+<td align="center" style="display:none" valign="middle">IT090IU01  01</td>
+<td align="center" style="width: 60px;" valign="middle">IT090IU</td>
+<td align="left" style="width: 180px;" valign="middle"> Object-Oriented Analysis and Design</td>
+<td align="center" style="width: 35px;" valign="middle">01</td>
+<td align="center" style="width: 45px;" valign="middle">01</td>
+<td align="center" style="width: 35px;" valign="middle">4</td>
+<td align="center" style="width: 35px;" valign="middle">4</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_IT090IU01  01" name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="IT090IU01  01"/></td></tr>
+<tr>
+<td align="center" style="width: 30px;" valign="middle">2</td>
+<td align="center" style="display:none" valign="middle">IT007WE01    </td>
+<td align="center" style="width: 60px;" valign="middle">IT007WE</td>
+<td align="left" style="width: 180px;" valign="middle"> Skills for Communicating Information</td>
+<td align="center" style="width: 35px;" valign="middle">01</td>
+<td align="center" style="width: 45px;" valign="middle"></td>
+<td align="center" style="width: 35px;" valign="middle">3</td>
+<td align="center" style="width: 35px;" valign="middle">3</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_IT007WE01    " name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="IT007WE01    "/></td></tr>
+<tr>
+<td align="center" style="width: 30px;" valign="middle">3</td>
+<td align="center" style="display:none" valign="middle">PH012IU01    </td>
+<td align="center" style="width: 60px;" valign="middle">PH012IU</td>
+<td align="left" style="width: 180px;" valign="middle"> Physics 4</td>
+<td align="center" style="width: 35px;" valign="middle">01</td>
+<td align="center" style="width: 45px;" valign="middle"></td>
+<td align="center" style="width: 35px;" valign="middle">2</td>
+<td align="center" style="width: 35px;" valign="middle">2</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_PH012IU01    " name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="PH012IU01    "/></td></tr>
+<tr>
+<td align="center" style="width: 30px;" valign="middle">4</td>
+<td align="center" style="display:none" valign="middle">IT093IU02  01</td>
+<td align="center" style="width: 60px;" valign="middle">IT093IU</td>
+<td align="left" style="width: 180px;" valign="middle"> Web Application Development</td>
+<td align="center" style="width: 35px;" valign="middle">02</td>
+<td align="center" style="width: 45px;" valign="middle">01</td>
+<td align="center" style="width: 35px;" valign="middle">4</td>
+<td align="center" style="width: 35px;" valign="middle">4</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_IT093IU02  01" name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="IT093IU02  01"/></td></tr>
+<tr>
+<td align="center" style="width: 30px;" valign="middle">5</td>
+<td align="center" style="display:none" valign="middle">EN011IU03    </td>
+<td align="center" style="width: 60px;" valign="middle">EN011IU</td>
+<td align="left" style="width: 180px;" valign="middle"> Writing AE2</td>
+<td align="center" style="width: 35px;" valign="middle">03</td>
+<td align="center" style="width: 45px;" valign="middle"></td>
+<td align="center" style="width: 35px;" valign="middle">2</td>
+<td align="center" style="width: 35px;" valign="middle">2</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_EN011IU03    " name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="EN011IU03    "/></td></tr>
+<tr>
+<td align="center" style="width: 30px;" valign="middle">6</td>
+<td align="center" style="display:none" valign="middle">IT120IU01    </td>
+<td align="center" style="width: 60px;" valign="middle">IT120IU</td>
+<td align="left" style="width: 180px;" valign="middle"> Entrepreneurship</td>
+<td align="center" style="width: 35px;" valign="middle">01</td>
+<td align="center" style="width: 45px;" valign="middle"></td>
+<td align="center" style="width: 35px;" valign="middle">3</td>
+<td align="center" style="width: 35px;" valign="middle">3</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_IT120IU01    " name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="IT120IU01    "/></td></tr>
+<tr>
+<td align="center" style="width: 30px;" valign="middle">7</td>
+<td align="center" style="display:none" valign="middle">MA026IU02    </td>
+<td align="center" style="width: 60px;" valign="middle">MA026IU</td>
+<td align="left" style="width: 180px;" valign="middle"> Probability, Statistic &amp; Random Process</td>
+<td align="center" style="width: 35px;" valign="middle">02</td>
+<td align="center" style="width: 45px;" valign="middle"></td>
+<td align="center" style="width: 35px;" valign="middle">3</td>
+<td align="center" style="width: 35px;" valign="middle">3</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_MA026IU02    " name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="MA026IU02    "/></td></tr>
+<tr>
+<td align="center" style="width: 30px;" valign="middle">8</td>
+<td align="center" style="display:none" valign="middle">IT013IU02  02</td>
+<td align="center" style="width: 60px;" valign="middle">IT013IU</td>
+<td align="left" style="width: 180px;" valign="middle"> Algorithms &amp; Data Structures</td>
+<td align="center" style="width: 35px;" valign="middle">02</td>
+<td align="center" style="width: 45px;" valign="middle">02</td>
+<td align="center" style="width: 35px;" valign="middle">4</td>
+<td align="center" style="width: 35px;" valign="middle">4</td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="right" style="width: 80px;" valign="middle"> </td>
+<td align="right" style="width: 80px;" valign="middle">1,000,000</td>
+<td align="left" valign="middle"> Đã lưu vào CSDL</td>
+<td align="left" style="width: 50px;" valign="middle"><input disabled="disabled" id="chk_IT013IU02  02" name="chk_xoa" onclick="CheckToDelete_CheckedChanged(this)" style="" type="checkbox" value="IT013IU02  02"/></td></tr>
+<tr height="20px" style="font-weight: bold;">
+<td align="center" colspan="5" valign="middle">Tổng cộng</td>
+<td align="center" valign="middle">25</td>
+<td align="center" valign="middle">25</td>
+<td align="right" valign="middle">1,000,000</td>
+<td align="right" valign="middle">00 </td>
+<td align="right" valign="middle">1,000,000</td>
+<td align="left" valign="middle"></td>
+<td align="center" valign="middle">
+</td>
+</tr></table></div>
+</div>
+<br/>
+<div style="text-align: right">
+<span class="Label" id="ContentPlaceHolder1_ctl00_lblNote"><i><font color="Gray">( Diễn giải: ĐK (đăng ký); Mã MH (mã môn học); NMH (Nhóm môn học); TTH (Tổ thực hành); STC (Số tín chỉ); STCHP (Số tín chỉ học phí); CL (Còn lại); TH (Thực hành) )</font></i></span>
+</div>
+<br/>
+</div>
+<div id="ContentPlaceHolder1_ctl00_pnlDanhGia">
+</div>
+<div id="ContentPlaceHolder1_ctl00_pnlNguyenVong">
+<br/>
+<div id="ContentPlaceHolder1_ctl00_pnlDuyetKQDK">
+<fieldset>
+<legend>
+<span id="ContentPlaceHolder1_ctl00_lblTieuDeKQDK"><b><font color="Navy">Lời nhắn từ cố vấn học tập: </font></b></span>
+</legend>
+<table width="100%">
+<tr>
+<td align="left" width="100px">
+</td>
+<td align="left">
+</td>
+</tr></table>
+</fieldset>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<tr>
+<td>
+<style type="text/css">
+
+   
+
+    .style3
+
+    {
+
+        width: 70px;
+
+    }
+
+    .style4
+
+    {
+
+        width: 129px;
+
+    }
+
+    .style5
+
+    {
+
+        width: 1019px;
+
+    }
+
+   
+
+</style>
+<div class="footer">
+<table width="100%"><tr><td align="left" class="style5">
+<img alt="" src="App_Themes/Standard/Images/icon_11c.gif"/>
+<span class="LogoFooter"><span class="Label" id="Footer1_lblCompany">Copyright ©2009 Trường ĐH Quốc Tế - ĐHQG TP.HCM-Trường Đại học Quốc tế. Quản lý bởi Phòng BĐCLGD&amp;KT</span></span>
+</td>
+<td align="left" class="style4" valign="top">
+<img align="right" alt="" src="App_Themes/Standard/Images/iconHome.png"/>
+</td>
+<td align="left" class="style3">
+<a href="Default.aspx"><span class="Label" id="Footer1_lbltrangchu">Trang Chủ</span></a>
+</td>
+</tr>
+<tr>
+<td class="style5">
+<img alt="" src="App_Themes/Standard/Images/icon_11c.gif"/>
+<a href="https://aqtech.vn/" target="_blank"><span class="Label" id="Footer1_lblCopyRight">Thiết kế bởi cty Phần mềm Anh Quân</span></a>
+</td>
+<td align="right" class="style4" valign="top">
+<img alt="" src="App_Themes/Standard/Images/topTen.gif" width="15px"/>
+</td>
+<td class="style3">
+<a href="#Top" style="text-decoration: none; font-family:Tahoma;font-size:8pt" title="Go to top">
+<span class="Label" id="Footer1_lbltop">Đầu Trang</span>
+</a>
+</td>
+<td align="right"><a href="Default.aspx?page=thongtinsp"><span class="Label" id="Footer1_lblAbout">About</span></a></td>
+</tr>
+</table></div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<script language="JavaScript">LoadDSKhoaLop_load('Lọc >>|Lọc >>|Lưu Đăng Ký|Xóa|Lưu|Thông báo: số môn đăng ký vượt số tín chỉ tối đa cho phép trong học kỳ!|Thông báo: Môn học vừa chọn bị trùng thời khóa biểu. Vẫn tiếp tục chọn?|Thông báo: Môn học vừa chọn bị trùng TKB, không được phép chọn!|Thông báo: Không có môn học nào được chọn để xóa!|Xác nhận xóa các môn đã chọn?|Xác nhận xóa tất cả các môn đã đăng ký?|Vui lòng nhập vào điều kiện cần lọc!|Server đang bận, vui lòng đợi chọn lưu lại lần nữa!|0|Bạn có muốn đóng 0% học phí cho lần đầu, nếu đóng 100% chọn Cancle   |Không được phép đăng ký môn học trùng với môn niên chế (môn bắt buộc học)|Vui lòng đợi trong khi môn trước được kiểm tra|Ngoài thời gian cho phép đăng ký môn học!|Môn học vừa chọn nằm ngoài chuyên ngành chuyên sâu chuyên ngành chính của sinh viên|Môn học vừa chọn nằm ngoài chuyên ngành chuyên sâu chuyên ngành 2 của sinh viên|Môn đăng ký học cải thiện cần có điểm tổng kết môn lớn hơn D|Môn đăng ký học cải thiện cần có điểm tổng kết môn lớn hơn D và số chênh lệch học kỳ tính đến học kỳ hiện tại là |Môn học vừa chọn bị trùng tổng số tiết với TKB cũ là | tổng số tiết.Vẫn tiếp tục chọn|Môn vừa đăng ký bị trùng lịch thi với môn đã chọn trước đó, không thể chọn!|Môn vừa chọn trùng lịch thi với môn chọn trước đó, vẫn tiếp tục lưu ?|Môn vừa đăng ký bị trùng lịch thi với môn đã chọn trước đó, vượt quá số cho phép trùng tối đa |Đã qua thời gian đăng ký, không thể xóa|(Không có môn học được mở)|Không đủ số tín chỉ đăng ký tích lũy (hoặc đạt tích lũy) để đăng ký môn |Không thể thay đổi kqdk vượt quá phạm vi số tín chỉ max quy định trong đợt đăng ký 0|0');</script></form>
+</body>
+</html>

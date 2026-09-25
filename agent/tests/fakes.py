@@ -75,7 +75,8 @@ class FakeEduSoft:
         if self.login_error:
             raise self.login_error
 
-    SECTION_PARTS = {"timetable": ("weekly", "semester"), "exams": ("final", "midterm"), "tuition": ("report",)}
+    SECTION_PARTS = {"timetable": ("weekly", "semester"), "exams": ("final", "midterm"), "tuition": ("report",),
+                     "registration": ("registration",)}
 
     def get_page(self, name):
         return f"<html>{name}</html>"

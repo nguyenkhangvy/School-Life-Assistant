@@ -269,6 +269,7 @@ def cmd_fetch(args):
             for part, html in edusoft.read(section).items():
                 if part != "term":
                     files[_file_name(section, part)] = html
+        files["registration.html"] = edusoft.read("registration")["registration"]
     except (BadCredentials, ExtraVerification) as error:
         state.paused = error.code
         save_state(state)

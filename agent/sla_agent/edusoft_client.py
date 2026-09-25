@@ -44,6 +44,7 @@ PAGES = {
     "exams": "xemlichthi",  # final exams
     "midterm_exams": "xemlichthigk",
     "tuition": "xemhocphi",
+    "registration": "dkmonhoc",  # read only, never submitted
 }
 
 # Form fields used to switch views (reading only; nothing is changed on EduSoft).
@@ -190,6 +191,8 @@ class EduSoftClient:
             return {"term": self.current_term, "final": final, "midterm": self.get_page("midterm_exams")}
         if section == "tuition":
             return {"term": self._learn_current_term(), "report": self._tuition_report()}
+        if section == "registration":
+            return {"registration": self.get_page("registration")}  # GET only: never submit this form
         raise KeyError(section)
 
     def _learn_current_term(self):
