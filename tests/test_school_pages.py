@@ -65,6 +65,19 @@ def test_cancelling_a_device_stops_its_key(app, browser):
     assert api(app.test_client(), "GET", "/check", key).status_code == 401
 
 
+def test_a_cancelled_device_disappears_from_the_list(app, browser):
+    add_device(browser, name="Old laptop")
+    add_device(browser, name="New laptop")
+    old_id = devices(app)[0].id
+
+    browser.post(f"/school/devices/{old_id}/revoke")
+    browser.get("/school/devices")  # shows (and clears) the "can no longer sync" message
+    page = browser.get("/school/devices").get_data(as_text=True)
+
+    assert "Old laptop" not in page
+    assert "New laptop" in page
+
+
 def test_renaming_a_device(app, browser):
     add_device(browser)
     device_id = devices(app)[0].id

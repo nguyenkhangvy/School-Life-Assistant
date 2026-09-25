@@ -19,9 +19,13 @@ def vn_time(moment):
     return when(moment) if moment else "never"
 
 
-def _my_devices():
+def _active_devices():
+    """The user's devices that can still sync. Cancelled ones stay in the database (sync
+    history refers to them) but are no longer shown."""
     return db.session.execute(
-        select(SchoolSyncDevice).filter_by(user_id=current_user.id).order_by(SchoolSyncDevice.created_at)
+        select(SchoolSyncDevice)
+        .filter_by(user_id=current_user.id, revoked_at=None)
+        .order_by(SchoolSyncDevice.created_at)
     ).scalars().all()
 
 
@@ -33,7 +37,7 @@ def _status(now):
     settings = get_settings(current_user.id)
     latest = latest_run(current_user.id)
     last_good = latest_run(current_user.id, "success", "partial")
-    active = [d for d in _my_devices() if d.revoked_at is None]
+    active = _active_devices()
     return describe(
         now=now,
         interval_hours=settings.interval_hours,
@@ -74,7 +78,7 @@ def devices():
         _, new_key = create_device(current_user.id, form.name.data)
         db.session.commit()
         form = DeviceForm(formdata=None)
-    response = render_template("school/devices.html", form=form, devices=_my_devices(), new_key=new_key)
+    response = render_template("school/devices.html", form=form, devices=_active_devices(), new_key=new_key)
     if new_key:
         # The key is shown once; don't let the browser keep a copy.
         return response, 200, {"Cache-Control": "no-store"}

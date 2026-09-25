@@ -157,7 +157,6 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 }
 .device:first-child { border-top: 0; }
 .device .muted { display: block; font-size: 0.9rem; }
-.device.is-revoked strong { color: var(--muted); text-decoration: line-through; }
 .device-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .inline-form { display: flex; gap: 6px; align-items: center; }
 .inline-form input {
