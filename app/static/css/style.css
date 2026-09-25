@@ -186,13 +186,6 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 .item-time { font-weight: 700; font-variant-numeric: tabular-nums; }
 .item-meta { color: var(--muted); font-size: 0.9rem; }
 
-.week-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.week-nav h2 { margin: 0; font-size: 1.1rem; text-align: center; }
-.week { display: grid; gap: 12px; margin-top: 12px; }
-@media (min-width: 1000px) { .week { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
-.day { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; }
-.day h3 { margin: 0 0 8px; font-size: 1rem; }
-.day.is-today { border-color: var(--accent); border-width: 2px; }
 
 .changes { margin: 0; padding-left: 18px; }
 .change { margin-bottom: 6px; }
@@ -202,3 +195,54 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 .facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
 .facts dt { color: var(--muted); }
 .facts dd { margin: 0; }
+
+/* School: tuition payment */
+.pay-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.pay-card h2, .pay-card p { margin: 0 0 4px; }
+.button { text-decoration: none; }
+
+/* School: timetable calendar (FullCalendar) */
+:root {
+  --class-color: #1f5fbf;
+  --exam-color: #b42318;
+}
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 0 0 12px; }
+.legend-item::before {
+  content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px;
+  vertical-align: -1px; border-radius: 3px;
+}
+.legend-class::before { background: var(--class-color); }
+.legend-exam::before { background: var(--exam-color); }
+.calendar-card { padding: 12px; overflow-x: auto; }
+.fc {
+  --fc-page-bg-color: var(--surface);
+  --fc-neutral-bg-color: var(--bg);
+  --fc-list-event-hover-bg-color: var(--bg);
+  --fc-border-color: var(--border);
+  --fc-today-bg-color: rgba(31, 95, 191, 0.08);
+  --fc-now-indicator-color: var(--error);
+  --fc-button-bg-color: var(--accent);
+  --fc-button-border-color: var(--accent);
+  --fc-button-hover-bg-color: var(--accent);
+  --fc-button-hover-border-color: var(--accent);
+  --fc-button-active-bg-color: var(--text);
+  --fc-button-active-border-color: var(--text);
+  --fc-button-text-color: var(--accent-text);
+  color: var(--text);
+}
+.fc .fc-toolbar-title { font-size: 1.15rem; }
+.fc .fc-button { font-size: 0.9rem; text-transform: none; }
+.fc .fc-toolbar { flex-wrap: wrap; gap: 8px; }
+.fc .event-class { background: var(--class-color); border-color: var(--class-color); color: #fff; }
+.fc .event-exam { background: var(--exam-color); border-color: var(--exam-color); color: #fff; }
+.fc .fc-list-event.event-class, .fc .fc-list-event.event-exam { background: transparent; color: var(--text); }
+.fc .fc-list-event.event-class .fc-list-event-dot { border-color: var(--class-color); }
+.fc .fc-list-event.event-exam .fc-list-event-dot { border-color: var(--exam-color); }
+.fc .event-time { font-weight: 700; font-size: 0.8rem; }
+.fc .event-title { font-size: 0.85rem; line-height: 1.25; }
+.fc .event-room { font-size: 0.8rem; opacity: 0.9; }
+.fc .fc-list-event .event-time { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root { --class-color: #3d7be0; --exam-color: #d64545; }
+  .fc { --fc-today-bg-color: rgba(110, 162, 242, 0.12); }
+}

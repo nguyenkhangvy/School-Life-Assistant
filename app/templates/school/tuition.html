@@ -4,6 +4,16 @@
   <h1>Tuition</h1>
   {% include "school/_subnav.html" %}
 
+  <section class="card pay-card">
+    <div>
+      <h2>Pay your tuition</h2>
+      <p class="muted">Opens IU's official payment site, IUPay, in a new tab.</p>
+    </div>
+    <a class="button" href="https://iupay.hcmiu.edu.vn/search/dhqt" target="_blank" rel="noopener noreferrer">
+      Pay on IUPay ↗
+    </a>
+  </section>
+
   {% if rows %}
     {% for row in rows %}
       <section class="card">

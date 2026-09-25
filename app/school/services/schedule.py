@@ -30,10 +30,6 @@ def vietnam_date(moment_utc):
     return (moment_utc + VIETNAM_OFFSET).date()
 
 
-def monday_of(day):
-    return day - timedelta(days=day.weekday())
-
-
 def day_start_utc(day):
     """Midnight in Vietnam on `day`, as naive UTC."""
     return datetime.combine(day, time()) - VIETNAM_OFFSET
@@ -65,10 +61,3 @@ def items_between(user_id, start_utc, end_utc):
 
 def items_on(user_id, day):
     return items_between(user_id, day_start_utc(day), day_start_utc(day + timedelta(days=1)))
-
-
-def week(user_id, monday):
-    """[(day, [items])] for the 7 days starting at `monday`."""
-    items = items_between(user_id, day_start_utc(monday), day_start_utc(monday + timedelta(days=7)))
-    days = [monday + timedelta(days=i) for i in range(7)]
-    return [(day, [item for item in items if vietnam_date(item.start_at) == day]) for day in days]

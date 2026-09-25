@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import select
 
@@ -104,22 +104,43 @@ def index():
 @bp.get("/timetable")
 @login_required
 def timetable():
-    today = schedule.vietnam_date(utcnow())
+    return render_template("school/timetable.html")
+
+
+MAX_CALENDAR_DAYS = 62  # a month view asks for about 6 weeks
+
+
+def _wall_clock(moment_utc):
+    """Naive UTC -> Vietnam wall-clock time without an offset, e.g. '2026-09-29T08:00:00'.
+    The calendar shows these as they are, so times stay in Vietnam time on any device."""
+    return (moment_utc + schedule.VIETNAM_OFFSET).isoformat(timespec="seconds")
+
+
+def _calendar_event(item):
+    event = {
+        "title": f"{item.label}: {item.title}" if item.label else item.title,
+        "start": _wall_clock(item.start_at),
+        "classNames": [f"event-{item.kind}"],
+        "extendedProps": {"kind": item.kind, "code": item.code, "room": item.room},
+    }
+    if item.end_at:
+        event["end"] = _wall_clock(item.end_at)
+    return event
+
+
+@bp.get("/api/calendar")
+@login_required
+def calendar_feed():
+    """Events for FullCalendar. start/end are Vietnam dates (end exclusive)."""
     try:
-        chosen = date.fromisoformat(request.args.get("week", ""))
-    except ValueError:
-        chosen = today
-    monday = schedule.monday_of(chosen)
-    return render_template(
-        "school/timetable.html",
-        days=schedule.week(current_user.id, monday),
-        monday=monday,
-        sunday=monday + timedelta(days=6),
-        previous_week=monday - timedelta(days=7),
-        next_week=monday + timedelta(days=7),
-        this_week=schedule.monday_of(today),
-        today=today,
-    )
+        start = date.fromisoformat(request.args["start"][:10])
+        end = date.fromisoformat(request.args["end"][:10])
+    except (KeyError, ValueError):
+        return jsonify(error="start and end dates are required"), 400
+    if not start < end or (end - start).days > MAX_CALENDAR_DAYS:
+        return jsonify(error=f"the range must be 1 to {MAX_CALENDAR_DAYS} days"), 400
+    items = schedule.items_between(current_user.id, schedule.day_start_utc(start), schedule.day_start_utc(end))
+    return jsonify([_calendar_event(item) for item in items])
 
 
 @bp.get("/exams")

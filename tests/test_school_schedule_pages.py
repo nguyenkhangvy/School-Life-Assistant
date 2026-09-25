@@ -4,6 +4,7 @@ naive UTC; pages show Vietnam time (UTC+7)."""
 from datetime import date, datetime
 
 import pytest
+from bs4 import BeautifulSoup
 
 from app.extensions import db
 from app.school.models import SchoolChange, SchoolClassMeeting, SchoolCourse, SchoolExam, SchoolSyncRun, SchoolTuition
@@ -49,47 +50,75 @@ def test_schedule_pages_need_login(client, path):
     assert client.get(path).status_code == 302
 
 
-def test_the_timetable_shows_that_weeks_classes_in_vietnam_time(app, browser):
+FEED = "/school/api/calendar"
+NEXT_WEEK = {"start": "2026-09-28T00:00:00Z", "end": "2026-10-05T00:00:00Z"}  # as FullCalendar sends them
+
+
+def feed(browser, **params):
+    response = browser.get(FEED, query_string=params)
+    assert response.status_code == 200
+    return response.get_json()
+
+
+def test_the_calendar_feed_gives_classes_in_vietnam_time(app, browser):
     add_course(app, 1, "IT093IU", "Web Application Development", [WEB_TUESDAY])
 
-    html = page(browser, "/school/timetable?week=2026-09-28")
+    assert feed(browser, **NEXT_WEEK) == [{
+        "title": "Web Application Development",
+        "start": "2026-09-29T08:00:00",
+        "end": "2026-09-29T10:30:00",
+        "classNames": ["event-class"],
+        "extendedProps": {"kind": "class", "code": "IT093IU", "room": "A2.508"},
+    }]
 
-    assert "Web Application Development" in html
-    assert "08:00–10:30" in html
-    assert "A2.508" in html
 
-
-def test_the_timetable_shows_only_my_classes(app, browser):
+def test_the_calendar_feed_has_only_my_classes(app, browser):
     other = make_user(app, email="binh@example.com")
     add_course(app, other, "BA001IU", "Binh's Business Course", [WEB_TUESDAY])
 
-    assert "Binh" not in page(browser, "/school/timetable?week=2026-09-28")
+    assert feed(browser, **NEXT_WEEK) == []
 
 
 def test_a_class_early_on_monday_in_vietnam_belongs_to_that_monday(app, browser):
     # Mon 05/10/2026 06:00 in Vietnam is still Sunday 04/10 23:00 in UTC.
     add_course(app, 1, "MA001IU", "Early Maths", [(datetime(2026, 10, 4, 23, 0), datetime(2026, 10, 5, 0, 30), "A1.1")])
 
-    assert "Early Maths" not in page(browser, "/school/timetable?week=2026-09-28")
-    assert "Early Maths" in page(browser, "/school/timetable?week=2026-10-05")
+    assert feed(browser, **NEXT_WEEK) == []
+    [event] = feed(browser, start="2026-10-05T00:00:00Z", end="2026-10-12T00:00:00Z")
+    assert event["start"] == "2026-10-05T06:00:00"
 
 
-def test_any_day_of_the_week_opens_that_week_with_links_to_the_next_and_previous(app, browser):
-    html = page(browser, "/school/timetable?week=2026-10-01")  # a Thursday
-
-    assert "28/09 – 04/10/2026" in html
-    assert "week=2026-09-21" in html
-    assert "week=2026-10-05" in html
-
-
-def test_a_bad_week_value_falls_back_to_this_week(browser):
-    assert browser.get("/school/timetable?week=not-a-date").status_code == 200
-
-
-def test_exams_in_that_week_also_show_on_the_timetable(app, browser):
+def test_exams_are_in_the_calendar_with_their_own_colour(app, browser):
     add_exam(app, 1, "IT093IU", "Web Application Development", datetime(2026, 9, 30, 1, 0))
 
-    assert "Final exam" in page(browser, "/school/timetable?week=2026-09-28")
+    [event] = feed(browser, **NEXT_WEEK)
+
+    assert (event["title"], event["start"], event["classNames"]) == (
+        "Final exam: Web Application Development", "2026-09-30T08:00:00", ["event-exam"],
+    )
+
+
+@pytest.mark.parametrize(
+    "params",
+    [{}, {"start": "not-a-date", "end": "2026-10-05"}, {"start": "2026-10-05", "end": "2026-09-28"},
+     {"start": "2026-01-01", "end": "2026-12-31"}],
+    ids=["missing", "not-a-date", "end-before-start", "too-long"],
+)
+def test_the_calendar_feed_refuses_bad_ranges(browser, params):
+    assert browser.get(FEED, query_string=params).status_code == 400
+
+
+def test_the_calendar_feed_needs_login(client):
+    assert client.get(FEED, query_string=NEXT_WEEK).status_code == 302
+
+
+def test_the_timetable_page_loads_the_pinned_calendar_script(browser):
+    html = page(browser, "/school/timetable")
+
+    assert 'id="calendar"' in html
+    assert 'data-feed="/school/api/calendar"' in html
+    assert "fullcalendar@6.1.21/index.global.min.js" in html
+    assert 'integrity="sha384-' in html
 
 
 def test_the_exams_page_lists_upcoming_exams(app, browser):
@@ -117,6 +146,15 @@ def test_the_tuition_page_shows_balance_and_due_date(app, browser):
 
     assert "12,500,000" in html
     assert "15/10/2026" in html
+
+
+def test_the_tuition_page_links_to_the_iu_payment_site_in_a_new_tab(browser):
+    link = BeautifulSoup(page(browser, "/school/tuition"), "html.parser").find(
+        "a", href="https://iupay.hcmiu.edu.vn/search/dhqt")
+
+    assert link is not None
+    assert link["target"] == "_blank"
+    assert {"noopener", "noreferrer"} <= set(link["rel"])
 
 
 def test_the_tuition_page_says_when_nothing_is_synced(browser):
