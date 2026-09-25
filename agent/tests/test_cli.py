@@ -208,7 +208,7 @@ def test_fetch_saves_the_pages_locally_with_a_privacy_warning(world, tmp_path, c
     saved = sorted(p.name for p in folder.iterdir())
     assert saved == [
         "exams-final.html", "exams-midterm.html", "home.html",
-        "timetable-semester.html", "timetable-weekly.html", "tuition.html",
+        "timetable-semester.html", "timetable-weekly.html", "tuition-report.json",
     ]
     assert (folder / "timetable-semester.html").read_text(encoding="utf-8") == "<html>timetable semester</html>"
     assert all(PASSWORD not in p.read_text(encoding="utf-8") for p in folder.iterdir())
@@ -239,6 +239,16 @@ def test_import_uploads_the_parts_found_in_a_saved_folder_even_while_paused(worl
     [(_, result)] = world.server.finishes
     assert list(result.sections()) == ["exams"]
     assert world.edusoft.logins == []
+
+
+def test_import_reads_a_saved_tuition_report(world, tmp_path):
+    configure()
+    (tmp_path / "tuition-report.json").write_text('{"pagesArray": []}', encoding="utf-8")
+
+    assert cli.main(["import", str(tmp_path), "--term", "20261"]) == 0
+
+    [(_, result)] = world.server.finishes
+    assert list(result.sections()) == ["tuition"]
 
 
 def test_import_of_exams_needs_to_know_the_semester(world, tmp_path, capsys):

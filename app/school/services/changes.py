@@ -67,8 +67,10 @@ def _day(value):
 
 
 def timetable_changes(old, new, now):
-    """old is None on the first sync of a term."""
+    """old is None on the first sync of a term (or while it had no classes)."""
     if old is None:
+        if not new:
+            return []  # nothing to announce yet
         courses = len({m.course_code for m in new})
         upcoming = sum(1 for m in new if m.start_at >= now)
         return [Change("added", f"Timetable loaded: {_count(courses, 'course')}, "
@@ -112,8 +114,10 @@ def timetable_changes(old, new, now):
 
 
 def exam_changes(old, new, now):
-    """old is None on the first sync of a term."""
+    """old is None on the first sync of a term (or while no exams were published)."""
     if old is None:
+        if not new:
+            return []  # nothing published yet; announced once exams appear
         return [Change("added", f"Exam schedule loaded: {_count(len(new), 'exam')}")]
 
     before = {(e.course_code, e.exam_type): e for e in old if e.start_at >= now}

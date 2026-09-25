@@ -7,9 +7,11 @@ Safety rules:
 - the login form is submitted once; a rejected password is never retried
 """
 
+import base64
+import json
 import logging
 import time
-from urllib.parse import urljoin, urlsplit, urlunsplit
+from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
 
 import requests
 from bs4 import BeautifulSoup
@@ -51,6 +53,25 @@ TIMETABLE_TERM_FIELD = "ctl00$ContentPlaceHolder1$ctl00$ddlChonNHHK"
 TIMETABLE_VIEW_FIELD = "ctl00$ContentPlaceHolder1$ctl00$ddlLoai"
 SEMESTER_VIEW = "1"  # "TKB học kỳ cá nhân": every course of the semester, not just this week
 FINAL_EXAM_TERM_FIELD = "ctl00$ContentPlaceHolder1$ctl00$dropNHHK"
+
+# Tuition: EduSoft's report viewer, report "Tổng Hợp Học Phí Một Sinh Viên".
+REPORT_URL = f"{BASE_URL}dg/Report/"
+TUITION_REPORT = "HP1SV.001"
+# What EduSoft's report viewer script sends when it loads the first page.
+REPORT_VIEWER_REQUEST = {
+    "viewerId": "MvcViewer",
+    "routes": {"action": "ReportDisplay", "controller": "Report"},
+    "formValues": {},
+    "serverCacheMode": "ObjectCache",
+    "serverCacheTimeout": 20,
+    "serverCacheItemPriority": "Default",
+    "pageNumber": 0,
+    "zoom": 100,
+    "viewMode": "OnePage",
+    "showBookmarks": False,
+    "openLinksTarget": "_self",
+    "sendBookmarks": True,
+}
 
 VERIFICATION_HINTS = ("captcha", "recaptcha", "otp", "maxacnhan", "xacthuc")
 MICROSOFT_HOSTS = ("login.microsoftonline.com", "login.live.com", "login.windows.net")
@@ -100,6 +121,7 @@ class EduSoftClient:
         self.session.headers["User-Agent"] = USER_AGENT
         self.sleep = sleep
         self.current_term = None  # e.g. "20261", learned from the timetable page
+        self.student_id = None  # set after a successful login
 
     # ---- HTTP with safety checks ------------------------------------------
 
@@ -172,6 +194,7 @@ class EduSoftClient:
             raise ExtraVerification("EduSoft asked for extra verification after login.")
         if _has_login_form(result):
             raise BadCredentials("EduSoft rejected the student ID or password.")
+        self.student_id = student_id
         log.info("Logged in to EduSoft")
 
     def _page_url(self, name):
@@ -200,13 +223,27 @@ class EduSoftClient:
             semester = self.switch_view("timetable", weekly, TIMETABLE_VIEW_FIELD, SEMESTER_VIEW)
             return {"weekly": weekly, "semester": semester}
         if section == "exams":
-            if self.current_term is None:
-                self.current_term = _selected(self.get_page("timetable"), TIMETABLE_TERM_FIELD)[0]
+            self._learn_current_term()
             final = self.get_page("exams")
             shown, listed = _selected(final, FINAL_EXAM_TERM_FIELD)
             if shown != self.current_term and self.current_term in listed:
                 final = self.switch_view("exams", final, FINAL_EXAM_TERM_FIELD, self.current_term)
             return {"term": self.current_term, "final": final, "midterm": self.get_page("midterm_exams")}
         if section == "tuition":
-            return {"tuition": self.get_page("tuition")}
+            return {"term": self._learn_current_term(), "report": self._tuition_report()}
         raise KeyError(section)
+
+    def _learn_current_term(self):
+        if self.current_term is None:
+            self.current_term = _selected(self.get_page("timetable"), TIMETABLE_TERM_FIELD)[0]
+        return self.current_term
+
+    def _tuition_report(self):
+        """The report viewer's JSON for the logged-in student's own tuition report."""
+        if not self.student_id:
+            raise SessionExpired("Not logged in to EduSoft.")
+        query = urlencode({"t": TUITION_REPORT, "nhhk": self.current_term, "masv": self.student_id})
+        self._logged_in(self._get_with_retries(f"{REPORT_URL}ReportDisplay?{query}").text)  # opens the report
+        body = {"mvcviewer_parameters": base64.b64encode(
+            json.dumps(REPORT_VIEWER_REQUEST, separators=(",", ":")).encode("utf-8")).decode("ascii")}
+        return self._logged_in(self._request("POST", f"{REPORT_URL}ReportDisplayV?{query}", data=body).text)

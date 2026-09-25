@@ -75,7 +75,7 @@ class FakeEduSoft:
         if self.login_error:
             raise self.login_error
 
-    SECTION_PARTS = {"timetable": ("weekly", "semester"), "exams": ("final", "midterm"), "tuition": ("tuition",)}
+    SECTION_PARTS = {"timetable": ("weekly", "semester"), "exams": ("final", "midterm"), "tuition": ("report",)}
 
     def get_page(self, name):
         return f"<html>{name}</html>"
@@ -83,7 +83,7 @@ class FakeEduSoft:
     def read(self, name):
         self.page_calls.append(name)
         default = {part: f"<html>{name} {part}</html>" for part in self.SECTION_PARTS[name]}
-        if name == "exams":
+        if name in ("exams", "tuition"):
             default["term"] = "20261"
         results = self.pages.get(name, [default])
         result = results.pop(0) if len(results) > 1 else results[0]

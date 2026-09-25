@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup
 from sla_agent.errors import ParseError
 
 VIETNAM = timezone(timedelta(hours=7))
-TERM_TITLE = re.compile(r"Học kỳ\s*(\d)\s*-\s*Năm học\s*(\d{4})\s*-\s*\d{4}", re.IGNORECASE)
+# "Học kỳ 1 - Năm học 2026-2027" (pages) or "Học kỳ 1 Năm học 2026-2027" (tuition report)
+TERM_TITLE = re.compile(r"Học kỳ\s*(\d)\s*-?\s*Năm học\s*(\d{4})\s*-\s*\d{4}", re.IGNORECASE)
 CLOCK = re.compile(r"^(\d{1,2})\s*[:gh]\s*(\d{2})$")
 
 

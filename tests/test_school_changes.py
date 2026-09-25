@@ -143,3 +143,11 @@ def test_tuition_due_date_moved():
 
 def test_unchanged_tuition_gives_no_lines():
     assert tuition_changes(UNPAID, UNPAID) == []
+
+
+def test_an_empty_exam_schedule_is_not_announced_again_and_again():
+    assert exam_changes(None, [], NOW) == []
+
+
+def test_an_empty_timetable_is_not_announced_again_and_again():
+    assert timetable_changes(None, [], NOW) == []

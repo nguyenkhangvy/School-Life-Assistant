@@ -200,8 +200,9 @@ def cmd_sync_now(args):
 
 
 def _file_name(section, part):
-    """timetable + semester -> timetable-semester.html; tuition + tuition -> tuition.html."""
-    return f"{section}.html" if part == section else f"{section}-{part}.html"
+    """timetable + semester -> timetable-semester.html; tuition + report -> tuition-report.json."""
+    extension = "json" if part == "report" else "html"
+    return f"{section}.{extension}" if part == section else f"{section}-{part}.{extension}"
 
 
 def cmd_fetch(args):
@@ -248,7 +249,7 @@ def _read_folder(folder, term):
     found = {
         "timetable": {"weekly": load("timetable", "weekly"), "semester": load("timetable", "semester")},
         "exams": {"final": load("exams", "final"), "midterm": load("exams", "midterm")},
-        "tuition": {"tuition": load("tuition", "tuition")},
+        "tuition": {"report": load("tuition", "report")},
     }
     found["timetable"] = found["timetable"] if found["timetable"]["semester"] else None
     found = {name: pages for name, pages in found.items() if pages and any(pages.values())}
@@ -256,12 +257,12 @@ def _read_folder(folder, term):
     results = {}
     for name, pages in found.items():
         try:
-            if name == "exams":
+            if name in ("exams", "tuition"):
                 if term is None:
                     timetable = results.get("timetable", {}).get("data")
                     term = timetable.term_code if timetable else None
                 if term is None:
-                    raise ValueError("exams need the semester: add --term, e.g. --term 20261")
+                    raise ValueError(f"{name} need the semester: add --term, e.g. --term 20261")
                 pages = {"term": term, **pages}
             results[name] = {"status": "ok", "data": PARSERS[name](pages)}
         except ParseError as error:
