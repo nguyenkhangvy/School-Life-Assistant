@@ -2,9 +2,9 @@ import logging
 from datetime import date, datetime, timezone
 
 import pytest
-from sla_contract.schema import Exams, Timetable, Tuition
+from sla_contract.schema import Blackboard, Exams, Timetable, Tuition
 
-from agent.tests.fakes import FakeEduSoft, FakeServer
+from agent.tests.fakes import FakeBlackboard, FakeEduSoft, FakeServer
 from sla_agent.errors import (
     BadCredentials,
     ExtraVerification,
@@ -44,10 +44,20 @@ def state():
     return State(server_url="https://sla.example.com", student_id="ITITIU20001")
 
 
-def sync(state, edusoft, server=None, parsers=PARSERS, trigger="scheduled"):
+
+BB_PASSWORD = "bb-s3cret"
+
+
+def empty_blackboard(client, registered):
+    return Blackboard(courses=[])
+
+
+def sync(state, edusoft, server=None, parsers=PARSERS, trigger="scheduled", blackboard=None, read=None):
     server = server or FakeServer()
     outcome = run_sync(trigger, state=state, edusoft=edusoft, server=server, parsers=parsers,
-                       password=PASSWORD, now=NOW)
+                       password=PASSWORD, now=NOW, blackboard=blackboard,
+                       blackboard_password=BB_PASSWORD if blackboard else None,
+                       read_blackboard=read or empty_blackboard)
     return outcome, server
 
 
@@ -75,7 +85,9 @@ def test_a_wrong_password_pauses_after_exactly_one_login_attempt(state):
 
     assert len(edusoft.logins) == 1
     assert edusoft.page_calls == []
-    assert only_finish(server).error_code == "bad_credentials"
+    result = only_finish(server)
+    assert {name: part.error_code for name, part in result.sections().items()} == {
+        "timetable": "bad_credentials", "exams": "bad_credentials", "tuition": "bad_credentials"}
     assert state.paused == "bad_credentials"
     assert "sla-agent setup" in outcome.message
 
@@ -93,7 +105,7 @@ def test_a_paused_agent_contacts_nobody(state):
 def test_extra_verification_pauses_and_suggests_import(state):
     outcome, server = sync(state, FakeEduSoft(login_error=ExtraVerification("CAPTCHA shown")))
 
-    assert only_finish(server).error_code == "extra_verification"
+    assert only_finish(server).timetable.error_code == "extra_verification"
     assert state.paused == "extra_verification"
     assert "sla-agent import" in outcome.message
 
@@ -101,7 +113,7 @@ def test_extra_verification_pauses_and_suggests_import(state):
 def test_edusoft_unreachable_is_reported_but_does_not_pause(state):
     outcome, server = sync(state, FakeEduSoft(login_error=NetworkError("timed out")))
 
-    assert only_finish(server).error_code == "network"
+    assert only_finish(server).timetable.error_code == "network"
     assert state.paused is None
 
 
@@ -173,5 +185,113 @@ def test_a_password_rejected_during_re_login_pauses_and_stops(state):
 
     assert len(edusoft.logins) == 2
     assert edusoft.page_calls == ["timetable"]
-    assert only_finish(server).error_code == "bad_credentials"
+    assert only_finish(server).timetable.error_code == "bad_credentials"
     assert state.paused == "bad_credentials"
+
+
+@pytest.fixture
+def bb_state(state):
+    state.blackboard_username = "bbuser"
+    state.registered_courses = [["IT093IU", "02"]]
+    return state
+
+
+def test_blackboard_syncs_after_edusoft_and_logs_out(bb_state):
+    blackboard = FakeBlackboard()
+    seen = []
+
+    def read(client, registered):
+        seen.append(registered)
+        return Blackboard(courses=[])
+
+    outcome, server = sync(bb_state, FakeEduSoft(), blackboard=blackboard, read=read)
+
+    assert list(only_finish(server).sections()) == ["timetable", "exams", "tuition", "blackboard"]
+    assert blackboard.logins == [("bbuser", BB_PASSWORD)]
+    assert blackboard.logouts == 1
+    assert outcome.status == "success"
+    assert len(seen) == 1
+
+
+def test_a_wrong_edusoft_password_still_syncs_blackboard_with_the_last_known_courses(bb_state):
+    edusoft = FakeEduSoft(login_error=BadCredentials("rejected"))
+    seen = []
+
+    outcome, server = sync(bb_state, edusoft, blackboard=FakeBlackboard(),
+                           read=lambda client, registered: seen.append(registered) or Blackboard(courses=[]))
+
+    result = only_finish(server)
+    assert result.timetable.error_code == "bad_credentials"
+    assert result.blackboard.status == "ok"
+    assert bb_state.paused == "bad_credentials"
+    assert [tuple(r) for r in seen[0]] == [("IT093IU", "02")]
+
+
+def test_a_wrong_blackboard_password_pauses_only_blackboard(bb_state):
+    blackboard = FakeBlackboard(login_error=BadCredentials("rejected"))
+
+    outcome, server = sync(bb_state, FakeEduSoft(), blackboard=blackboard)
+
+    result = only_finish(server)
+    assert (result.timetable.status, result.blackboard.error_code) == ("ok", "bad_credentials")
+    assert (bb_state.paused, bb_state.blackboard_paused) == (None, "bad_credentials")
+    assert len(blackboard.logins) == 1
+    assert "sla-agent setup --blackboard" in outcome.message
+
+
+def test_a_paused_blackboard_is_not_contacted(bb_state):
+    bb_state.blackboard_paused = "bad_credentials"
+    blackboard = FakeBlackboard()
+
+    sync(bb_state, FakeEduSoft(), blackboard=blackboard)
+
+    assert blackboard.logins == []
+
+
+def test_both_paused_contacts_nobody(bb_state):
+    bb_state.paused, bb_state.blackboard_paused = "bad_credentials", "bad_credentials"
+    edusoft, blackboard = FakeEduSoft(), FakeBlackboard()
+
+    outcome, server = sync(bb_state, edusoft, blackboard=blackboard)
+
+    assert (edusoft.logins, blackboard.logins, server.starts) == ([], [], [])
+    assert outcome.status == "paused"
+
+
+def test_an_expired_blackboard_session_logs_in_again_once(bb_state):
+    blackboard = FakeBlackboard()
+    calls = []
+
+    def read(client, registered):
+        calls.append(1)
+        if len(calls) == 1:
+            raise SessionExpired("expired")
+        return Blackboard(courses=[])
+
+    _, server = sync(bb_state, FakeEduSoft(), blackboard=blackboard, read=read)
+
+    assert len(blackboard.logins) == 2
+    assert only_finish(server).blackboard.status == "ok"
+
+
+def test_blackboard_without_a_known_course_list_waits_for_edusoft(state):
+    state.blackboard_username, state.paused = "bbuser", "bad_credentials"
+
+    _, server = sync(state, FakeEduSoft(), blackboard=FakeBlackboard())
+
+    result = only_finish(server)
+    assert result.blackboard.status == "failed"
+    assert "course list" in result.blackboard.error_message
+
+
+def test_the_registered_course_list_is_remembered(bb_state):
+    from pathlib import Path
+
+    page = (Path(__file__).parent / "fixtures" / "registration.html").read_text(encoding="utf-8")
+    bb_state.registered_courses = None
+    edusoft = FakeEduSoft(pages={"registration": [{"registration": page}]})
+
+    sync(bb_state, edusoft)
+
+    assert ["IT093IU", "02"] in bb_state.registered_courses
+    assert len(bb_state.registered_courses) == 8

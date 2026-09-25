@@ -366,3 +366,35 @@ def test_forget_removes_the_blackboard_password_too(world, isolated_agent):
     cli.main(["forget"])
 
     assert isolated_agent.entries == {}
+
+
+def test_run_syncs_blackboard_when_it_is_set_up(world, monkeypatch):
+    from sla_contract.schema import Blackboard
+
+    configure()
+    credentials.save_blackboard(BB_USER, BB_PASSWORD)
+    state = load_state()
+    state.blackboard_username, state.registered_courses = BB_USER, [["IT093IU", "02"]]
+    save_state(state)
+    monkeypatch.setattr(cli, "read_blackboard", lambda client, registered: Blackboard(courses=[]))
+
+    assert cli.main(["run"]) == 0
+
+    assert world.blackboard.logins == [(BB_USER, BB_PASSWORD)]
+    assert "blackboard" in world.server.finishes[0][1].sections()
+
+
+def test_run_with_only_edusoft_paused_still_syncs_blackboard(world, monkeypatch):
+    from sla_contract.schema import Blackboard
+
+    configure(paused="bad_credentials")
+    credentials.save_blackboard(BB_USER, BB_PASSWORD)
+    state = load_state()
+    state.blackboard_username, state.registered_courses = BB_USER, [["IT093IU", "02"]]
+    save_state(state)
+    monkeypatch.setattr(cli, "read_blackboard", lambda client, registered: Blackboard(courses=[]))
+
+    cli.main(["run"])
+
+    assert world.edusoft.logins == []
+    assert world.blackboard.logins == [(BB_USER, BB_PASSWORD)]

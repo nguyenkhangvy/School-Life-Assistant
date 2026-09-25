@@ -20,6 +20,7 @@ from sla_contract.schema import EDUSOFT_SECTIONS, FinishRun
 
 from sla_agent import credentials
 from sla_agent.blackboard_client import BlackboardClient
+from sla_agent.blackboard_reader import read_blackboard
 from sla_agent.edusoft_client import EduSoftClient
 from sla_agent.errors import (
     AgentError,
@@ -35,7 +36,7 @@ from sla_agent.parsers import PARSERS
 from sla_agent.scheduler import SchedulerError, current_user, install_task, remove_task, windowless_python
 from sla_agent.server_client import ServerClient, check_server_url
 from sla_agent.state import agent_home, load_state, save_state
-from sla_agent.sync import PAUSE_MESSAGES, run_sync
+from sla_agent.sync import PAUSE_MESSAGES, everything_paused, run_sync
 
 log = logging.getLogger(__name__)
 
@@ -186,10 +187,20 @@ def cmd_setup(args):
 # ---- syncing -----------------------------------------------------------------
 
 
+def _blackboard_login(state):
+    """(client, password) when Blackboard is set up, else (None, None)."""
+    if not state.blackboard_username:
+        return None, None
+    password = credentials.load_blackboard(state.blackboard_username)
+    return (make_blackboard(), password) if password else (None, None)
+
+
 def _sync(trigger, state, password, server):
+    blackboard, blackboard_password = _blackboard_login(state)
     try:
         outcome = run_sync(trigger, state=state, edusoft=make_edusoft(), server=server, parsers=PARSERS,
-                           password=password, now=_now())
+                           password=password, now=_now(), blackboard=blackboard,
+                           blackboard_password=blackboard_password, read_blackboard=read_blackboard)
     except RunInProgress:
         say("A sync is already running.")
         return 0
@@ -218,8 +229,8 @@ def cmd_run(args):
     except ServerError as error:
         log.warning("Check-in failed: %s", error)
         return 1
-    if state.paused:
-        log.info("Automatic sync is paused (%s); not syncing", state.paused)
+    if everything_paused(state):
+        log.info("Automatic sync is paused for every system; not syncing")
         return 0
     if not decision.due:
         log.info("No sync due (%s)", decision.reason)
@@ -233,7 +244,7 @@ def cmd_sync_now(args):
         say(NOT_SET_UP)
         return 1
     state, password, key = loaded
-    if state.paused:
+    if everything_paused(state):
         say(PAUSE_MESSAGES.get(state.paused, "Automatic sync is paused."))
         return 1
     if state.last_attempt_at and _now() - datetime.fromisoformat(state.last_attempt_at) < MIN_MANUAL_GAP:
