@@ -16,6 +16,22 @@ def test_missing_settings_stop_the_app_with_their_names():
     assert "SECRET_KEY" not in str(error.value)
 
 
+def test_a_database_password_with_a_raw_at_sign_stops_the_app_with_a_hint():
+    with pytest.raises(RuntimeError) as error:
+        load_config({"SECRET_KEY": "x", "DATABASE_URL": "mysql+pymysql://sla_app:abc@123@localhost:3306/school_life"})
+
+    assert "%40" in str(error.value)
+    assert "abc@123" not in str(error.value)
+
+
+@pytest.mark.parametrize(
+    "url",
+    ["mysql+pymysql://sla_app:abc%40123@localhost:3306/school_life?charset=utf8mb4", "sqlite://", "sqlite:///a.db"],
+)
+def test_valid_database_addresses_are_accepted(url):
+    assert load_config({"SECRET_KEY": "x", "DATABASE_URL": url})["SQLALCHEMY_DATABASE_URI"] == url
+
+
 def test_forms_reject_posts_without_a_csrf_token():
     app = create_app(make_config(WTF_CSRF_ENABLED=True))
     with app.app_context():
