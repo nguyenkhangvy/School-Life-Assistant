@@ -1,0 +1,28 @@
+# Secrets: never commit
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases and instance files
+instance/
+*.db
+*.sqlite3
+
+# EduSoft pages saved with `sla-agent fetch --save-html` contain personal data
+agent/saved-pages/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
