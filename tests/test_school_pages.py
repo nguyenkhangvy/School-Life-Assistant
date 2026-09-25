@@ -141,3 +141,18 @@ def test_another_user_logging_in_sees_their_own_status(app, browser):
     login(other, email="binh@example.com")
 
     assert "Not set up yet" in other.get("/school/").get_data(as_text=True)
+
+
+def test_school_home_shows_a_line_per_system(app, browser):
+    _, key = add_device(browser)
+    client = app.test_client()
+    run_id = api(client, "POST", "/runs", key, json={"trigger": "scheduled"}).get_json()["run_id"]
+    from tests.helpers import full_payload
+    payload = full_payload()
+    payload["blackboard"] = {"status": "failed", "error_code": "bad_credentials", "error_message": "rejected"}
+    api(client, "POST", f"/runs/{run_id}/finish", key, json=payload)
+
+    page = browser.get("/school/").get_data(as_text=True)
+
+    assert "EduSoft" in page and "Blackboard" in page
+    assert "sla-agent setup --blackboard" in page

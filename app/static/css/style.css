@@ -246,3 +246,8 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
   :root { --class-color: #3d7be0; --exam-color: #d64545; }
   .fc { --fc-today-bg-color: rgba(110, 162, 242, 0.12); }
 }
+
+.system-lines { list-style: none; margin: 0 0 8px; padding: 0; }
+.system-lines li { margin: 2px 0; }
+.system-paused, .system-partial { color: #c77700; }
+.system-failed { color: var(--error); }

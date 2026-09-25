@@ -6,12 +6,12 @@ from sqlalchemy import select
 
 from app.extensions import db
 from app.school.forms import DeviceForm
-from app.school.models import SchoolChange, SchoolExam, SchoolSyncDevice, SchoolTuition
+from app.school.models import SchoolChange, SchoolExam, SchoolSyncDevice, SchoolSyncRun, SchoolTuition
 from app.school.services import schedule
 from app.school.services.changes import WEEKDAYS, to_vietnam, when
 from app.school.services.devices import create_device
 from app.school.services.sync_runs import get_settings, latest_run
-from app.school.services.sync_status import RunInfo, describe
+from app.school.services.sync_status import RunInfo, describe, system_lines
 from app.timeutil import utcnow
 
 bp = Blueprint("school", __name__, url_prefix="/school")
@@ -90,9 +90,16 @@ def index():
     changes = db.session.execute(
         select(SchoolChange).filter_by(user_id=current_user.id).order_by(SchoolChange.id.desc()).limit(10)
     ).scalars().all()
+    recent = db.session.execute(
+        select(SchoolSyncRun).filter_by(user_id=current_user.id)
+        .order_by(SchoolSyncRun.started_at.desc(), SchoolSyncRun.id.desc()).limit(10)
+    ).scalars().all()
+    lines = system_lines([RunInfo(r.status, r.started_at, r.finished_at, r.error_code, r.error_message, r.sections)
+                          for r in recent], now)
     return render_template(
         "school/index.html",
         status=status,
+        system_lines=lines,
         today=today,
         today_items=schedule.items_on(current_user.id, today),
         tomorrow_items=schedule.items_on(current_user.id, today + timedelta(days=1)),

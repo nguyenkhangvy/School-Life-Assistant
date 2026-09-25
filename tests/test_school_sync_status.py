@@ -129,3 +129,44 @@ def test_laptop_silent_for_more_than_twice_the_interval():
 
 def test_laptop_seen_recently_gives_no_warning():
     assert status(last_seen=datetime(2026, 9, 30, 20, 0)).laptop_warning is None
+
+
+from app.school.services.sync_status import system_lines
+
+OK = {"status": "ok"}
+
+
+def bad(code):
+    return {"status": "failed", "error_code": code, "error_message": "x"}
+
+
+def edu(**parts):
+    return {"timetable": parts.get("timetable", OK), "exams": parts.get("exams", OK), "tuition": parts.get("tuition", OK)}
+
+
+def test_one_line_per_system_from_the_latest_run_that_included_it():
+    runs = [run("partial", sections={**edu(), "blackboard": bad("bad_credentials")})]
+
+    lines = system_lines(runs, NOW)
+
+    assert [(l.name, l.state) for l in lines] == [("EduSoft", "ok"), ("Blackboard", "paused")]
+    assert lines[0].text == "synced at 14:05"
+    assert "sla-agent setup --blackboard" in lines[1].text
+
+
+def test_a_system_never_synced_has_no_line():
+    assert [l.name for l in system_lines([run("success", sections=edu())], NOW)] == ["EduSoft"]
+
+
+def test_a_part_failure_is_shown_as_partly_synced():
+    [line] = system_lines([run("partial", sections=edu(tuition=bad("edusoft_changed")))], NOW)
+
+    assert (line.state, line.text) == ("partial", "synced at 14:05, but couldn't read: tuition")
+
+
+def test_blackboard_failure_headline_names_blackboard():
+    result = status(latest=run("failed", sections={"blackboard": bad("bad_credentials")}))
+
+    assert result.state == "paused"
+    assert "Blackboard" in result.headline
+    assert "sla-agent setup --blackboard" in result.detail
