@@ -31,6 +31,12 @@ class ParseError(AgentError):
     code = "edusoft_changed"
 
 
+class SourceChanged(AgentError):
+    """Blackboard's answers don't look the way the reader expects: its format probably changed."""
+
+    code = "source_changed"
+
+
 class UnexpectedRedirect(AgentError):
     """EduSoft tried to send us to another site. We don't follow."""
 

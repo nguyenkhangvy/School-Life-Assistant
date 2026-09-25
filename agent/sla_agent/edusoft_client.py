@@ -11,7 +11,7 @@ import base64
 import json
 import logging
 import time
-from urllib.parse import urlencode, urljoin, urlsplit, urlunsplit
+from urllib.parse import urlencode, urljoin
 
 import requests
 from bs4 import BeautifulSoup
@@ -22,8 +22,8 @@ from sla_agent.errors import (
     NetworkError,
     ParseError,
     SessionExpired,
-    UnexpectedRedirect,
 )
+from sla_agent.guarded_http import asks_for_verification, guarded_request
 
 log = logging.getLogger(__name__)
 
@@ -31,9 +31,7 @@ HOST = "edusoftweb.hcmiu.edu.vn"
 BASE_URL = f"https://{HOST}/"
 LOGIN_URL = f"{BASE_URL}default.aspx?page=dangnhap"
 USER_AGENT = "SchoolLifeAssistant/0.1 (IU student project)"
-TIMEOUT_SECONDS = 20
 RETRY_WAITS = (5, 30)  # seconds to wait before the 2nd and 3rd try
-MAX_REDIRECTS = 5
 
 USERNAME_FIELD = "ctl00$ContentPlaceHolder1$ctl00$txtTaiKhoa"
 PASSWORD_FIELD = "ctl00$ContentPlaceHolder1$ctl00$txtMatKhau"
@@ -73,22 +71,8 @@ REPORT_VIEWER_REQUEST = {
     "sendBookmarks": True,
 }
 
-VERIFICATION_HINTS = ("captcha", "recaptcha", "otp", "maxacnhan", "xacthuc")
-MICROSOFT_HOSTS = ("login.microsoftonline.com", "login.live.com", "login.windows.net")
-
-
 def _has_login_form(soup):
     return soup.find("input", attrs={"name": USERNAME_FIELD}) is not None
-
-
-def _asks_for_verification(soup):
-    for tag in soup.find_all(["input", "img", "div", "iframe"]):
-        text = " ".join(
-            str(tag.get(attr, "")) for attr in ("name", "id", "src", "class")
-        ).lower()
-        if any(hint in text for hint in VERIFICATION_HINTS):
-            return True
-    return False
 
 
 def _selected(html, field):
@@ -125,34 +109,9 @@ class EduSoftClient:
 
     # ---- HTTP with safety checks ------------------------------------------
 
-    def _safe_url(self, url):
-        parts = urlsplit(url)
-        if parts.hostname in MICROSOFT_HOSTS:
-            raise ExtraVerification("EduSoft sent the login to Microsoft sign-in.")
-        if parts.hostname != HOST:
-            raise UnexpectedRedirect(f"EduSoft tried to redirect to {parts.hostname}; not followed.")
-        # Same site over plain http: go over https instead, never send anything unencrypted.
-        return urlunsplit(("https", parts.netloc, parts.path, parts.query, parts.fragment))
-
     def _request(self, method, url, data=None):
         """One request, following redirects by hand so every hop is checked."""
-        url = self._safe_url(url)
-        for _ in range(MAX_REDIRECTS + 1):
-            try:
-                response = self.session.request(
-                    method, url, data=data, timeout=TIMEOUT_SECONDS, allow_redirects=False
-                )
-            except (requests.ConnectionError, requests.Timeout) as error:
-                raise NetworkError(f"EduSoft couldn't be reached ({error.__class__.__name__}).") from None
-            if response.status_code >= 500:
-                raise NetworkError(f"EduSoft answered with HTTP {response.status_code}.")
-            if response.is_redirect:
-                url = self._safe_url(urljoin(url, response.headers["Location"]))
-                method, data = "GET", None
-                continue
-            response.encoding = response.encoding or "utf-8"
-            return response
-        raise NetworkError("EduSoft redirected too many times.")
+        return guarded_request(self.session, method, url, HOST, data=data, site="EduSoft")
 
     def _get_with_retries(self, url):
         for wait in (*RETRY_WAITS, None):
@@ -168,7 +127,7 @@ class EduSoftClient:
 
     def login(self, student_id, password):
         login_page = BeautifulSoup(self._get_with_retries(LOGIN_URL).text, "html.parser")
-        if _asks_for_verification(login_page):
+        if asks_for_verification(login_page):
             raise ExtraVerification("EduSoft's login page asks for extra verification.")
         form = login_page.find("form")
         if form is None or not _has_login_form(login_page):
@@ -190,7 +149,7 @@ class EduSoftClient:
 
         # Submitted once. No retry here: a retry could count as a second failed login.
         result = BeautifulSoup(self._request("POST", action, data=fields).text, "html.parser")
-        if _asks_for_verification(result):
+        if asks_for_verification(result):
             raise ExtraVerification("EduSoft asked for extra verification after login.")
         if _has_login_form(result):
             raise BadCredentials("EduSoft rejected the student ID or password.")
