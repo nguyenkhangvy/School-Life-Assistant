@@ -36,3 +36,28 @@ def test_state_file_round_trip_never_contains_secrets(isolated_agent):
 
 def test_missing_state_file_gives_an_empty_state():
     assert load_state() == State()
+
+
+def test_blackboard_password_goes_to_its_own_keyring_entry(isolated_agent):
+    credentials.save_blackboard("bbuser", "bb-s3cret")
+
+    assert isolated_agent.entries == {("SchoolLifeAssistant-Blackboard", "bbuser"): "bb-s3cret"}
+    assert credentials.load_blackboard("bbuser") == "bb-s3cret"
+
+
+def test_forget_also_removes_the_blackboard_password(isolated_agent):
+    credentials.save_blackboard("bbuser", "bb-s3cret")
+
+    credentials.forget("ITITIU20001", "https://sla.example.com", "bbuser")
+
+    assert isolated_agent.entries == {}
+
+
+def test_blackboard_state_round_trips_and_old_state_files_still_load():
+    state = State(server_url="https://sla.example.com", student_id="S", blackboard_username="bbuser",
+                  blackboard_paused="bad_credentials", registered_courses=[["IT093IU", "02"]])
+    save_state(state)
+    assert load_state() == state
+
+    (agent_home() / "state.json").write_text('{"server_url": "https://x.example", "paused": null}', encoding="utf-8")
+    assert load_state() == State(server_url="https://x.example")

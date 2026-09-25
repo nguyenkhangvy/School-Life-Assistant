@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from sla_contract.schema import Exams, Timetable, Tuition
 
-from agent.tests.fakes import FakeEduSoft, FakeServer
+from agent.tests.fakes import FakeBlackboard, FakeEduSoft, FakeServer
 from sla_agent import cli, credentials
 from sla_agent.errors import BadCredentials, DeviceKeyRejected, ExtraVerification
 from sla_agent.state import State, agent_home, load_state, save_state
@@ -38,14 +38,17 @@ class World:
         monkeypatch.setattr(cli, "install_task", lambda *args, **kwargs: self.tasks.append("installed"))
         monkeypatch.setattr(cli, "remove_task", lambda *args, **kwargs: self.tasks.append("removed"))
         monkeypatch.setattr(cli, "PARSERS", PARSERS)
+        self.blackboard = FakeBlackboard()
+        monkeypatch.setattr(cli, "make_blackboard", lambda: self.blackboard)
 
     def _make_server(self, url, key):
         self.servers_made.append((url, key))
         return self.server
 
-    def answer_setup(self, server=SERVER, key=KEY, student=STUDENT, password=PASSWORD):
-        self.answers = [server, student]
-        self.secret_answers = [key, password]
+    def answer_setup(self, server=SERVER, key=KEY, student=STUDENT, password=PASSWORD,
+                     bb_user="", bb_password=None):
+        self.answers = [server, student, bb_user]
+        self.secret_answers = [key, password] + ([bb_password] if bb_user else [])
 
 
 @pytest.fixture
@@ -290,3 +293,76 @@ def test_forget_removes_secrets_state_and_the_task(world, isolated_agent):
     assert isolated_agent.entries == {}
     assert not (agent_home() / "state.json").exists()
     assert world.tasks == ["removed"]
+
+
+BB_USER, BB_PASSWORD = "bbuser", "bb-s3cret"
+
+
+def test_setup_can_add_blackboard_after_edusoft(world, isolated_agent):
+    world.answer_setup(bb_user=BB_USER, bb_password=BB_PASSWORD)
+
+    assert cli.main(["setup", "--no-schedule"]) == 0
+
+    assert world.blackboard.logins == [(BB_USER, BB_PASSWORD)]
+    assert world.blackboard.logouts == 1
+    assert credentials.load_blackboard(BB_USER) == BB_PASSWORD
+    assert load_state().blackboard_username == BB_USER
+
+
+def test_setup_blackboard_alone_needs_edusoft_setup_first(world, capsys):
+    assert cli.main(["setup", "--blackboard"]) == 1
+    assert "sla-agent setup" in capsys.readouterr().out
+
+
+def test_setup_blackboard_alone_saves_only_blackboard_and_clears_its_pause(world, isolated_agent):
+    configure()
+    state = load_state()
+    state.blackboard_paused = "bad_credentials"
+    save_state(state)
+    world.answers = [BB_USER]
+    world.secret_answers = [BB_PASSWORD]
+
+    assert cli.main(["setup", "--blackboard"]) == 0
+
+    assert world.edusoft.logins == []
+    assert credentials.load_blackboard(BB_USER) == BB_PASSWORD
+    assert (load_state().blackboard_username, load_state().blackboard_paused) == (BB_USER, None)
+
+
+def test_a_wrong_blackboard_password_saves_nothing(world, isolated_agent, capsys):
+    configure()
+    world.blackboard.login_error = BadCredentials("rejected")
+    world.answers = [BB_USER]
+    world.secret_answers = ["wrong"]
+
+    assert cli.main(["setup", "--blackboard"]) == 1
+
+    assert len(world.blackboard.logins) == 1
+    assert ("SchoolLifeAssistant-Blackboard", BB_USER) not in isolated_agent.entries
+    assert load_state().blackboard_username is None
+    assert "Nothing was saved" in capsys.readouterr().out
+
+
+def test_status_shows_blackboard(world, capsys):
+    configure()
+    state = load_state()
+    state.blackboard_username, state.blackboard_paused = BB_USER, "bad_credentials"
+    save_state(state)
+
+    cli.main(["status"])
+
+    out = capsys.readouterr().out
+    assert "Blackboard" in out
+    assert "sla-agent setup --blackboard" in out
+
+
+def test_forget_removes_the_blackboard_password_too(world, isolated_agent):
+    configure()
+    credentials.save_blackboard(BB_USER, BB_PASSWORD)
+    state = load_state()
+    state.blackboard_username = BB_USER
+    save_state(state)
+
+    cli.main(["forget"])
+
+    assert isolated_agent.entries == {}

@@ -85,7 +85,7 @@ All rules of the Phase 1 design apply. In addition:
 
 Today a wrong EduSoft password ends the whole run. After this change:
 
-- Each system has its **own pause** in the agent's state: `paused = {"edusoft": code or null, "blackboard": code or null}` (older state files with a single value are read as the EduSoft pause).
+- Each system has its **own pause** in the agent's state: `paused` (EduSoft, as before) and `blackboard_paused`. Older state files load unchanged.
 - A login failure of one system becomes **failed sections** for that system (not a whole-run error), so the other system still syncs and uploads.
 - Setup: `sla-agent setup` asks for the Blackboard username and password after the EduSoft ones (Enter skips them). `sla-agent setup --blackboard` sets or changes only the Blackboard login. Running either clears that system's pause.
 - The status card on the website shows one line per system, e.g. "EduSoft: synced 14:05 · Blackboard: paused, wrong password (run `sla-agent setup --blackboard`)".

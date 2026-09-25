@@ -19,6 +19,7 @@ from pathlib import Path
 from sla_contract.schema import SECTION_NAMES, FinishRun
 
 from sla_agent import credentials
+from sla_agent.blackboard_client import BlackboardClient
 from sla_agent.edusoft_client import EduSoftClient
 from sla_agent.errors import (
     AgentError,
@@ -54,6 +55,10 @@ def make_server(url, key):
     return ServerClient(url, key)
 
 
+def make_blackboard():
+    return BlackboardClient()
+
+
 def say(message):
     print(message)
 
@@ -77,8 +82,45 @@ def _load():
 # ---- setup -------------------------------------------------------------------
 
 
+def _setup_blackboard(state, username=None):
+    """Ask for (or use) the Blackboard login, check it once, save it. Returns an exit code."""
+    username = username or ask(f"Blackboard username [{state.blackboard_username or ''}]: ").strip()         or state.blackboard_username or ""
+    password = ask_secret("Blackboard password (not shown): ")
+    protect(password)
+    if not (username and password):
+        say("Blackboard username and password are both needed. Nothing was saved.")
+        return 1
+    say("Checking your Blackboard login (one attempt)...")
+    blackboard = make_blackboard()
+    try:
+        blackboard.login(username, password)
+    except BadCredentials:
+        say("Blackboard rejected the username or password. Nothing was saved.")
+        return 1
+    except ExtraVerification:
+        say("Blackboard asked for extra verification, so automatic Blackboard sync can't be used. Nothing was saved.")
+        return 1
+    except AgentError as error:
+        say(f"Couldn't check your Blackboard login: {error} Nothing was saved; try again later.")
+        return 1
+    finally:
+        blackboard.logout()
+    if state.blackboard_username and state.blackboard_username != username:
+        credentials.forget(None, None, state.blackboard_username)
+    credentials.save_blackboard(username, password)
+    state.blackboard_username, state.blackboard_paused = username, None
+    save_state(state)
+    say("Blackboard saved. Its password is in Windows Credential Manager too.")
+    return 0
+
+
 def cmd_setup(args):
     state = load_state()
+    if args.blackboard:
+        if not state.server_url or not state.student_id:
+            say(NOT_SET_UP)
+            return 1
+        return _setup_blackboard(state)
     server_url = ask(f"Web app address [{state.server_url or 'https://...'}]: ").strip() or state.server_url or ""
     try:
         check_server_url(server_url)
@@ -125,6 +167,10 @@ def cmd_setup(args):
     state.server_url, state.student_id, state.paused = server_url, student_id, None
     save_state(state)
     say("Saved. Your password is in Windows Credential Manager, not in any file.")
+
+    blackboard_user = ask(f"Blackboard username (press Enter to skip) [{state.blackboard_username or ''}]: ").strip()
+    if blackboard_user and _setup_blackboard(state, blackboard_user) != 0:
+        say("EduSoft is saved; set up Blackboard later with `sla-agent setup --blackboard`.")
 
     if not args.no_schedule:
         try:
@@ -307,9 +353,15 @@ def cmd_status(args):
     say(f"Web app:     {state.server_url}")
     say(f"Student ID:  {state.student_id}")
     if state.paused:
-        say(f"Automatic sync: PAUSED. {PAUSE_MESSAGES.get(state.paused, '')}")
+        say(f"EduSoft:     PAUSED. {PAUSE_MESSAGES.get(state.paused, '')}")
     else:
-        say("Automatic sync: on")
+        say("EduSoft:     on")
+    if not state.blackboard_username:
+        say("Blackboard:  not set up (run `sla-agent setup --blackboard`)")
+    elif state.blackboard_paused:
+        say(f"Blackboard:  PAUSED ({state.blackboard_paused}). Run `sla-agent setup --blackboard`.")
+    else:
+        say("Blackboard:  on")
     if state.last_result:
         say(f"Last sync:   {state.last_result['status']} at {state.last_result['at']}: {state.last_result['message']}")
     else:
@@ -319,7 +371,7 @@ def cmd_status(args):
 
 def cmd_forget(args):
     state = load_state()
-    credentials.forget(state.student_id, state.server_url)
+    credentials.forget(state.student_id, state.server_url, state.blackboard_username)
     remove_task()
     (agent_home() / "state.json").unlink(missing_ok=True)
     say("Removed your saved EduSoft password, the device key and the scheduled task from this laptop.")
@@ -342,6 +394,7 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     setup = commands.add_parser("setup", help="enter your details once; schedules automatic sync")
     setup.add_argument("--no-schedule", action="store_true", help="don't create the scheduled task")
+    setup.add_argument("--blackboard", action="store_true", help="set or change only the Blackboard login")
     commands.add_parser("run", help="scheduled check-in: sync if the web app says it's due")
     commands.add_parser("sync-now", help="sync right away")
     commands.add_parser("status", help="show the last result and whether sync is paused")

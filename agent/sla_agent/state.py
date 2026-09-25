@@ -25,6 +25,9 @@ class State:
     paused: str | None = None  # error code that paused automatic sync, e.g. "bad_credentials"
     last_attempt_at: str | None = None  # ISO time (UTC) of the last sync attempt
     last_result: dict | None = None  # {"at", "status", "message"} of the last sync
+    blackboard_username: str | None = None
+    blackboard_paused: str | None = None  # error code that paused Blackboard sync
+    registered_courses: list | None = None  # [[course code, group], ...] from EduSoft's registration page
 
 
 def load_state():

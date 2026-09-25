@@ -114,3 +114,19 @@ class FakeServer:
     def finish(self, run_id, result):
         self.finishes.append((run_id, result))
         return result.overall_status()
+
+
+class FakeBlackboard:
+    def __init__(self, login_error=None):
+        self.login_error = login_error
+        self.logins = []
+        self.logouts = 0
+        self.user_id = "_1_1"
+
+    def login(self, username, password):
+        self.logins.append((username, password))
+        if self.login_error:
+            raise self.login_error
+
+    def logout(self):
+        self.logouts += 1
