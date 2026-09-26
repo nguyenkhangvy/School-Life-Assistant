@@ -140,7 +140,7 @@ def test_changes_need_a_class_of_that_course_on_that_day(app, browser):
     add_timetable(app, 1, "IT007WE", "Skills for Communicating Information", [sat_10, sat_17])
     announce(app, 1, "IT007WE", "Logistics Reminder",
              "Our last in-person lecture is on 10/10. Starting the week of 12/10 , lectures will be taught "
-             "online by Dr. Tuan Nguyen via MS Teams.", posted_at=datetime(2026, 9, 22, 3, 59))
+             "online by Dr. Nguyen Van A via MS Teams.", posted_at=datetime(2026, 9, 22, 3, 59))
 
     events = classes(browser, start="2026-10-05", end="2026-10-19")
 

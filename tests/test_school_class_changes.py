@@ -36,7 +36,7 @@ LOGISTICS = (
     "Logistics Reminder",
     "Lecture attendance: You will attend the first five lectures with me in person in Room A1.603 , with our "
     "last in-person lecture on 10/10. Attendance will be taken during these sessions. Starting the week of "
-    "12/10 , lectures will be taught online by Dr. Tuan Nguyen via MS Teams. Please register your group in "
+    "12/10 , lectures will be taught online by Dr. Nguyen Van A via MS Teams. Please register your group in "
     "SkillsGroupTerm1-26-27_Sat.xlsx , available on our MS Teams Channel.",
     datetime(2026, 9, 22, 3, 59),
 )
