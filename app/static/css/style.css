@@ -1,9 +1,11 @@
 /* Shared styles for all modules. Module-specific styles go in their own file. */
 
+/* Always light: a light grey page, white cards and black text, whatever the device's theme. */
 :root {
+  color-scheme: light;
   --bg: #f6f7f9;
   --surface: #ffffff;
-  --text: #1c2430;
+  --text: #000000;
   --muted: #5d6b7e;
   --border: #dde2e8;
   --accent: #1f5fbf;
@@ -12,21 +14,6 @@
   --error-bg: #fdecea;
   --ok-bg: #e7f5ec;
   --radius: 10px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #12161c;
-    --surface: #1b2129;
-    --text: #e6eaf0;
-    --muted: #9aa6b5;
-    --border: #2c3440;
-    --accent: #6ea2f2;
-    --accent-text: #0d1117;
-    --error: #ff8a80;
-    --error-bg: #3a1d1b;
-    --ok-bg: #173324;
-  }
 }
 
 * { box-sizing: border-box; }
@@ -243,10 +230,6 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 .fc .event-title { font-size: 0.85rem; line-height: 1.25; }
 .fc .event-room { font-size: 0.8rem; opacity: 0.9; }
 .fc .fc-list-event .event-time { display: none; }
-@media (prefers-color-scheme: dark) {
-  :root { --class-color: #3d7be0; --exam-color: #d64545; }
-  .fc { --fc-today-bg-color: rgba(110, 162, 242, 0.12); }
-}
 
 .system-lines { list-style: none; margin: 0 0 8px; padding: 0; }
 .system-lines li { margin: 2px 0; }
@@ -255,7 +238,6 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 
 /* School: Blackboard */
 :root { --due-color: #c77700; }
-@media (prefers-color-scheme: dark) { :root { --due-color: #e0a040; } }
 .legend-due::before { background: var(--due-color); }
 .fc .event-due { background: var(--due-color); border-color: var(--due-color); color: #fff; }
 .fc .fc-list-event.event-due { background: transparent; color: var(--text); }
