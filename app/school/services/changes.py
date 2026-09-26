@@ -195,22 +195,43 @@ def _grade(item):
     return item.grade_text or "graded"
 
 
+MATERIALS_NAMED = 3  # titles named in a "new materials" line
+
+
+def _bb_counts(items):
+    def count(kind):
+        return sum(1 for i in items if i.kind == kind)
+    return (f"{_count(count('announcement'), 'announcement')}, {_count(count('assignment'), 'assignment')}, "
+            f"{_count(count('material'), 'material')}")
+
+
+def _materials_line(course, titles):
+    if len(titles) == 1:
+        return Change("added", f"New material · {course}: {titles[0]}")
+    more = f" and {len(titles) - MATERIALS_NAMED} more" if len(titles) > MATERIALS_NAMED else ""
+    return Change("added", f"{len(titles)} new materials · {course}: {', '.join(titles[:MATERIALS_NAMED])}{more}")
+
+
 def blackboard_changes(old, new):
-    """old/new: (course names, [BbItem]). old is None on the first Blackboard sync."""
+    """old/new: (course names, [BbItem]). old is None on the first Blackboard sync.
+
+    A newly seen course and a batch of new materials each give one line, so a folder of
+    uploads doesn't push the other news off the short list on the Overview."""
     courses, items = new
     if old is None:
         if not courses:
             return []
-        def count(kind):
-            return sum(1 for i in items if i.kind == kind)
-        return [Change("added", f"Blackboard loaded: {_count(len(courses), 'course')}, "
-                                f"{_count(count('announcement'), 'announcement')}, "
-                                f"{_count(count('assignment'), 'assignment')}, "
-                                f"{_count(count('material'), 'material')}")]
+        return [Change("added", f"Blackboard loaded: {_count(len(courses), 'course')}, {_bb_counts(items)}")]
 
+    known = set(old[0])
+    changes = [Change("added", f"New course on Blackboard · {course}: "
+                               f"{_bb_counts([i for i in items if i.course == course])}")
+               for course in courses if course not in known]
     before = {(i.kind, i.bb_id): i for i in old[1]}
-    changes = []
+    new_materials = {}
     for item in items:
+        if item.course not in known:
+            continue
         previous = before.get((item.kind, item.bb_id))
         if item.kind == "announcement" and previous is None:
             changes.append(Change("added", f"New announcement · {item.course}: {item.title}"))
@@ -226,5 +247,6 @@ def blackboard_changes(old, new):
             if item.status == "graded" and (previous.status != "graded" or previous.score != item.score):
                 changes.append(Change("changed", f"New grade · {item.course}, {item.title}: {_grade(item)}"))
         elif item.kind == "material" and previous is None and item.material_kind != "folder":
-            changes.append(Change("added", f"New material · {item.course}: {item.title}"))
+            new_materials.setdefault(item.course, []).append(item.title)
+    changes += [_materials_line(course, titles) for course, titles in new_materials.items()]
     return changes

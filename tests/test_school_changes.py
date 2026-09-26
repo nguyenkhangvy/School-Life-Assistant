@@ -195,3 +195,25 @@ def test_a_moved_deadline_and_a_new_grade():
         ("changed", "Due date changed · Web App, Lab 3: Fri 02/10 23:59 → Mon 05/10 23:59"),
         ("changed", "New grade · Web App, Lab 3: 8.5/10"),
     ]
+
+
+# A lecturer uploading a folder of files, or a newly seen course, must not push the rest
+# (e.g. a cancelled class) off the Overview's short "What changed" list.
+
+def test_many_new_materials_in_a_course_make_one_line():
+    new = [bb("material", f"_{i}_1", f"Slides {i}.pdf", material_kind="file") for i in range(1, 11)]
+
+    assert summaries(blackboard_changes((["Web App"], []), (["Web App"], new))) == [
+        ("added", "10 new materials · Web App: Slides 1.pdf, Slides 2.pdf, Slides 3.pdf and 7 more"),
+    ]
+
+
+def test_a_course_seen_for_the_first_time_is_one_line():
+    physics = [BbItem("announcement", "Physics 4", "_1_1", "Welcome"),
+               BbItem("assignment", "Physics 4", "_2_1", "HW 1"),
+               BbItem("material", "Physics 4", "_3_1", "Syllabus.pdf", material_kind="file"),
+               BbItem("material", "Physics 4", "_4_1", "Week 1", material_kind="folder")]
+
+    assert summaries(blackboard_changes((["Web App"], []), (["Web App", "Physics 4"], physics))) == [
+        ("added", "New course on Blackboard · Physics 4: 1 announcement, 1 assignment, 2 materials"),
+    ]
