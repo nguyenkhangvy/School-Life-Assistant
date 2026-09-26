@@ -77,14 +77,20 @@ def _read_section(name, edusoft, parsers, student_id, password):
 
 
 def _remember_registered_courses(state, edusoft, sections):
-    """This semester's courses for Blackboard: EduSoft's registration list, else the timetable's codes."""
+    """This semester's courses for Blackboard: EduSoft's registration list plus the timetable's courses.
+
+    The timetable keeps this semester's courses in the list during registration week, when the
+    registration list may already hold next semester's choices."""
     try:
         registered = parse_registered_courses(edusoft.read("registration"))
-    except Exception as error:  # the registration page is optional; fall back to the timetable
+    except Exception as error:  # the registration page is optional; the timetable still counts
         log.info("Registration list not read (%s); using the timetable's courses", error.__class__.__name__)
-        timetable = sections.get("timetable", {})
-        data = timetable.get("data") if timetable.get("status") == "ok" else None
-        registered = [RegisteredCourse(c.course_code, c.group or "") for c in data.courses] if data else []
+        registered = []
+    timetable = sections.get("timetable", {})
+    data = timetable.get("data") if timetable.get("status") == "ok" else None
+    listed = {r.code for r in registered}
+    registered += [RegisteredCourse(c.course_code, c.group or "") for c in (data.courses if data else [])
+                   if c.course_code not in listed]
     if registered:
         state.registered_courses = [[r.code, r.group] for r in registered]
 
@@ -134,11 +140,26 @@ def _collect_blackboard(state, blackboard, password, read):
         blackboard.logout()
 
 
-def _message(state, result, used_edusoft, used_blackboard):
+def _paused_sections(state):
+    """A paused system is reported as failed in every run, so the web page keeps showing the pause."""
+    sections = {}
+    if state.paused:
+        failure = {"status": "failed", "error_code": state.paused,
+                   "error_message": PAUSE_MESSAGES.get(state.paused, "EduSoft sync is paused.")}
+        sections.update({name: failure for name in EDUSOFT_SECTIONS})
+    if state.blackboard_username and state.blackboard_paused:
+        sections["blackboard"] = {
+            "status": "failed", "error_code": state.blackboard_paused,
+            "error_message": BLACKBOARD_PAUSE_MESSAGES.get(state.blackboard_paused, "Blackboard sync is paused."),
+        }
+    return sections
+
+
+def _message(state, result):
     notes = []
-    if used_edusoft and state.paused:
+    if state.paused:
         notes.append(PAUSE_MESSAGES.get(state.paused, "EduSoft sync is paused."))
-    if used_blackboard and state.blackboard_paused:
+    if state.blackboard_username and state.blackboard_paused:
         notes.append(BLACKBOARD_PAUSE_MESSAGES.get(state.blackboard_paused, "Blackboard sync is paused."))
     if notes:
         return " ".join(notes)
@@ -165,7 +186,7 @@ def run_sync(trigger, *, state, edusoft, server, parsers, password, now,
 
     run_id = server.start(trigger)
     state.last_attempt_at = now.isoformat()
-    sections = {}
+    sections = _paused_sections(state)
     if use_edusoft:
         sections.update(_collect_edusoft(state, edusoft, parsers, password))
     if use_blackboard:
@@ -173,7 +194,7 @@ def run_sync(trigger, *, state, edusoft, server, parsers, password, now,
     result = FinishRun.model_validate(sections)
     status = server.finish(run_id, result)
 
-    message = _message(state, result, use_edusoft, use_blackboard)
+    message = _message(state, result)
     state.last_result = {"at": now.isoformat(), "status": status, "message": message}
     log.info("Sync %s (%s): %s", status, trigger, message)
     return Outcome(status, message)

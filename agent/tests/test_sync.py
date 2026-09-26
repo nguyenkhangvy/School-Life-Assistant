@@ -295,3 +295,53 @@ def test_the_registered_course_list_is_remembered(bb_state):
 
     assert ["IT093IU", "02"] in bb_state.registered_courses
     assert len(bb_state.registered_courses) == 8
+
+
+# A paused system is reported in every run, so the web page keeps showing the pause
+# instead of dropping that system's line once newer runs only carry the other one.
+
+def test_a_paused_edusoft_is_reported_as_paused_in_every_run(bb_state):
+    bb_state.paused = "bad_credentials"
+    edusoft = FakeEduSoft()
+
+    outcome, server = sync(bb_state, edusoft, blackboard=FakeBlackboard())
+
+    sections = only_finish(server).sections()
+    assert edusoft.logins == []
+    assert [(sections[n].status, sections[n].error_code) for n in ("timetable", "exams", "tuition")] == \
+        [("failed", "bad_credentials")] * 3
+    assert sections["blackboard"].status == "ok"
+    assert "EduSoft rejected" in outcome.message
+
+
+def test_a_paused_blackboard_is_reported_as_paused_in_every_run(bb_state):
+    bb_state.blackboard_paused = "extra_verification"
+    blackboard = FakeBlackboard()
+
+    outcome, server = sync(bb_state, FakeEduSoft(), blackboard=blackboard)
+
+    result = only_finish(server)
+    assert blackboard.logins == []
+    assert (result.blackboard.status, result.blackboard.error_code) == ("failed", "extra_verification")
+    assert result.timetable.status == "ok"
+    assert "Blackboard asked for extra verification" in outcome.message
+
+
+def test_this_semesters_timetable_courses_stay_when_the_registration_list_moves_on(bb_state):
+    # During registration week the list may already hold next semester's choices; the timetable
+    # still has this semester's courses, so their Blackboard data isn't dropped.
+    from pathlib import Path
+
+    from sla_contract.schema import Course
+
+    page = (Path(__file__).parent / "fixtures" / "registration.html").read_text(encoding="utf-8")
+    edusoft = FakeEduSoft(pages={"registration": [{"registration": page}]})
+    parsers = {**PARSERS, "timetable": lambda html: Timetable(term_code="20261", courses=[
+        Course(course_code="IT093IU", course_name="Web Application Development", group="02"),
+        Course(course_code="CS999IU", course_name="Only on the timetable", group="05"),
+    ])}
+
+    sync(bb_state, edusoft, parsers=parsers)
+
+    assert ["CS999IU", "05"] in bb_state.registered_courses
+    assert len(bb_state.registered_courses) == 9  # the 8 registered, plus CS999IU; IT093IU only once
