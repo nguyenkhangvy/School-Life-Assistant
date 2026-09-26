@@ -60,8 +60,8 @@ About 40 to 60 requests per sync for 8 courses. With a sync every 6 to 12 hours 
 **Which courses are "current"** (decided by the student on 2026-09-26): the courses registered this semester, as listed on EduSoft.
 
 1. Each sync, the agent opens EduSoft's course registration page (`default.aspx?page=dkmonhoc`) and reads the table under **"DANH SÁCH MÔN HỌC ĐÃ CHỌN"** (columns STT, Regis ID, Mã MH, Tên môn học, NMH, TTH, STC, STCHP, Học Phí, Miễn Giảm, Phải Đóng, Trạng Thái môn học). Rows with status **"Đã lưu vào CSDL"** are the registered courses; their `Mã MH` (e.g. `IT093IU`) and `NMH` (group, e.g. `02`) are kept.
-2. A Blackboard course is current when its course code is on that list. How the code appears in Blackboard's course ID or name is confirmed from the real samples in step B2.
-3. If several Blackboard courses share a code (e.g. a course taken again), the one whose group matches `NMH` wins; if that still ties, the most recently created one.
+2. A Blackboard course is current when its course code is on that list. On IU's Blackboard (checked 2026-09-26) the code starts the course ID and the group ends it, e.g. `IT093IU_1_2026-2702` named `Web Application Development_S1_2026-27_G02`. A group's lab has its own course, e.g. `IT093IU_1_2026-270201` named `Web Application Development_S1_2026-27_G02_Lab01`.
+3. Every course with that code whose group matches `NMH` is kept, so a lecture course and its lab courses are all read. Courses of other groups are skipped. If a course was taken again, only the newest term's courses are kept. When no course shows the group, the most recently created course with the code is kept.
 4. If the registration page can't be read (e.g. EduSoft is overloaded during registration week), the agent uses the course codes of the current EduSoft timetable instead; they are the same courses.
 
 **The registration page is where students register and cancel courses. The agent only ever sends a `GET` for it and never submits its form or presses any of its buttons.** (Checked 2026-09-26, outside the registration period: the page says "ngoài thời gian đăng ký" and lists the 8 registered courses, matching the timetable.)

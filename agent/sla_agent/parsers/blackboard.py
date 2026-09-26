@@ -52,25 +52,42 @@ def _describes(course):
     return f"{course.get('courseId', '')} {course.get('name', '')}".upper()
 
 
-def _group_matches(course, course_code, group):
-    if not group or not group.isdigit():
-        return False
-    # Leave the course code out: "IT093IU" must not count as group "03".
-    text = _describes(course).replace(course_code, " ")
-    return re.search(rf"(?<![0-9])0*{int(group)}(?![0-9])", text) is not None
+# IU names a group's lecture course "<name>_S1_2026-27_G02" with course ID "IT093IU_1_2026-2702",
+# and its lab courses "<name>_S1_2026-27_G02_Lab01" / "IT093IU_1_2026-270201".
+TERM_AND_GROUP_IN_ID = re.compile(r"_(\d)_(\d{4}-\d{2})(\d{2})")
+GROUP_IN_NAME = re.compile(r"(?:^|[_\s-])G(?:ROUP)?\s*0*(\d+)(?![0-9])")
+
+
+def _group(course):
+    match = TERM_AND_GROUP_IN_ID.search(course.get("courseId") or "")
+    if match:
+        return int(match.group(3))
+    match = GROUP_IN_NAME.search((course.get("name") or "").upper())
+    return int(match.group(1)) if match else None
+
+
+def _term(course):
+    match = TERM_AND_GROUP_IN_ID.search(course.get("courseId") or "")
+    return match.group(1, 2) if match else None
 
 
 def select_current_courses(courses, registered):
-    """(course, code) for each registered course found on Blackboard. Ties: same group, then newest."""
+    """(course, code) for the Blackboard courses of each registered course.
+
+    All courses in the student's group are kept (a lecture course and its lab courses), from the
+    newest term only (a course taken again also has older ones). When no course shows the group,
+    the newest course with the code is kept."""
     chosen = []
     for course_code, group in registered:
         candidates = [c for c in courses if _mentions(_describes(c), course_code)]
-        if not candidates:
-            continue
-        same_group = [c for c in candidates if _group_matches(c, course_code, group)]
-        pool = same_group or candidates
-        pool.sort(key=lambda c: c.get("created") or "", reverse=True)
-        chosen.append((pool[0], course_code))
+        newest_first = sorted(candidates, key=lambda c: c.get("created") or "", reverse=True)
+        same_group = [c for c in newest_first if group.isdigit() and _group(c) == int(group)]
+        if same_group:
+            term = _term(same_group[0])
+            picked = [c for c in same_group if term is not None and _term(c) == term] or same_group[:1]
+        else:
+            picked = newest_first[:1]
+        chosen += [(c, course_code) for c in picked]
     return chosen
 
 

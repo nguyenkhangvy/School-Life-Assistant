@@ -1,0 +1,3350 @@
+{
+ "/v1/users/me": {
+  "id": "_1_1"
+ },
+ "/v1/users/_1_1/courses?limit=100&expand=course": {
+  "results": [
+   {
+    "id": "_1563342_1",
+    "userId": "_1_1",
+    "courseId": "_35337_1",
+    "course": {
+     "id": "_35337_1",
+     "uuid": "15ab2df1d3054c66b0d30d0603bf4abe",
+     "externalId": "IT120IU_1_2026-2701",
+     "dataSourceId": "_2_1",
+     "courseId": "IT120IU_1_2026-2701",
+     "name": "Entrepreneurship_S1_2026-27_G01",
+     "created": "2026-08-18T03:48:37.830Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35337_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-09-14T04:16:57.250Z",
+    "modified": "2026-09-14T04:16:57.250Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-26T04:14:52.257Z"
+   },
+   {
+    "id": "_1550860_1",
+    "userId": "_1_1",
+    "courseId": "_35309_1",
+    "course": {
+     "id": "_35309_1",
+     "uuid": "ea0d577ee20b4951a203d52bf179ace9",
+     "externalId": "IT093IU_1_2026-2701",
+     "dataSourceId": "_2_1",
+     "courseId": "IT093IU_1_2026-2701",
+     "name": "Web Application Development_S1_2026-27_G01",
+     "created": "2026-08-18T03:48:34.017Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35309_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-29T13:36:21.790Z",
+    "modified": "2026-08-29T13:36:21.790Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-25T18:04:29.310Z"
+   },
+   {
+    "id": "_1543396_1",
+    "userId": "_1_1",
+    "courseId": "_35310_1",
+    "course": {
+     "id": "_35310_1",
+     "uuid": "e1677733f0d84f7580ca04926afbac62",
+     "externalId": "IT093IU_1_2026-270201",
+     "dataSourceId": "_2_1",
+     "courseId": "IT093IU_1_2026-270201",
+     "name": "Web Application Development_S1_2026-27_G02_Lab01",
+     "created": "2026-08-18T03:48:34.173Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35310_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T08:52:25.367Z",
+    "modified": "2026-08-24T08:52:25.367Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-26T04:14:52.257Z"
+   },
+   {
+    "id": "_1543153_1",
+    "userId": "_1_1",
+    "courseId": "_35322_1",
+    "course": {
+     "id": "_35322_1",
+     "uuid": "4e858a80851e433bac7ac619af3c0f75",
+     "externalId": "IT090IU_1_2026-270101",
+     "dataSourceId": "_2_1",
+     "courseId": "IT090IU_1_2026-270101",
+     "name": "Object-Oriented Analysis and Design_S1_2026-27_G01_Lab01",
+     "created": "2026-08-18T03:48:35.847Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35322_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T08:52:22.693Z",
+    "modified": "2026-08-24T08:52:22.693Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student"
+   },
+   {
+    "id": "_1542653_1",
+    "userId": "_1_1",
+    "courseId": "_35282_1",
+    "course": {
+     "id": "_35282_1",
+     "uuid": "f295fe9162494a33aacf127f1ab2c358",
+     "externalId": "IT013IU_1_2026-270202",
+     "dataSourceId": "_2_1",
+     "courseId": "IT013IU_1_2026-270202",
+     "name": "Algorithms & Data Structures_S1_2026-27_G02_Lab02",
+     "created": "2026-08-18T03:48:30.157Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35282_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T08:52:15.613Z",
+    "modified": "2026-08-24T08:52:15.613Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-13T12:18:39.757Z"
+   },
+   {
+    "id": "_1539965_1",
+    "userId": "_1_1",
+    "courseId": "_35735_1",
+    "course": {
+     "id": "_35735_1",
+     "uuid": "0ffb16a532ac49dea1ffe09118088b82",
+     "externalId": "PH012IU_1_2026-2701",
+     "dataSourceId": "_2_1",
+     "courseId": "PH012IU_1_2026-2701",
+     "name": "Physics 4_S1_2026-27_G01",
+     "created": "2026-08-18T03:49:32.403Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35735_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T07:00:26.390Z",
+    "modified": "2026-08-24T07:00:26.390Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-26T04:14:52.257Z"
+   },
+   {
+    "id": "_1534377_1",
+    "userId": "_1_1",
+    "courseId": "_35687_1",
+    "course": {
+     "id": "_35687_1",
+     "uuid": "95029c7ee70a45c29d6c9f0a64e28c67",
+     "externalId": "MA026IU_1_2026-2702",
+     "dataSourceId": "_2_1",
+     "courseId": "MA026IU_1_2026-2702",
+     "name": "Probability",
+     "description": "Anonymized description.",
+     "created": "2026-08-18T03:49:26.123Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35687_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T06:59:33.877Z",
+    "modified": "2026-08-24T06:59:33.877Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-13T12:19:39.757Z"
+   },
+   {
+    "id": "_1531792_1",
+    "userId": "_1_1",
+    "courseId": "_35306_1",
+    "course": {
+     "id": "_35306_1",
+     "uuid": "bc8af674badc4c7fab2e1cf4da0c39ed",
+     "externalId": "IT093IU_1_2026-2702",
+     "dataSourceId": "_2_1",
+     "courseId": "IT093IU_1_2026-2702",
+     "name": "Web Application Development_S1_2026-27_G02",
+     "created": "2026-08-18T03:48:33.500Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35306_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T06:59:09.297Z",
+    "modified": "2026-08-24T06:59:09.297Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-22T02:43:35.853Z"
+   },
+   {
+    "id": "_1531549_1",
+    "userId": "_1_1",
+    "courseId": "_35323_1",
+    "course": {
+     "id": "_35323_1",
+     "uuid": "618a04937b4444b5be7ac9219548c564",
+     "externalId": "IT090IU_1_2026-2701",
+     "dataSourceId": "_2_1",
+     "courseId": "IT090IU_1_2026-2701",
+     "name": "Object-Oriented Analysis and Design_S1_2026-27_G01",
+     "created": "2026-08-18T03:48:35.970Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35323_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T06:59:06.827Z",
+    "modified": "2026-08-24T06:59:06.827Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-26T04:14:52.257Z"
+   },
+   {
+    "id": "_1530599_1",
+    "userId": "_1_1",
+    "courseId": "_35281_1",
+    "course": {
+     "id": "_35281_1",
+     "uuid": "eb02e45f3b5447038aa862c4abf46954",
+     "externalId": "IT013IU_1_2026-2702",
+     "dataSourceId": "_2_1",
+     "courseId": "IT013IU_1_2026-2702",
+     "name": "Algorithms & Data Structures_S1_2026-27_G02",
+     "created": "2026-08-18T03:48:30.047Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35281_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T06:58:57.547Z",
+    "modified": "2026-08-24T06:58:57.547Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-24T09:43:02.710Z"
+   },
+   {
+    "id": "_1530377_1",
+    "userId": "_1_1",
+    "courseId": "_35266_1",
+    "course": {
+     "id": "_35266_1",
+     "uuid": "8f772b1ad62b425eb65004e88a35b6dc",
+     "externalId": "IT007WE_1_2026-2701",
+     "dataSourceId": "_2_1",
+     "courseId": "IT007WE_1_2026-2701",
+     "name": "Skills for Communicating Information_S1_2026-27_G01",
+     "created": "2026-08-18T03:48:28.140Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35266_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T06:58:55.217Z",
+    "modified": "2026-08-24T06:58:55.217Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-26T04:14:52.257Z"
+   },
+   {
+    "id": "_1526783_1",
+    "userId": "_1_1",
+    "courseId": "_35452_1",
+    "course": {
+     "id": "_35452_1",
+     "uuid": "f40106df80654a3fa6f4da0845da8e81",
+     "externalId": "EN012IU_1_2026-2711",
+     "dataSourceId": "_2_1",
+     "courseId": "EN012IU_1_2026-2711",
+     "name": "Speaking AE2_S1_2026-27_G11",
+     "created": "2026-08-18T03:48:52.940Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35452_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T06:58:21.120Z",
+    "modified": "2026-08-24T06:58:21.120Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-20T16:42:21.580Z"
+   },
+   {
+    "id": "_1526231_1",
+    "userId": "_1_1",
+    "courseId": "_35433_1",
+    "course": {
+     "id": "_35433_1",
+     "uuid": "ed995483e3e84a71a606190cff23d174",
+     "externalId": "EN011IU_1_2026-2703",
+     "dataSourceId": "_2_1",
+     "courseId": "EN011IU_1_2026-2703",
+     "name": "Writing AE2_S1_2026-27_G03",
+     "created": "2026-08-18T03:48:50.503Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_35433_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-08-24T06:58:15.807Z",
+    "modified": "2026-08-24T06:58:15.807Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-09-26T04:14:52.257Z"
+   },
+   {
+    "id": "_1470271_1",
+    "userId": "_1_1",
+    "courseId": "_33920_1",
+    "course": {
+     "id": "_33920_1",
+     "uuid": "b56624d1fc3446d183c635feb4653446",
+     "externalId": "PH013IU_2_2025-2602",
+     "dataSourceId": "_2_1",
+     "courseId": "PH013IU_2_2025-2602",
+     "name": "Physics 1_S2_2025-26_G02",
+     "created": "2025-12-31T03:54:21.710Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33920_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-14T08:17:04.387Z",
+    "modified": "2026-01-14T08:17:04.387Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "TeachingAssistant",
+    "lastAccessed": "2026-09-10T03:54:46.077Z"
+   },
+   {
+    "id": "_1466805_1",
+    "userId": "_1_1",
+    "courseId": "_33633_1",
+    "course": {
+     "id": "_33633_1",
+     "uuid": "1e15b73cb4df43eeba13fbcad5b2a1d0",
+     "externalId": "IT089IU_2_2025-260102",
+     "dataSourceId": "_2_1",
+     "courseId": "IT089IU_2_2025-260102",
+     "name": "Computer Architecture_S2_2025-26_G01_lab02",
+     "created": "2025-12-31T03:53:40.687Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33633_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T02:10:39.853Z",
+    "modified": "2026-01-05T02:10:39.853Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-06T02:22:28.217Z"
+   },
+   {
+    "id": "_1466734_1",
+    "userId": "_1_1",
+    "courseId": "_33628_1",
+    "course": {
+     "id": "_33628_1",
+     "uuid": "2915109ebc9d4d5fbca91ddf9347d169",
+     "externalId": "IT079IU_2_2025-260203",
+     "dataSourceId": "_2_1",
+     "courseId": "IT079IU_2_2025-260203",
+     "name": "Principles of Database Management_S2_2025-26_G02_lab03",
+     "created": "2025-12-31T03:53:39.967Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33628_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T02:10:38.807Z",
+    "modified": "2026-01-05T02:10:38.807Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-24T16:53:40.267Z"
+   },
+   {
+    "id": "_1466287_1",
+    "userId": "_1_1",
+    "courseId": "_33615_1",
+    "course": {
+     "id": "_33615_1",
+     "uuid": "dfb62f7b96f5424a964e4e8ad625bc3a",
+     "externalId": "IT069IU_2_2025-260301",
+     "dataSourceId": "_2_1",
+     "courseId": "IT069IU_2_2025-260301",
+     "name": "Object-Oriented Programming_S2_25-26_G3L1-Thu",
+     "created": "2025-12-31T03:53:38.233Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33615_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T02:10:32.870Z",
+    "modified": "2026-01-05T02:10:32.870Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-15T18:15:10.573Z"
+   },
+   {
+    "id": "_1451875_1",
+    "userId": "_1_1",
+    "courseId": "_33689_1",
+    "course": {
+     "id": "_33689_1",
+     "uuid": "69114d32ef6646d0a078de7367e5bba2",
+     "externalId": "IT153IU_2_2025-2601",
+     "dataSourceId": "_2_1",
+     "courseId": "IT153IU_2_2025-2601",
+     "name": "Discrete Mathematics_S2_2025-26_G01",
+     "created": "2025-12-31T03:53:48.310Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33689_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T01:58:39.063Z",
+    "modified": "2026-01-05T01:58:39.063Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-10T03:20:05.890Z"
+   },
+   {
+    "id": "_1451194_1",
+    "userId": "_1_1",
+    "courseId": "_33661_1",
+    "course": {
+     "id": "_33661_1",
+     "uuid": "2eeccb7c4c2a4db08201b97b619cfc84",
+     "externalId": "IT099IU_2_2025-2601",
+     "dataSourceId": "_2_1",
+     "courseId": "IT099IU_2_2025-2601",
+     "name": "Digital Logic Design Laboratory_S2_2025-26_G01",
+     "created": "2025-12-31T03:53:44.513Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33661_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T01:58:32.593Z",
+    "modified": "2026-01-05T01:58:32.593Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-05-13T06:05:30.947Z"
+   },
+   {
+    "id": "_1450466_1",
+    "userId": "_1_1",
+    "courseId": "_33631_1",
+    "course": {
+     "id": "_33631_1",
+     "uuid": "ed5db2f72aab4e0585d106cbc99e8220",
+     "externalId": "IT089IU_2_2025-2601",
+     "dataSourceId": "_2_1",
+     "courseId": "IT089IU_2_2025-2601",
+     "name": "Computer Architecture_S2_2025-26_G01",
+     "created": "2025-12-31T03:53:40.390Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33631_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T01:58:24.623Z",
+    "modified": "2026-01-05T01:58:24.623Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-08T04:10:53.373Z"
+   },
+   {
+    "id": "_1450195_1",
+    "userId": "_1_1",
+    "courseId": "_33625_1",
+    "course": {
+     "id": "_33625_1",
+     "uuid": "f959ddce843b46ccb47595e542606ae2",
+     "externalId": "IT079IU_2_2025-2602",
+     "dataSourceId": "_2_1",
+     "courseId": "IT079IU_2_2025-2602",
+     "name": "Principles of Database Management_S2_2025-26_G02",
+     "created": "2025-12-31T03:53:39.560Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33625_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T01:58:21.670Z",
+    "modified": "2026-01-05T01:58:21.670Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-24T16:53:40.267Z"
+   },
+   {
+    "id": "_1449736_1",
+    "userId": "_1_1",
+    "courseId": "_33614_1",
+    "course": {
+     "id": "_33614_1",
+     "uuid": "5b60203e64944107997156ce720986f6",
+     "externalId": "IT069IU_2_2025-2603",
+     "dataSourceId": "_2_1",
+     "courseId": "IT069IU_2_2025-2603",
+     "name": "Object-Oriented Programming_S2_2025-26_G03",
+     "created": "2025-12-31T03:53:38.077Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33614_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T01:58:17.123Z",
+    "modified": "2026-01-05T01:58:17.123Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-24T16:15:40.250Z"
+   },
+   {
+    "id": "_1449619_1",
+    "userId": "_1_1",
+    "courseId": "_33606_1",
+    "course": {
+     "id": "_33606_1",
+     "uuid": "8d1bf027ecc54f769c968b6771ac3d5c",
+     "externalId": "IT067IU_2_2025-2601",
+     "dataSourceId": "_2_1",
+     "courseId": "IT067IU_2_2025-2601",
+     "name": "Digital Logic Design_S2_2025-26_G01",
+     "created": "2025-12-31T03:53:37.013Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_33606_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2026-01-05T01:58:15.950Z",
+    "modified": "2026-01-05T01:58:15.950Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-06-08T14:38:53.740Z"
+   },
+   {
+    "id": "_1413897_1",
+    "userId": "_1_1",
+    "courseId": "_32525_1",
+    "course": {
+     "id": "_32525_1",
+     "uuid": "6484b487904544069de1473dc92c0943",
+     "externalId": "IT116IU_1_2025-260102",
+     "dataSourceId": "_2_1",
+     "courseId": "IT116IU_1_2025-260102",
+     "name": "C/C++ Programming_S1_2025-26_G01_lab02",
+     "created": "2025-09-05T02:30:52.720Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_32525_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-09-16T07:12:35.250Z",
+    "modified": "2025-09-16T07:12:35.250Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-12-19T04:01:23.170Z"
+   },
+   {
+    "id": "_1392253_1",
+    "userId": "_1_1",
+    "courseId": "_32346_1",
+    "course": {
+     "id": "_32346_1",
+     "uuid": "5728612ac8664a1c9d1fb1a4b9d878b3",
+     "externalId": "PH016IU_1_2025-2606",
+     "dataSourceId": "_2_1",
+     "courseId": "PH016IU_1_2025-2606",
+     "name": "Physics 3 Laboratory_S1_2025-26_G06",
+     "created": "2025-08-25T02:36:29.743Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_32346_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-08-30T23:59:19.443Z",
+    "modified": "2025-08-30T23:59:19.443Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-12-18T07:27:41.617Z"
+   },
+   {
+    "id": "_1392208_1",
+    "userId": "_1_1",
+    "courseId": "_32342_1",
+    "course": {
+     "id": "_32342_1",
+     "uuid": "f17bb78f8c9d4880832aa00fdaf4ee41",
+     "externalId": "PH015IU_1_2025-2602",
+     "dataSourceId": "_2_1",
+     "courseId": "PH015IU_1_2025-2602",
+     "name": "Physics 3_S1_2025-26_G02",
+     "created": "2025-08-25T02:36:29.210Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_32342_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-08-30T23:59:19.053Z",
+    "modified": "2025-08-30T23:59:19.053Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-02-04T05:00:25.767Z"
+   },
+   {
+    "id": "_1385527_1",
+    "userId": "_1_1",
+    "courseId": "_32205_1",
+    "course": {
+     "id": "_32205_1",
+     "uuid": "19851161a0ac4d3091bc50b7f9d13379",
+     "externalId": "MA023IU_1_2025-2602",
+     "dataSourceId": "_2_1",
+     "courseId": "MA023IU_1_2025-2602",
+     "name": "Calculus 3_S1_2025-26_G02",
+     "created": "2025-08-25T02:36:10.477Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_32205_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-08-30T23:58:09.703Z",
+    "modified": "2025-08-30T23:58:09.703Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-01-28T05:21:24.557Z"
+   },
+   {
+    "id": "_1383247_1",
+    "userId": "_1_1",
+    "courseId": "_32165_1",
+    "course": {
+     "id": "_32165_1",
+     "uuid": "015d10d5046649fca96bc7dfde4e7e56",
+     "externalId": "IT116IU_1_2025-2601",
+     "dataSourceId": "_2_1",
+     "courseId": "IT116IU_1_2025-2601",
+     "name": "C/C++ Programming_S1_2025-26_G01",
+     "created": "2025-08-25T02:36:04.710Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_32165_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-08-30T23:57:46.017Z",
+    "modified": "2025-08-30T23:57:46.017Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-01-16T03:19:20.843Z"
+   },
+   {
+    "id": "_1381848_1",
+    "userId": "_1_1",
+    "courseId": "_32141_1",
+    "course": {
+     "id": "_32141_1",
+     "uuid": "413a6c54577549c8ad715340d3081a5a",
+     "externalId": "IT064IU_1_2025-2601",
+     "dataSourceId": "_2_1",
+     "courseId": "IT064IU_1_2025-2601",
+     "name": "Introduction to Computing_S1_2025-26_G01",
+     "created": "2025-08-25T02:36:01.100Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_32141_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-08-30T23:57:31.237Z",
+    "modified": "2025-08-30T23:57:31.237Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-02-03T02:28:38.850Z"
+   },
+   {
+    "id": "_1369108_1",
+    "userId": "_1_1",
+    "courseId": "_31626_1",
+    "course": {
+     "id": "_31626_1",
+     "uuid": "88b53852a3b84797b14f7ecfc03cc3d8",
+     "externalId": "CH011IU_1_2025-2601",
+     "dataSourceId": "_2_1",
+     "courseId": "CH011IU_1_2025-2601",
+     "name": "Chemistry for Engineers_S1_2025-26_G01",
+     "created": "2025-08-25T02:34:47.897Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_31626_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-08-30T23:55:15.430Z",
+    "modified": "2025-08-30T23:55:15.430Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-01-17T16:22:23.687Z"
+   },
+   {
+    "id": "_1289696_1",
+    "userId": "_1_1",
+    "courseId": "_29714_1",
+    "course": {
+     "id": "_29714_1",
+     "uuid": "32b365dc7de74fe193953f3e574267d3",
+     "externalId": "PH014IU_2_2024-2504",
+     "dataSourceId": "_2_1",
+     "courseId": "PH014IU_2_2024-2504",
+     "name": "Physics 2_S2_2024-25_G04",
+     "created": "2025-01-07T03:44:06.107Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_29714_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-01-18T03:22:09.993Z",
+    "modified": "2025-01-18T03:22:09.993Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-06-03T15:52:33.590Z"
+   },
+   {
+    "id": "_1289339_1",
+    "userId": "_1_1",
+    "courseId": "_29813_1",
+    "course": {
+     "id": "_29813_1",
+     "uuid": "fc2c4cd63cda458281d6bdfe29fe51b1",
+     "externalId": "PH013IU_2_2024-2504",
+     "dataSourceId": "_2_1",
+     "courseId": "PH013IU_2_2024-2504",
+     "name": "Physics 1_S2_2024-25_G04",
+     "created": "2025-01-07T03:44:20.263Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_29813_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-01-18T03:22:06.650Z",
+    "modified": "2025-01-18T03:22:06.650Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-06-13T02:03:44.893Z"
+   },
+   {
+    "id": "_1284283_1",
+    "userId": "_1_1",
+    "courseId": "_29795_1",
+    "course": {
+     "id": "_29795_1",
+     "uuid": "3a2964991fbc482a9c49c71268fc4bff",
+     "externalId": "PE008IU_2_2024-2509",
+     "dataSourceId": "_2_1",
+     "courseId": "PE008IU_2_2024-2509",
+     "name": "Critical Thinking_S2_2024-25_G09",
+     "created": "2025-01-07T03:44:17.700Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_29795_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-01-18T03:21:18.533Z",
+    "modified": "2025-01-18T03:21:18.533Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-06-18T15:41:39.263Z"
+   },
+   {
+    "id": "_1281356_1",
+    "userId": "_1_1",
+    "courseId": "_29550_1",
+    "course": {
+     "id": "_29550_1",
+     "uuid": "c3a855ef0da2438e9a670ed74acc32b0",
+     "externalId": "MA003IU_2_2024-2506",
+     "dataSourceId": "_2_1",
+     "courseId": "MA003IU_2_2024-2506",
+     "name": "Calculus 2_S2_2024-25_G06",
+     "created": "2025-01-07T03:43:43.183Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_29550_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-01-18T03:20:51.220Z",
+    "modified": "2025-01-18T03:20:51.220Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-06-16T11:02:59.797Z"
+   },
+   {
+    "id": "_1271078_1",
+    "userId": "_1_1",
+    "courseId": "_29687_1",
+    "course": {
+     "id": "_29687_1",
+     "uuid": "3516efecbeb44d708baa7cf9948b3e66",
+     "externalId": "EN008IU_2_2024-2514",
+     "dataSourceId": "_2_1",
+     "courseId": "EN008IU_2_2024-2514",
+     "name": "Listening AE1_S2_2024-25_G14",
+     "created": "2025-01-07T03:44:02.167Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_29687_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-01-18T03:19:09.923Z",
+    "modified": "2025-01-18T03:19:09.923Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-06-16T11:01:59.797Z"
+   },
+   {
+    "id": "_1270210_1",
+    "userId": "_1_1",
+    "courseId": "_29530_1",
+    "course": {
+     "id": "_29530_1",
+     "uuid": "55f05331fa654864bb80f35b3e04d0b4",
+     "externalId": "EN007IU_2_2024-2514",
+     "dataSourceId": "_2_1",
+     "courseId": "EN007IU_2_2024-2514",
+     "name": "Writing AE1_S2_2024-25_G14",
+     "created": "2025-01-07T03:43:40.527Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_29530_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2025-01-18T03:19:01.030Z",
+    "modified": "2025-01-18T03:19:01.030Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-05-30T03:58:20.063Z"
+   },
+   {
+    "id": "_1234909_1",
+    "userId": "_1_1",
+    "courseId": "_29049_1",
+    "course": {
+     "id": "_29049_1",
+     "uuid": "cf0bfa0568084035949c82b8601413fc",
+     "externalId": "SHCD_DK_hk1_24_25",
+     "dataSourceId": "_2_1",
+     "courseId": "SHCD_DK_hk1_24_25",
+     "name": "Sinh hoạt công dân đầu khóa HK1 2024-2025",
+     "created": "2024-09-11T01:25:32.010Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_29049_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2024-09-16T01:20:17.977Z",
+    "modified": "2024-09-16T01:20:17.977Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-12-18T07:27:41.617Z"
+   },
+   {
+    "id": "_1219799_1",
+    "userId": "_1_1",
+    "courseId": "_28664_1",
+    "course": {
+     "id": "_28664_1",
+     "uuid": "70661fbee43344d99e422ead8f6e1e48",
+     "externalId": "MA001IU1_2024-2505",
+     "dataSourceId": "_2_1",
+     "courseId": "MA001IU1_2024-2505",
+     "name": "Calculus 1_S1_2024-25-Group05",
+     "created": "2024-08-19T07:52:55.267Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_28664_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2024-09-04T02:39:39.547Z",
+    "modified": "2024-09-04T02:39:39.547Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-03-12T06:36:22.410Z"
+   },
+   {
+    "id": "_1219342_1",
+    "userId": "_1_1",
+    "courseId": "_28435_1",
+    "course": {
+     "id": "_28435_1",
+     "uuid": "143de3d9a5e84f48b938805209c291f0",
+     "externalId": "ENTP031_2024-2501",
+     "dataSourceId": "_2_1",
+     "courseId": "ENTP031_2024-2501",
+     "name": "Intensive English 3- Twinning Program_S1_2024-25-Group01",
+     "created": "2024-08-19T07:52:26.700Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "No",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_28435_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2024-09-04T02:39:18.687Z",
+    "modified": "2024-09-04T02:39:18.687Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2025-03-01T02:58:41.903Z"
+   },
+   {
+    "id": "_1212254_1",
+    "userId": "_1_1",
+    "courseId": "_1959_1",
+    "course": {
+     "id": "_1959_1",
+     "uuid": "53d2e9800eec46e6a0f46a0e4f3ca797",
+     "externalId": "oss_Course",
+     "dataSourceId": "_2_1",
+     "courseId": "oss_Course",
+     "name": "Announcements of Office of Student Services",
+     "created": "2015-10-09T07:23:25.240Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": true,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_1959_1&sc=",
+     "guestAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_1959_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2024-08-26T05:52:10.120Z",
+    "modified": "2024-08-26T05:52:10.120Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2026-03-03T02:53:34.223Z"
+   },
+   {
+    "id": "_1210208_1",
+    "userId": "_1_1",
+    "courseId": "_6050_1",
+    "course": {
+     "id": "_6050_1",
+     "uuid": "ff3869a5866847609d86168a9aca837e",
+     "externalId": "CIS_Note",
+     "dataSourceId": "_2_1",
+     "courseId": "CIS_Note",
+     "name": "Annoucements from CIS",
+     "created": "2018-01-16T07:23:51.890Z",
+     "organization": false,
+     "ultraStatus": "Classic",
+     "allowGuests": false,
+     "readOnly": false,
+     "availability": {
+      "available": "Yes",
+      "duration": {
+       "type": "Continuous"
+      }
+     },
+     "enrollment": {
+      "type": "InstructorLed"
+     },
+     "locale": {
+      "force": false
+     },
+     "externalAccessUrl": "https://blackboard.hcmiu.edu.vn/webapps/blackboard/execute/courseMain?course_id=_6050_1&sc="
+    },
+    "dataSourceId": "_2_1",
+    "created": "2024-08-26T05:50:43.960Z",
+    "modified": "2024-08-26T05:50:43.960Z",
+    "availability": {
+     "available": "Yes"
+    },
+    "courseRoleId": "Student",
+    "lastAccessed": "2024-12-13T14:04:38.743Z"
+   }
+  ]
+ },
+ "/v1/courses/_35323_1/announcements?limit=100": {
+  "results": []
+ },
+ "/v2/courses/_35323_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146168_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_319158_1"
+   },
+   {
+    "id": "_146167_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_319157_1"
+   }
+  ]
+ },
+ "/v2/courses/_35323_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146167_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146168_1",
+    "exempt": false,
+    "changeIndex": 0
+   }
+  ]
+ },
+ "/v1/courses/_35323_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_441237_1",
+    "title": "Item 1",
+    "created": "2026-08-18T03:48:36.080Z",
+    "modified": "2026-08-18T03:48:36.080Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35323_1&content_id=_441237_1",
+      "rel": "alternate",
+      "title": "Item 2",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_441236_1",
+    "title": "Item 3",
+    "created": "2026-08-18T03:48:36.080Z",
+    "modified": "2026-08-18T03:48:36.080Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35323_1&content_id=_441236_1",
+      "rel": "alternate",
+      "title": "Item 4",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35323_1/contents/_441237_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_449082_1",
+    "parentId": "_441237_1",
+    "title": "Item 5",
+    "created": "2026-09-13T16:17:44.153Z",
+    "modified": "2026-09-13T16:17:44.153Z",
+    "position": 0,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-file",
+     "file": {
+      "fileName": "US_OOAD_01_Introduction_2026.pdf"
+     }
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35323_1&content_id=_449082_1",
+      "rel": "alternate",
+      "title": "Item 6",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_449083_1",
+    "parentId": "_441237_1",
+    "title": "Item 7",
+    "created": "2026-09-13T16:20:10.440Z",
+    "modified": "2026-09-13T16:20:10.440Z",
+    "position": 1,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-file",
+     "file": {
+      "fileName": "US_OOAD_02_Requirements 2026.pdf"
+     }
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35323_1&content_id=_449083_1",
+      "rel": "alternate",
+      "title": "Item 8",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_451251_1",
+    "parentId": "_441237_1",
+    "title": "Item 9",
+    "created": "2026-09-21T15:53:24.890Z",
+    "modified": "2026-09-21T15:53:24.890Z",
+    "position": 2,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-file",
+     "file": {
+      "fileName": "US_OOAD_03_Use Case Modeling.pdf"
+     }
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35323_1&content_id=_451251_1",
+      "rel": "alternate",
+      "title": "Item 10",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35323_1/contents/_441236_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35266_1/announcements?limit=100": {
+  "results": [
+   {
+    "id": "_123419_1",
+    "title": "Item 11",
+    "body": "Anonymized text.",
+    "creator": "_45183_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-22T03:59:03.403Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-22T03:59:03.403Z",
+    "modified": "2026-09-22T03:59:03.403Z",
+    "position": 1
+   },
+   {
+    "id": "_123053_1",
+    "title": "Item 12",
+    "body": "Anonymized text.",
+    "creator": "_39900_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-14T09:29:58.893Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-14T09:29:58.893Z",
+    "modified": "2026-09-14T09:29:58.893Z",
+    "position": 2
+   }
+  ]
+ },
+ "/v2/courses/_35266_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146054_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_318645_1"
+   },
+   {
+    "id": "_146053_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 20.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_318644_1"
+   },
+   {
+    "id": "_147982_1",
+    "name": "Exercise 1",
+    "contentId": "_450912_1",
+    "score": {
+     "possible": 20.0
+    },
+    "grading": {
+     "type": "Attempts",
+     "due": "2026-09-26T16:59:00.000Z",
+     "attemptsAllowed": 1,
+     "scoringModel": "Last"
+    },
+    "gradebookCategoryId": "_318640_1"
+   }
+  ]
+ },
+ "/v2/courses/_35266_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146053_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146054_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_147982_1",
+    "status": "NeedsGrading",
+    "exempt": false,
+    "changeIndex": 17130410
+   }
+  ]
+ },
+ "/v1/courses/_35266_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_441123_1",
+    "title": "Item 13",
+    "created": "2026-08-18T03:48:28.250Z",
+    "modified": "2026-08-18T03:48:28.250Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35266_1&content_id=_441123_1",
+      "rel": "alternate",
+      "title": "Item 14",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_441122_1",
+    "title": "Item 15",
+    "created": "2026-08-18T03:48:28.250Z",
+    "modified": "2026-08-18T03:48:28.250Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35266_1&content_id=_441122_1",
+      "rel": "alternate",
+      "title": "Item 16",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35266_1/contents/_441123_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_448720_1",
+    "parentId": "_441123_1",
+    "title": "Item 17",
+    "created": "2026-09-11T13:11:58.877Z",
+    "modified": "2026-09-11T13:11:58.877Z",
+    "position": 0,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35266_1&content_id=_448720_1",
+      "rel": "alternate",
+      "title": "Item 18",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_450912_1",
+    "parentId": "_441123_1",
+    "title": "Item 19",
+    "body": "Anonymized text.",
+    "created": "2026-09-20T07:23:41.163Z",
+    "modified": "2026-09-20T07:24:00.647Z",
+    "position": 1,
+    "hasGradebookColumns": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-assignment",
+     "gradeColumnId": "_147982_1",
+     "groupContent": false,
+     "originalityReportingTool": {
+      "id": "safeAssign",
+      "checkSubmission": false,
+      "studentViewReports": false,
+      "excludeSubmissionsFromDatabases": false
+     }
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35266_1&content_id=_450912_1",
+      "rel": "alternate",
+      "title": "Item 20",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35266_1/contents/_441122_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35266_1/contents/_448720_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_448721_1",
+    "parentId": "_448720_1",
+    "title": "Item 21",
+    "created": "2026-09-11T13:12:26.573Z",
+    "modified": "2026-09-11T13:12:26.697Z",
+    "position": 0,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35266_1&content_id=_448721_1",
+      "rel": "alternate",
+      "title": "Item 22",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448748_1",
+    "parentId": "_448720_1",
+    "title": "Item 23",
+    "created": "2026-09-11T18:06:44.837Z",
+    "modified": "2026-09-19T02:23:56.360Z",
+    "position": 1,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35266_1&content_id=_448748_1",
+      "rel": "alternate",
+      "title": "Item 24",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35735_1/announcements?limit=100": {
+  "results": [
+   {
+    "id": "_123194_1",
+    "title": "Item 25",
+    "body": "Anonymized text.",
+    "creator": "_566_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-17T09:30:14.420Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-17T09:30:14.420Z",
+    "modified": "2026-09-17T09:30:14.420Z",
+    "position": 1
+   },
+   {
+    "id": "_122523_1",
+    "title": "Item 26",
+    "body": "Anonymized text.",
+    "creator": "_566_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-06T12:34:26.063Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-06T12:34:26.063Z",
+    "modified": "2026-09-06T12:34:26.063Z",
+    "position": 2
+   },
+   {
+    "id": "_122377_1",
+    "title": "Item 27",
+    "body": "Anonymized text.",
+    "creator": "_566_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-02T12:42:16.990Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-02T12:42:16.990Z",
+    "modified": "2026-09-02T12:42:16.990Z",
+    "position": 3
+   }
+  ]
+ },
+ "/v2/courses/_35735_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146992_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_322866_1"
+   },
+   {
+    "id": "_146991_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_322865_1"
+   }
+  ]
+ },
+ "/v2/courses/_35735_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146991_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146992_1",
+    "exempt": false,
+    "changeIndex": 0
+   }
+  ]
+ },
+ "/v1/courses/_35735_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_442061_1",
+    "title": "Item 28",
+    "created": "2026-08-18T03:49:32.513Z",
+    "modified": "2026-08-18T03:49:32.513Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35735_1&content_id=_442061_1",
+      "rel": "alternate",
+      "title": "Item 29",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_442060_1",
+    "title": "Item 30",
+    "created": "2026-08-18T03:49:32.513Z",
+    "modified": "2026-08-18T03:49:32.513Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35735_1&content_id=_442060_1",
+      "rel": "alternate",
+      "title": "Item 31",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35735_1/contents/_442061_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35735_1/contents/_442060_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35310_1/announcements?limit=100": {
+  "results": []
+ },
+ "/v2/courses/_35310_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146142_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_319041_1"
+   },
+   {
+    "id": "_146141_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_319040_1"
+   }
+  ]
+ },
+ "/v2/courses/_35310_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146141_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146142_1",
+    "exempt": false,
+    "changeIndex": 0
+   }
+  ]
+ },
+ "/v1/courses/_35310_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_441211_1",
+    "title": "Item 32",
+    "created": "2026-08-18T03:48:34.300Z",
+    "modified": "2026-08-18T03:48:34.300Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35310_1&content_id=_441211_1",
+      "rel": "alternate",
+      "title": "Item 33",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_441210_1",
+    "title": "Item 34",
+    "created": "2026-08-18T03:48:34.300Z",
+    "modified": "2026-08-18T03:48:34.300Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35310_1&content_id=_441210_1",
+      "rel": "alternate",
+      "title": "Item 35",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35310_1/contents/_441211_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35310_1/contents/_441210_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35433_1/announcements?limit=100": {
+  "results": []
+ },
+ "/v2/courses/_35433_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146388_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_320148_1"
+   },
+   {
+    "id": "_146387_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_320147_1"
+   }
+  ]
+ },
+ "/v2/courses/_35433_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146387_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146388_1",
+    "exempt": false,
+    "changeIndex": 0
+   }
+  ]
+ },
+ "/v1/courses/_35433_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_441457_1",
+    "title": "Item 36",
+    "created": "2026-08-18T03:48:50.610Z",
+    "modified": "2026-08-18T03:48:50.610Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35433_1&content_id=_441457_1",
+      "rel": "alternate",
+      "title": "Item 37",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_441456_1",
+    "title": "Item 38",
+    "created": "2026-08-18T03:48:50.610Z",
+    "modified": "2026-08-18T03:48:50.610Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35433_1&content_id=_441456_1",
+      "rel": "alternate",
+      "title": "Item 39",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35433_1/contents/_441457_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_447654_1",
+    "parentId": "_441457_1",
+    "title": "Item 40",
+    "created": "2026-09-08T09:47:40.177Z",
+    "modified": "2026-09-08T09:47:40.177Z",
+    "position": 0,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35433_1&content_id=_447654_1",
+      "rel": "alternate",
+      "title": "Item 41",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35433_1/contents/_441456_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35433_1/contents/_447654_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_447655_1",
+    "parentId": "_447654_1",
+    "title": "Item 42",
+    "created": "2026-09-08T09:48:20.900Z",
+    "modified": "2026-09-08T09:48:20.900Z",
+    "position": 0,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-file",
+     "file": {
+      "fileName": "EN011IU Writing AE2_SYLLABUS_since2026 v.2_signed.pdf"
+     }
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35433_1&content_id=_447655_1",
+      "rel": "alternate",
+      "title": "Item 43",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35337_1/announcements?limit=100": {
+  "results": [
+   {
+    "id": "_123592_1",
+    "title": "Item 44",
+    "body": "Anonymized text.",
+    "creator": "_39900_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-25T08:28:51.603Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-25T08:28:51.603Z",
+    "modified": "2026-09-25T08:28:51.603Z",
+    "position": 1
+   },
+   {
+    "id": "_123051_1",
+    "title": "Item 45",
+    "body": "Anonymized text.",
+    "creator": "_39900_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-14T08:41:27.947Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-14T08:41:27.947Z",
+    "modified": "2026-09-14T08:41:27.947Z",
+    "position": 2
+   },
+   {
+    "id": "_122891_1",
+    "title": "Item 46",
+    "body": "Anonymized text.",
+    "creator": "_39900_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-10T23:49:34.623Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-10T23:49:34.640Z",
+    "modified": "2026-09-10T23:49:34.640Z",
+    "position": 3
+   },
+   {
+    "id": "_122833_1",
+    "title": "Item 47",
+    "body": "Anonymized text.",
+    "creator": "_39900_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-09T23:23:57.043Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-09T23:23:57.060Z",
+    "modified": "2026-09-09T23:23:57.060Z",
+    "position": 4
+   }
+  ]
+ },
+ "/v2/courses/_35337_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146196_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_319284_1"
+   },
+   {
+    "id": "_146195_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 100.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_319283_1"
+   },
+   {
+    "id": "_148266_1",
+    "name": "Finding the problems and potential solutions",
+    "contentId": "_452089_1",
+    "score": {
+     "possible": 100.0
+    },
+    "grading": {
+     "type": "Attempts",
+     "due": "2026-10-02T16:30:00.000Z",
+     "attemptsAllowed": 1,
+     "scoringModel": "Last"
+    },
+    "gradebookCategoryId": "_319279_1"
+   }
+  ]
+ },
+ "/v2/courses/_35337_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146195_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146196_1",
+    "exempt": false,
+    "changeIndex": 0
+   }
+  ]
+ },
+ "/v1/courses/_35337_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_441265_1",
+    "title": "Item 48",
+    "created": "2026-08-18T03:48:37.940Z",
+    "modified": "2026-09-09T23:40:17.830Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_441265_1",
+      "rel": "alternate",
+      "title": "Item 49",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_441264_1",
+    "title": "Item 50",
+    "created": "2026-08-18T03:48:37.940Z",
+    "modified": "2026-09-09T23:40:18.487Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_441264_1",
+      "rel": "alternate",
+      "title": "Item 51",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35337_1/contents/_441265_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_448172_1",
+    "parentId": "_441265_1",
+    "title": "Item 52",
+    "created": "2026-09-09T23:40:17.860Z",
+    "modified": "2026-09-10T23:45:50.793Z",
+    "position": 0,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448172_1",
+      "rel": "alternate",
+      "title": "Item 53",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448173_1",
+    "parentId": "_441265_1",
+    "title": "Item 54",
+    "created": "2026-09-09T23:40:17.923Z",
+    "modified": "2026-09-09T23:40:17.923Z",
+    "position": 1,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {
+      "start": "2022-09-08T03:00:00.000Z"
+     }
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448173_1",
+      "rel": "alternate",
+      "title": "Item 55",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448174_1",
+    "parentId": "_441265_1",
+    "title": "Item 56",
+    "created": "2026-09-09T23:40:17.987Z",
+    "modified": "2026-09-09T23:40:17.987Z",
+    "position": 2,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448174_1",
+      "rel": "alternate",
+      "title": "Item 57",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448175_1",
+    "parentId": "_441265_1",
+    "title": "Item 58",
+    "created": "2026-09-09T23:40:18.050Z",
+    "modified": "2026-09-09T23:40:18.050Z",
+    "position": 3,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448175_1",
+      "rel": "alternate",
+      "title": "Item 59",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448176_1",
+    "parentId": "_441265_1",
+    "title": "Item 60",
+    "created": "2026-09-09T23:40:18.110Z",
+    "modified": "2026-09-09T23:40:18.110Z",
+    "position": 4,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448176_1",
+      "rel": "alternate",
+      "title": "Item 61",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448177_1",
+    "parentId": "_441265_1",
+    "title": "Item 62",
+    "created": "2026-09-09T23:40:18.173Z",
+    "modified": "2026-09-09T23:40:18.173Z",
+    "position": 5,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448177_1",
+      "rel": "alternate",
+      "title": "Item 63",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448178_1",
+    "parentId": "_441265_1",
+    "title": "Item 64",
+    "created": "2026-09-09T23:40:18.237Z",
+    "modified": "2026-09-09T23:40:18.237Z",
+    "position": 6,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448178_1",
+      "rel": "alternate",
+      "title": "Item 65",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448179_1",
+    "parentId": "_441265_1",
+    "title": "Item 66",
+    "created": "2026-09-09T23:40:18.300Z",
+    "modified": "2026-09-09T23:40:18.300Z",
+    "position": 7,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448179_1",
+      "rel": "alternate",
+      "title": "Item 67",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448180_1",
+    "parentId": "_441265_1",
+    "title": "Item 68",
+    "created": "2026-09-09T23:40:18.360Z",
+    "modified": "2026-09-09T23:40:18.360Z",
+    "position": 8,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448180_1",
+      "rel": "alternate",
+      "title": "Item 69",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448181_1",
+    "parentId": "_441265_1",
+    "title": "Item 70",
+    "created": "2026-09-09T23:40:18.423Z",
+    "modified": "2026-09-09T23:40:18.423Z",
+    "position": 9,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_448181_1",
+      "rel": "alternate",
+      "title": "Item 71",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35337_1/contents/_441264_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_452089_1",
+    "parentId": "_441264_1",
+    "title": "Item 72",
+    "body": "Anonymized text.",
+    "created": "2026-09-25T08:27:36.243Z",
+    "modified": "2026-09-25T08:27:36.260Z",
+    "position": 1,
+    "hasGradebookColumns": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {
+      "end": "2026-10-09T16:30:00.000Z"
+     }
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-assignment",
+     "gradeColumnId": "_148266_1",
+     "groupContent": false,
+     "originalityReportingTool": {
+      "id": "safeAssign",
+      "checkSubmission": false,
+      "studentViewReports": false,
+      "excludeSubmissionsFromDatabases": false
+     }
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_452089_1",
+      "rel": "alternate",
+      "title": "Item 73",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35687_1/announcements?limit=100": {
+  "results": [
+   {
+    "id": "_123499_1",
+    "title": "Item 74",
+    "body": "Anonymized text.",
+    "creator": "_22122_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-23T16:07:05.803Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-23T16:07:05.803Z",
+    "modified": "2026-09-23T16:07:05.803Z",
+    "position": 1
+   },
+   {
+    "id": "_123071_1",
+    "title": "Item 75",
+    "body": "Anonymized text.",
+    "creator": "_22122_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-15T02:36:25.130Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-15T02:36:25.130Z",
+    "modified": "2026-09-15T02:36:25.130Z",
+    "position": 2
+   },
+   {
+    "id": "_122758_1",
+    "title": "Item 76",
+    "body": "Anonymized text.",
+    "creator": "_35058_1",
+    "draft": false,
+    "availability": {
+     "duration": {
+      "type": "Restricted",
+      "start": "2026-09-09T01:00:00.000Z",
+      "end": null
+     }
+    },
+    "created": "2026-09-08T14:24:34.007Z",
+    "modified": "2026-09-08T14:26:37.800Z",
+    "position": 3
+   }
+  ]
+ },
+ "/v2/courses/_35687_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146896_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_322434_1"
+   },
+   {
+    "id": "_146895_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_322433_1"
+   }
+  ]
+ },
+ "/v2/courses/_35687_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146895_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146896_1",
+    "exempt": false,
+    "changeIndex": 0
+   }
+  ]
+ },
+ "/v1/courses/_35687_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_441965_1",
+    "title": "Item 77",
+    "created": "2026-08-18T03:49:26.230Z",
+    "modified": "2026-08-18T03:49:26.230Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35687_1&content_id=_441965_1",
+      "rel": "alternate",
+      "title": "Item 78",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_441964_1",
+    "title": "Item 79",
+    "created": "2026-08-18T03:49:26.230Z",
+    "modified": "2026-08-18T03:49:26.230Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35687_1&content_id=_441964_1",
+      "rel": "alternate",
+      "title": "Item 80",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35687_1/contents/_441965_1/children?limit=100": {
+  "results": [
+   {
+    "id": "_448301_1",
+    "parentId": "_441965_1",
+    "title": "Item 81",
+    "created": "2026-09-10T04:20:26.090Z",
+    "modified": "2026-09-10T04:20:26.577Z",
+    "position": 0,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35687_1&content_id=_448301_1",
+      "rel": "alternate",
+      "title": "Item 82",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_448302_1",
+    "parentId": "_441965_1",
+    "title": "Item 83",
+    "created": "2026-09-10T04:21:37.127Z",
+    "modified": "2026-09-10T04:21:37.363Z",
+    "position": 1,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-document"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35687_1&content_id=_448302_1",
+      "rel": "alternate",
+      "title": "Item 84",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35687_1/contents/_441964_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35282_1/announcements?limit=100": {
+  "results": []
+ },
+ "/v2/courses/_35282_1/gradebook/columns?limit=100": {
+  "results": [
+   {
+    "id": "_146086_1",
+    "name": "Weighted Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_318789_1"
+   },
+   {
+    "id": "_146085_1",
+    "name": "Total",
+    "description": "Anonymized description.",
+    "score": {
+     "possible": 0.0
+    },
+    "grading": {
+     "type": "Calculated"
+    },
+    "gradebookCategoryId": "_318788_1"
+   }
+  ]
+ },
+ "/v2/courses/_35282_1/gradebook/users/_1_1?limit=100": {
+  "results": [
+   {
+    "userId": "_1_1",
+    "columnId": "_146085_1",
+    "exempt": false,
+    "changeIndex": 0
+   },
+   {
+    "userId": "_1_1",
+    "columnId": "_146086_1",
+    "exempt": false,
+    "changeIndex": 0
+   }
+  ]
+ },
+ "/v1/courses/_35282_1/contents?limit=100": {
+  "results": [
+   {
+    "id": "_441155_1",
+    "title": "Item 85",
+    "created": "2026-08-18T03:48:30.267Z",
+    "modified": "2026-08-18T03:48:30.267Z",
+    "position": 2,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35282_1&content_id=_441155_1",
+      "rel": "alternate",
+      "title": "Item 86",
+      "type": "text/html"
+     }
+    ]
+   },
+   {
+    "id": "_441154_1",
+    "title": "Item 87",
+    "created": "2026-08-18T03:48:30.267Z",
+    "modified": "2026-08-18T03:48:30.267Z",
+    "position": 5,
+    "hasChildren": true,
+    "launchInNewWindow": false,
+    "reviewable": false,
+    "availability": {
+     "available": "Yes",
+     "allowGuests": true,
+     "adaptiveRelease": {}
+    },
+    "contentHandler": {
+     "id": "resource/x-bb-folder"
+    },
+    "links": [
+     {
+      "href": "/webapps/blackboard/execute/displayIndividualContent?course_id=_35282_1&content_id=_441154_1",
+      "rel": "alternate",
+      "title": "Item 88",
+      "type": "text/html"
+     }
+    ]
+   }
+  ]
+ },
+ "/v1/courses/_35282_1/contents/_441155_1/children?limit=100": {
+  "results": []
+ },
+ "/v1/courses/_35282_1/contents/_441154_1/children?limit=100": {
+  "results": []
+ }
+}

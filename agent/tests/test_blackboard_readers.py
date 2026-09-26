@@ -39,24 +39,64 @@ def test_a_code_inside_a_longer_code_does_not_match():
     assert select_current_courses(courses, [RegisteredCourse("IT093IU", "02")]) == []
 
 
-def test_the_group_then_the_newest_course_breaks_a_tie():
-    courses = [course("_1_1", "IT093IU-2025-1-01", "Web App (old)", created="2025-08-01T00:00:00.000Z"),
-               course("_2_1", "IT093IU-2026-1-02", "Web App", created="2026-08-01T00:00:00.000Z"),
-               course("_3_1", "IT093IU-2026-1-03", "Web App (other group)", created="2026-08-02T00:00:00.000Z")]
+# IU's real format (seen 2026-09-26): a group has a lecture course "<name>_S1_2026-27_G02"
+# with course ID "IT093IU_1_2026-2702", and lab courses "<name>_S1_2026-27_G02_Lab01" / "IT093IU_1_2026-270201".
 
-    [(chosen, _)] = select_current_courses(courses, [RegisteredCourse("IT093IU", "02")])
+def test_a_groups_lecture_and_lab_courses_are_both_kept_and_other_groups_are_not():
+    courses = [course("_1_1", "IT093IU_1_2026-2701", "Web Application Development_S1_2026-27_G01"),
+               course("_2_1", "IT093IU_1_2026-2702", "Web Application Development_S1_2026-27_G02"),
+               course("_3_1", "IT093IU_1_2026-270201", "Web Application Development_S1_2026-27_G02_Lab01")]
 
-    assert chosen["id"] == "_2_1"
+    chosen = select_current_courses(courses, [RegisteredCourse("IT093IU", "02")])
+
+    assert sorted(c["id"] for c, _ in chosen) == ["_2_1", "_3_1"]
+
+
+def test_the_semester_digit_and_lab_number_are_not_taken_for_group_1():
+    courses = [course("_1_1", "IT090IU_1_2026-2701", "Object-Oriented Analysis and Design_S1_2026-27_G01"),
+               course("_2_1", "IT090IU_1_2026-270101", "Object-Oriented Analysis and Design_S1_2026-27_G01_Lab01"),
+               course("_3_1", "IT090IU_1_2026-2702", "Object-Oriented Analysis and Design_S1_2026-27_G02"),
+               course("_4_1", "IT090IU_1_2026-270201", "Object-Oriented Analysis and Design_S1_2026-27_G02_Lab01")]
+
+    chosen = select_current_courses(courses, [RegisteredCourse("IT090IU", "01")])
+
+    assert sorted(c["id"] for c, _ in chosen) == ["_1_1", "_2_1"]
+
+
+def test_a_course_taken_again_keeps_only_the_newest_terms_courses():
+    courses = [course("_1_1", "IT093IU_1_2025-2602", "Web Application Development_S1_2025-26_G02",
+                      created="2025-08-01T00:00:00.000Z"),
+               course("_2_1", "IT093IU_1_2026-2702", "Web Application Development_S1_2026-27_G02",
+                      created="2026-08-01T00:00:00.000Z"),
+               course("_3_1", "IT093IU_1_2026-270201", "Web Application Development_S1_2026-27_G02_Lab01",
+                      created="2026-08-02T00:00:00.000Z")]
+
+    chosen = select_current_courses(courses, [RegisteredCourse("IT093IU", "02")])
+
+    assert sorted(c["id"] for c, _ in chosen) == ["_2_1", "_3_1"]
 
 
 def test_the_digits_of_the_course_code_are_not_mistaken_for_the_group():
-    # "EN011IU" contains "011", which looks like group 11 unless the code is left out.
-    courses = [course("_1_1", "EN011IU-2026-1-01", "Writing", created="2026-08-02T00:00:00.000Z"),
-               course("_2_1", "EN011IU-2026-1-11", "Writing", created="2026-08-01T00:00:00.000Z")]
+    # "EN011IU" contains "011", which looks like group 11.
+    courses = [course("_1_1", "EN011IU_1_2026-2701", "Writing AE2_S1_2026-27_G01"),
+               course("_2_1", "EN011IU_1_2026-2711", "Writing AE2_S1_2026-27_G11")]
 
-    [(chosen, _)] = select_current_courses(courses, [RegisteredCourse("EN011IU", "11")])
+    assert [c["id"] for c, _ in select_current_courses(courses, [RegisteredCourse("EN011IU", "11")])] == ["_2_1"]
+    assert [c["id"] for c, _ in select_current_courses(courses, [RegisteredCourse("EN011IU", "01")])] == ["_1_1"]
 
-    assert chosen["id"] == "_2_1"
+
+def test_the_group_is_read_from_the_name_when_the_course_id_has_none():
+    courses = [course("_1_1", "ENTP031_2024-2501", "Intensive English 3_S1_2024-25-Group01"),
+               course("_2_1", "ENTP031_2024-2502", "Intensive English 3_S1_2024-25-Group02")]
+
+    assert [c["id"] for c, _ in select_current_courses(courses, [RegisteredCourse("ENTP031", "02")])] == ["_2_1"]
+
+
+def test_without_a_matching_group_the_newest_course_with_the_code_is_kept():
+    courses = [course("_1_1", "MA026IU-old", "Probability", created="2025-08-01T00:00:00.000Z"),
+               course("_2_1", "MA026IU-new", "Probability", created="2026-08-01T00:00:00.000Z")]
+
+    assert [c["id"] for c, _ in select_current_courses(courses, [RegisteredCourse("MA026IU", "02")])] == ["_2_1"]
 
 
 # ---- Text --------------------------------------------------------------------------
