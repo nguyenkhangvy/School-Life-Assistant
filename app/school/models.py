@@ -7,9 +7,9 @@ from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
+    Double,
     Date,
     DateTime,
-    Float,
     ForeignKey,
     Index,
     Integer,
@@ -226,8 +226,9 @@ class SchoolBbAssignment(db.Model):
     bb_id: Mapped[str] = mapped_column(String(64), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     due_at: Mapped[datetime | None] = mapped_column(DateTime)
-    points_possible: Mapped[float | None] = mapped_column(Float)
-    score: Mapped[float | None] = mapped_column(Float)
+    # DOUBLE: MySQL's FLOAT keeps about 7 digits, so a score like 6.666666667 would change on every read.
+    points_possible: Mapped[float | None] = mapped_column(Double)
+    score: Mapped[float | None] = mapped_column(Double)
     grade_text: Mapped[str | None] = mapped_column(String(50))
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     feedback: Mapped[str | None] = mapped_column(Text)

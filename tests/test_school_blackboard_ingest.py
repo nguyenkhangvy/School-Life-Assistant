@@ -72,3 +72,14 @@ def test_blackboard_changes_reach_the_feed(app, key):
     summaries = [c.summary for c in rows(app, SchoolChange) if c.section == "blackboard"]
     assert summaries[0].startswith("Blackboard loaded: 1 course")
     assert summaries[-1] == "New announcement · Web Application Development: Room change"
+
+
+def test_scores_keep_full_precision_on_mysql():
+    # MySQL FLOAT keeps about 7 digits: 6.666666667 would come back different on every sync
+    # and be reported as a "New grade" each time.
+    from sqlalchemy.dialects import mysql
+
+    from app.school.models import SchoolBbAssignment
+
+    for column in ("score", "points_possible"):
+        assert SchoolBbAssignment.__table__.c[column].type.compile(dialect=mysql.dialect()) == "DOUBLE"
