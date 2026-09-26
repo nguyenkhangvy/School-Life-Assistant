@@ -3,7 +3,7 @@
 **Date:** 2026-09-26
 **Scope:** (1) show online, cancelled and make-up classes in the timetable when a Blackboard announcement says so; (2) list the assignments still to submit on the Overview, with a direct link to each
 **Owner:** Nguyen Khang Vy
-**Status:** Design approved in conversation, waiting for review of this document
+**Status:** Built (see docs/superpowers/plans/2026-09-26-class-changes-and-to-submit.md)
 **Builds on:** [Blackboard design](2026-09-26-blackboard-design.md) and [EduSoft-first Phase 1 design](2026-09-25-edusoft-first-phase1-design.md). Everything there stays the same unless this document says otherwise.
 
 ---
