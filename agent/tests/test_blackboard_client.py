@@ -118,3 +118,41 @@ def test_api_all_of_a_refused_list_is_empty():
     responses.get(f"{API}/v1/items", status=403, json={"status": 403})
 
     assert BlackboardClient().api_all("/v1/items") == []
+
+
+# After the password is sent, only a login that didn't work is checked for a verification step:
+# the home page shows lecturers' announcements and images, whose names can contain "otp".
+
+@responses.activate
+def test_a_home_page_with_otp_in_an_image_name_is_not_taken_for_verification():
+    responses.get(LOGIN_URL, body=LOGIN_PAGE)
+    responses.post(LOGIN_URL, body=HOME_PAGE.replace("</body>", '<img src="/bbcswebdav/footprint.png"></body>'))
+    responses.get(f"{API}/v1/users/me", json=ME)
+    client = BlackboardClient()
+
+    client.login("student", "bb-s3cret")
+
+    assert client.user_id == "_77_1"
+
+
+@responses.activate
+def test_a_code_step_after_the_password_pauses():
+    responses.get(LOGIN_URL, body=LOGIN_PAGE)
+    responses.post(LOGIN_URL, body="<html><body><input name='otp' type='text'></body></html>")
+    responses.get(f"{API}/v1/users/me", status=401)
+
+    with pytest.raises(ExtraVerification):
+        BlackboardClient().login("student", "bb-s3cret")
+
+
+@responses.activate
+def test_a_rejection_page_without_the_login_form_counts_as_a_wrong_password():
+    # "Session expired" would be retried at the next sync; a wrong password must not be.
+    responses.get(LOGIN_URL, body=LOGIN_PAGE)
+    responses.post(LOGIN_URL, body="<html><body>Access denied.</body></html>")
+    responses.get(f"{API}/v1/users/me", status=401)
+
+    with pytest.raises(BadCredentials):
+        BlackboardClient().login("student", "wrong")
+
+    assert len(posts()) == 1

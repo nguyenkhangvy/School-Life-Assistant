@@ -66,11 +66,18 @@ class BlackboardClient:
 
         # Submitted once. No retry: a retry could count as a second failed login.
         result = BeautifulSoup(self._request("POST", LOGIN_URL, data=fields).text, "html.parser")
-        if asks_for_verification(result):
-            raise ExtraVerification("Blackboard asked for extra verification after login.")
         if _login_form_shown(result):
+            if asks_for_verification(result):
+                raise ExtraVerification("Blackboard asked for extra verification after login.")
             raise BadCredentials("Blackboard rejected the username or password.")
-        me = self.api("/v1/users/me")
+        try:
+            me = self.api("/v1/users/me")
+        except SessionExpired:
+            # Not logged in, although the login form is gone: a verification step or a rejection.
+            # Only this page is checked; a logged-in home page can mention "otp" in an image name.
+            if asks_for_verification(result):
+                raise ExtraVerification("Blackboard asked for extra verification after login.") from None
+            raise BadCredentials("Blackboard didn't accept the username or password.") from None
         if not isinstance(me, dict) or not me.get("id"):
             raise SourceChanged("Blackboard's API didn't say who is logged in.")
         self.user_id = me["id"]
