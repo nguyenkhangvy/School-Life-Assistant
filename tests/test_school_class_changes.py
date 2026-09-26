@@ -131,6 +131,9 @@ def test_each_date_takes_the_nearest_change_word():
     ("Makeup class online on 3/10, 1:15 PM", time(13, 15), None, "Online"),
     ("Make-up lecture on 3/10 from 8:00 AM to 9:40 AM, room R109", time(8, 0), time(9, 40), "R109"),
     ("Make-up class at 8:00 on 3/10", time(8, 0), None, None),
+    ("Make-up class on 3/10 from 1:15 to 3:45 PM", time(13, 15), time(15, 45), None),
+    ("Make-up class on 3/10, 1:15-3:45pm", time(13, 15), time(15, 45), None),
+    ("Make-up class on 3/10 from 11:00 to 1:00 PM", time(11, 0), time(13, 0), None),
 ])
 def test_make_up_classes(title, start, end, room):
     assert read_announcement(title, "", POSTED) == [Announced("makeup", date(2026, 10, 3), start, end, room)]

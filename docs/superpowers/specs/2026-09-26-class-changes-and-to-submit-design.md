@@ -68,7 +68,7 @@ New file `app/school/services/class_changes.py`. `schedule.py`'s `Item` gains tw
    - Dates before the posting day (Vietnam time) are ignored; they are about the past.
 4. **The sentence must also mention a class:** `class(es)`, `lecture(s)`, `session(s)`, `lesson(s)`, `lớp`, `buổi`, `học`, `tiết`. ("Submit your report online by 24/9" changes nothing; "classmates" or "classroom" doesn't count.)
 5. **Each date takes the nearest cancel or make-up word in its sentence** (by distance in characters). Online words decide only when the sentence has neither, so "Make-up class online on 3/10" is an online make-up class. A sentence without a change word, or without a date, changes nothing.
-6. **Times** (only used for make-up classes), in the same sentence: `8:00`, `08:00`, `8:00 AM`, `1:15 PM`, `13h15`, `8h`, `8g00`, `8g`; a range joined by `-`, `–`, `to` or `đến` gives the end time. A make-up's time and room come from the part of the sentence after its date (up to the next date), or else from the part before it.
+6. **Times** (only used for make-up classes), in the same sentence: `8:00`, `08:00`, `8:00 AM`, `1:15 PM`, `13h15`, `8h`, `8g00`, `8g`; a range joined by `-`, `–`, `to` or `đến` gives the end time. A make-up's time and room come from the part of the sentence after its date (up to the next date), or else from the part before it. In a range, a start without AM/PM takes the end's AM/PM when that keeps it before the end (`1:15 to 3:45 PM` is 13:15–15:45).
 
 ### 2.4 What a change does
 

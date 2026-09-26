@@ -99,9 +99,10 @@ def _dates(sentence, posted_day):
     return sorted(found)
 
 
-def _time(match):
+def _time(match, ampm=None):
+    """The time `match` names, read with `ampm` ("a" / "p") when given, else with its own AM/PM."""
     hour, minute = int(match.group("hour")), int(match.group("minute") or 0)
-    ampm = (match.group("ampm") or "").lower()
+    ampm = (ampm or match.group("ampm") or "").lower()
     if ampm == "p" and hour < 12:
         hour += 12
     if ampm == "a" and hour == 12:
@@ -110,14 +111,19 @@ def _time(match):
 
 
 def _times(sentence):
-    """(start, end) of the first time in `sentence`; end only for a range like 8:00-9:40."""
+    """(start, end) of the first time in `sentence`; end only for a range like 8:00-9:40. In a range, a start
+    without AM/PM takes the end's when that keeps it before the end: "1:15 to 3:45 PM" is 13:15-15:45."""
     matches = list(TIME.finditer(sentence))
     if not matches:
         return None, None
-    end = None
+    start, end = _time(matches[0]), None
     if len(matches) > 1 and RANGE_JOIN.fullmatch(sentence[matches[0].end():matches[1].start()]):
         end = _time(matches[1])
-    return _time(matches[0]), end
+        if start and end and not matches[0].group("ampm") and matches[1].group("ampm"):
+            shifted = _time(matches[0], ampm=matches[1].group("ampm"))
+            if shifted and shifted < end:
+                start = shifted
+    return start, end
 
 
 def read_announcement(title, text, posted_at):
