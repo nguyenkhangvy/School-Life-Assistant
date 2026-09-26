@@ -100,6 +100,15 @@ def test_what_changes_nothing(title):
     assert read_announcement(title, "", POSTED) == []
 
 
+@pytest.mark.parametrize("title, expected", [
+    ("No class on Thursday 24/9 (8-10)", [Announced("cancelled", date(2026, 9, 24))]),
+    ("The class on Thursday 24/9 will be online, 8-10am", [Announced("online", date(2026, 9, 24))]),
+    ("Học bù ngày 3/10, tiết 10-12", [Announced("makeup", date(2026, 10, 3))]),
+])
+def test_hour_and_period_ranges_are_not_dates(title, expected):
+    assert read_announcement(title, "", POSTED) == expected
+
+
 def test_a_date_without_a_year_is_placed_near_the_posting_date():
     posted = datetime(2026, 12, 28, 2, 0)
 

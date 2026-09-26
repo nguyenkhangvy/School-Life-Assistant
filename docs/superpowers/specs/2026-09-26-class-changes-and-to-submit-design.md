@@ -62,7 +62,7 @@ New file `app/school/services/class_changes.py`. `schedule.py`'s `Item` gains tw
    Change words and class words count only as whole words.
 3. **Dates** in the same sentence:
    - `September 24`, `Sep 24`, `Sept. 24`, `September 24th`, `24 September`, `24th September`, each with an optional year (`, 2026` or ` 2026`)
-   - `18/9`, `18/09`, `18/9/2026`, `18-9-2026`: always day/month (Vietnamese order)
+   - `18/9`, `18/09`, `18/9/2026`, and `18-9-2026` (a dash only with the year, so hour and period ranges like `8-10` or `tiết 10-12` are not dates): always day/month (Vietnamese order)
    - `ngày 18 tháng 9`, optionally `năm 2026`
    - A date without a year gets the year that puts it closest to the posting date.
    - Dates before the posting day (Vietnam time) are ignored; they are about the past.
