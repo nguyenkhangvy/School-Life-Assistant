@@ -77,12 +77,24 @@ def test_cancel_words(title):
     assert read_announcement(title, "", POSTED) == [Announced("cancelled", date(2026, 9, 24))]
 
 
+@pytest.mark.parametrize("title, kind", [
+    ("Classes on 24/9 are cancelled", "cancelled"),
+    ("Class cancellation on 24/9", "cancelled"),
+    ("We are cancelling the lecture on 24/9", "cancelled"),
+    ("Lectures on 24/9 will be online", "online"),
+])
+def test_plurals_and_word_forms(title, kind):
+    assert read_announcement(title, "", POSTED) == [Announced(kind, date(2026, 9, 24))]
+
+
 @pytest.mark.parametrize("title", [
     "Submit your report online by 24/9",  # no class word
     "The class on September 10 was online",  # before the posting day
     "Online class soon",  # no date
     "Online class from 10:30-11:45 in A2.401",  # times are not dates
     "Online class, see https://example.com/10-11/12",  # dates inside links are ignored
+    "Tell your classmates to submit online by 24/9",  # "classmates" is not a class word
+    "The classroom booking system goes online on 24/9",  # nor is "classroom"
 ])
 def test_what_changes_nothing(title):
     assert read_announcement(title, "", POSTED) == []

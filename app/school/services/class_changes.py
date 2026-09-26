@@ -15,12 +15,12 @@ log = logging.getLogger(__name__)
 VIETNAM_OFFSET = timedelta(hours=7)
 
 CHANGE_WORDS = re.compile(
-    r"(?P<makeup>make[\s-]?up|\bbù\b)"
-    r"|(?P<cancelled>cancel\w*|no class|nghỉ|hủy|huỷ)"
-    r"|(?P<online>online|trực tuyến)",
+    r"(?P<makeup>\bmake[\s-]?up\b|\bbù\b)"
+    r"|(?P<cancelled>\bcancel(?:s|ed|led|ing|ling|lations?)?\b|\bno class(?:es)?\b|\bnghỉ\b|\bhủy\b|\bhuỷ\b)"
+    r"|(?P<online>\bonline\b|\btrực tuyến\b)",
     re.IGNORECASE,
 )
-CLASS_WORDS = re.compile(r"class|lecture|session|lesson|lớp|buổi|\bhọc\b|tiết", re.IGNORECASE)
+CLASS_WORDS = re.compile(r"\b(?:class(?:es)?|lectures?|sessions?|lessons?|lớp|buổi|học|tiết)\b", re.IGNORECASE)
 
 MONTH_NAMES = {
     "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6, "july": 7, "august": 8,

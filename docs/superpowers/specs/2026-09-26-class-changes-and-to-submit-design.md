@@ -56,15 +56,17 @@ New file `app/school/services/class_changes.py`. `schedule.py`'s `Item` gains tw
 1. **Sentences.** The title is one sentence. The text is split into sentences at `.`, `!`, `?` followed by a space, and at line breaks.
 2. **Change words** (any letter case):
    - online: `online`, `trực tuyến`
-   - cancelled: `cancel`, `canceled`, `cancelled`, `no class`, `nghỉ`, `hủy`, `huỷ`
+   - cancelled: `cancel`, `cancels`, `canceled`, `cancelled`, `canceling`, `cancelling`, `cancellation(s)`, `no class(es)`, `nghỉ`, `hủy`, `huỷ`
    - make-up: `make-up`, `makeup`, `make up`, `bù` (as in `học bù`, `dạy bù`)
+   
+   Change words and class words count only as whole words.
 3. **Dates** in the same sentence:
    - `September 24`, `Sep 24`, `Sept. 24`, `September 24th`, `24 September`, `24th September`, each with an optional year (`, 2026` or ` 2026`)
    - `18/9`, `18/09`, `18/9/2026`, `18-9-2026`: always day/month (Vietnamese order)
    - `ngày 18 tháng 9`, optionally `năm 2026`
    - A date without a year gets the year that puts it closest to the posting date.
    - Dates before the posting day (Vietnam time) are ignored; they are about the past.
-4. **The sentence must also mention a class:** `class`, `lecture`, `session`, `lesson`, `lớp`, `buổi`, `học`, `tiết`. ("Submit your report online by 24/9" changes nothing.)
+4. **The sentence must also mention a class:** `class(es)`, `lecture(s)`, `session(s)`, `lesson(s)`, `lớp`, `buổi`, `học`, `tiết`. ("Submit your report online by 24/9" changes nothing; "classmates" or "classroom" doesn't count.)
 5. **Each date takes the nearest cancel or make-up word in its sentence** (by distance in characters). Online words decide only when the sentence has neither, so "Make-up class online on 3/10" is an online make-up class. A sentence without a change word, or without a date, changes nothing.
 6. **Times** (only used for make-up classes), in the same sentence: `8:00`, `08:00`, `8:00 AM`, `1:15 PM`, `13h15`, `8h`, `8g00`, `8g`; a range joined by `-`, `–`, `to` or `đến` gives the end time.
 
