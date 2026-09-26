@@ -109,6 +109,15 @@ def test_hour_and_period_ranges_are_not_dates(title, expected):
     assert read_announcement(title, "", POSTED) == expected
 
 
+def test_paragraphs_from_blackboard_stay_separate_sentences():
+    from sla_agent.parsers.blackboard import html_to_text
+
+    html = ("<p>our class on 24/9 will be online via MS Teams</p>"
+            "<p>Reminder: Homework 2 is due in class on 1/10</p>")
+
+    assert read_announcement("Notice", html_to_text(html, 5000), POSTED) == [Announced("online", date(2026, 9, 24))]
+
+
 def test_a_date_without_a_year_is_placed_near_the_posting_date():
     posted = datetime(2026, 12, 28, 2, 0)
 

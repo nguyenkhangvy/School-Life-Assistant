@@ -42,7 +42,7 @@ The Overview's "Due soon" box also lists assignments the student has already sub
 
 ### 2.1 Where it runs
 
-In the web app, as a pure function over data already stored: the Blackboard announcements and the EduSoft class meetings. No database change, no laptop-agent change. It runs whenever the calendar feed or the Overview is built, so it always reflects the newest announcements and timetable.
+In the web app, as a pure function over data already stored: the Blackboard announcements and the EduSoft class meetings. No database change. One small laptop-agent change: announcement text keeps one line per paragraph, list item or line break, so paragraphs stay separate sentences. It runs whenever the calendar feed or the Overview is built, so it always reflects the newest announcements and timetable.
 
 New file `app/school/services/class_changes.py`. `schedule.py`'s `Item` gains two fields, `change` (`None` / `"online"` / `"cancelled"` / `"makeup"`) and `link` (the app's page for the announcement's course). `items_between` applies the changes, so the calendar and the Overview's Today/Tomorrow show the same thing.
 

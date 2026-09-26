@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from urllib.parse import quote
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from pydantic import ValidationError
 from sla_contract.schema import BbAnnouncement, BbAssignment, BbMaterial
 
@@ -20,14 +20,24 @@ KINDS = {
     "resource/x-bb-document": "document",
 }
 GRADE_STATUS = {"Graded": "graded", "NeedsGrading": "needs_grading"}
+BLOCK_TAGS = ["p", "div", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "table", "ul", "ol"]
 
 
 def html_to_text(html, limit):
-    """Plain text: scripts, styles and embedded frames dropped, entities decoded, cut at `limit`."""
+    """Plain text with one line per paragraph, list item or line break: scripts, styles and embedded frames
+    dropped, entities decoded, cut at `limit`."""
     page = BeautifulSoup(html or "", "html.parser")
     for tag in page(["script", "style", "iframe", "object", "embed", "noscript"]):
         tag.decompose()
-    text = re.sub(r"\s+", " ", page.get_text(" ")).replace(" .", ".").strip()
+    for text in page.find_all(string=True):
+        if type(text) is NavigableString:  # leaves comments out, as get_text does
+            text.replace_with(re.sub(r"\s+", " ", text))
+    for br in page.find_all("br"):
+        br.replace_with("\n")
+    for block in page.find_all(BLOCK_TAGS):
+        block.append("\n")
+    lines = (re.sub(r"\s+", " ", line).replace(" .", ".").strip() for line in page.get_text(" ").split("\n"))
+    text = "\n".join(line for line in lines if line)
     return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
 
 

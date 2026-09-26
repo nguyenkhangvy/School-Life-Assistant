@@ -113,6 +113,13 @@ def test_html_becomes_safe_plain_text_within_its_limit():
     assert result.endswith("…")
 
 
+def test_html_keeps_paragraphs_and_line_breaks_as_lines():
+    html = ("<p>Our class on <b>24/9</b> will be online</p>\n<p>Homework 2 is due<br>on 1/10</p>"
+            "<ul><li>one</li><li>two\n  three</li></ul><!-- a comment -->")
+
+    assert html_to_text(html, 5000) == "Our class on 24/9 will be online\nHomework 2 is due\non 1/10\none\ntwo three"
+
+
 # ---- Announcements ---------------------------------------------------------------
 
 def test_announcements_skip_drafts_and_use_the_posting_date():
