@@ -84,9 +84,14 @@ document.addEventListener("DOMContentLoaded", function () {
     events: element.dataset.feed,
     eventContent: function (arg) {
       var room = roomLabel(arg.event.extendedProps.room);
+      var linkInList = arg.event.url && arg.view.type.indexOf("list") === 0;
+      var title = textElement(linkInList ? "a" : "div", "event-title", arg.event.title);
+      if (linkInList) {
+        title.href = arg.event.url; // FullCalendar's list rows follow the link inside the row
+      }
       var nodes = [
         textElement("div", "event-time", arg.timeText),
-        textElement("div", "event-title", arg.event.title),
+        title,
       ];
       if (room) {
         nodes.push(textElement("div", "event-room", room));
