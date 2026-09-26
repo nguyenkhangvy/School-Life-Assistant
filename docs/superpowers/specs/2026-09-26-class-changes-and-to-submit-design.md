@@ -64,8 +64,9 @@ New file `app/school/services/class_changes.py`. `schedule.py`'s `Item` gains tw
    - `ngày 18 tháng 9`, optionally `năm 2026`
    - A date without a year gets the year that puts it closest to the posting date.
    - Dates before the posting day (Vietnam time) are ignored; they are about the past.
-4. **Each date takes the nearest change word in its sentence** (by distance in characters). A sentence without a change word, or without a date, changes nothing.
-5. **Times** (only used for make-up classes), in the same sentence: `8:00`, `08:00`, `8:00 AM`, `1:15 PM`, `13h15`, `8h`, `8g00`, `8g`; a range joined by `-`, `–`, `to` or `đến` gives the end time.
+4. **The sentence must also mention a class:** `class`, `lecture`, `session`, `lesson`, `lớp`, `buổi`, `học`, `tiết`. ("Submit your report online by 24/9" changes nothing.)
+5. **Each date takes the nearest cancel or make-up word in its sentence** (by distance in characters). Online words decide only when the sentence has neither, so "Make-up class online on 3/10" is an online make-up class. A sentence without a change word, or without a date, changes nothing.
+6. **Times** (only used for make-up classes), in the same sentence: `8:00`, `08:00`, `8:00 AM`, `1:15 PM`, `13h15`, `8h`, `8g00`, `8g`; a range joined by `-`, `–`, `to` or `đến` gives the end time.
 
 ### 2.4 What a change does
 
@@ -133,6 +134,8 @@ Every deadline still shows. Those done (submitted, graded or exempt) get a check
 - **Reader (pure functions):** the 4 real announcements above (codes and links removed) give exactly the listed changes. Cases that must change nothing:
   - "Logistics Reminder" (dates next to "in-person", a range "from weeks commencing on 12 Oct")
   - "The makeup schedule will be announced later" (no date)
+  - "Submit your report online by 24/9" (no class word)
+  - dates inside links (Teams and Meet links are full of digits and dashes)
   - a deadline date in the same text as "online" when the course has no class that day
   - a date before the posting day
   - Also: each date format, Vietnamese words, year guessing across New Year, nearest-word choice in a sentence with two changes, make-up with and without a time, the newest announcement winning.
