@@ -81,16 +81,20 @@ def _utc(day, clock):
 
 
 def _with_changes(items, changes, courses, start_utc, end_utc):
-    """Mark announced online and cancelled classes, and add make-up classes in [start_utc, end_utc)."""
+    """Mark announced online and cancelled classes, and add make-up classes in [start_utc, end_utc).
+
+    No make-up is added on a day the course has a class: such a date names the original class, as in
+    "the make-up for the class on 24/9"."""
     result = []
     for item in items:
-        change = changes.get((item.code, vietnam_date(item.start_at))) if item.kind == "class" else None
+        change = changes.get((item.code, vietnam_date(item.start_at), "class")) if item.kind == "class" else None
         if change is not None and change.kind in ("online", "cancelled"):
             item = item._replace(change=change.kind, bb_course_id=change.bb_course_id,
                                  room="Online" if change.kind == "online" else item.room)
         result.append(item)
+    class_days = {(item.code, vietnam_date(item.start_at)) for item in items if item.kind == "class"}
     for change in changes.values():
-        if change.kind != "makeup" or change.code not in courses:
+        if change.kind != "makeup" or change.code not in courses or (change.code, change.day) in class_days:
             continue
         name, usual = courses[change.code]
         marks = {"change": "makeup", "bb_course_id": change.bb_course_id}
@@ -101,9 +105,7 @@ def _with_changes(items, changes, courses, start_utc, end_utc):
             continue
         start_at = _utc(change.day, change.start)
         end_at = _utc(change.day, change.end) if change.end and change.end > change.start else start_at + usual
-        overlaps = any(i.kind == "class" and i.code == change.code and i.start_at < end_at
-                       and (i.end_at or i.start_at) > start_at for i in result)
-        if start_utc <= start_at < end_utc and not overlaps:
+        if start_utc <= start_at < end_utc:
             result.append(Item("class", start_at, end_at, change.code, name, change.room, **marks))
     return sorted(result, key=lambda item: (item.start_at, item.kind))
 

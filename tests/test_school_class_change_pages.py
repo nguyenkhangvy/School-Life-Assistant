@@ -119,6 +119,19 @@ def test_a_make_up_class_at_the_time_of_a_class_is_not_added_twice(app, browser)
     assert len(classes(browser)) == 1
 
 
+def test_a_make_up_notice_naming_the_cancelled_day_keeps_it_cancelled(app, browser):
+    add_timetable(app, 1, "MA026IU", PROBABILITY, [THU_24])
+    announce(app, 1, "MA026IU", "Cancel class on September 24", posted_at=datetime(2026, 9, 15))
+    announce(app, 1, "MA026IU", "The make-up for the class on September 24 will be on 3/10 at 8:00",
+             posted_at=datetime(2026, 9, 16))
+
+    this_week = classes(browser)
+    next_week = classes(browser, start="2026-09-28", end="2026-10-05")
+
+    assert [(e["title"], e["start"]) for e in this_week] == [(f"Cancelled: {PROBABILITY}", "2026-09-24T13:15:00")]
+    assert [(e["title"], e["start"]) for e in next_week] == [(f"Make-up: {PROBABILITY}", "2026-10-03T08:00:00")]
+
+
 def test_changes_need_a_class_of_that_course_on_that_day(app, browser):
     # The real "Logistics Reminder": "Starting the week of 12/10, lectures will be taught online" is read as
     # Mon 12/10, and this Saturday course has no class that day.

@@ -173,8 +173,18 @@ def row(title, posted, code="MA026IU", bb_course_id=5, text=""):
 def test_the_newest_announcement_wins_for_a_course_and_date():
     rows = [row("Class on 24/9 is cancelled", datetime(2026, 9, 21)), row("Online class on 24/9", datetime(2026, 9, 20))]
 
-    assert changes_from(rows) == {("MA026IU", date(2026, 9, 24)): ClassChange(
+    assert changes_from(rows) == {("MA026IU", date(2026, 9, 24), "class"): ClassChange(
         "MA026IU", 5, "cancelled", date(2026, 9, 24), None, None, None)}
+
+
+def test_a_later_make_up_notice_keeps_the_cancellation_of_the_same_day():
+    rows = [row("Cancel class on September 24", datetime(2026, 9, 15)),
+            row("The make-up for the class on September 24 will be on 3/10 at 8:00", datetime(2026, 9, 16))]
+
+    changes = changes_from(rows)
+
+    assert changes[("MA026IU", date(2026, 9, 24), "class")].kind == "cancelled"
+    assert changes[("MA026IU", date(2026, 10, 3), "makeup")].start == time(8, 0)
 
 
 def test_announcements_without_a_course_code_or_time_are_skipped():
@@ -191,4 +201,4 @@ def test_an_unreadable_announcement_is_skipped(monkeypatch):
 
     monkeypatch.setattr(class_changes, "read_announcement", read)
 
-    assert list(changes_from([row("bad", POSTED), row("Online class on 24/9", POSTED)])) == [("MA026IU", date(2026, 9, 24))]
+    assert list(changes_from([row("bad", POSTED), row("Online class on 24/9", POSTED)])) == [("MA026IU", date(2026, 9, 24), "class")]

@@ -156,7 +156,9 @@ def read_announcement(title, text, posted_at):
 
 
 def changes_from(announcements):
-    """{(course code, Vietnam date): ClassChange}; the newest announcement wins.
+    """{(course code, Vietnam date, slot): ClassChange}, where slot is "class" for a change to a class (online,
+    cancelled) and "makeup" for a make-up class. The newest announcement wins within each slot, so a later
+    make-up notice naming a cancelled day doesn't erase the cancellation.
 
     announcements: (course code, app course id, title, text, posted_at) tuples."""
     changes = {}
@@ -168,5 +170,6 @@ def changes_from(announcements):
             log.exception("Couldn't read an announcement for class changes")
             continue
         for a in announced:
-            changes[(code, a.day)] = ClassChange(code, bb_course_id, *a)
+            slot = "makeup" if a.kind == "makeup" else "class"
+            changes[(code, a.day, slot)] = ClassChange(code, bb_course_id, *a)
     return changes
