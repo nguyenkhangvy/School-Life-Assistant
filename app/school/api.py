@@ -14,7 +14,7 @@ from app.timeutil import utcnow
 
 bp = Blueprint("school_api", __name__, url_prefix="/api/school/sync")
 
-MAX_UPLOAD_BYTES = 1_000_000
+MAX_UPLOAD_BYTES = 5_000_000  # a full semester of Blackboard text, JSON-escaped, stays well under this
 
 
 def _error(code, status, **extra):

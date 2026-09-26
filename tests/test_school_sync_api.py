@@ -1,4 +1,5 @@
 import hashlib
+import json
 from datetime import timedelta
 
 import pytest
@@ -177,7 +178,7 @@ def test_an_oversized_upload_gets_413(app, key):
     client = app.test_client()
     run_id = _start(client, key)
     payload = full_payload()
-    payload["tuition"]["data"]["status_text"] = "x" * 1_100_000
+    payload["tuition"]["data"]["status_text"] = "x" * 5_100_000
 
     response = api(client, "POST", f"/runs/{run_id}/finish", key, json=payload)
 
@@ -195,3 +196,23 @@ def test_the_api_works_with_csrf_protection_switched_on():
     assert response.status_code == 201
     with app.app_context():
         db.drop_all()
+
+
+def test_a_heavy_semester_of_blackboard_data_in_vietnamese_is_accepted(app, key):
+    # 11 courses x 40 announcements of about 1,500 Vietnamese characters: well over 1 MB once JSON
+    # escapes every letter with a diacritic as \uXXXX.
+    from tests.helpers import BB, blackboard_payload
+
+    client = app.test_client()
+    run_id = _start(client, key)
+    course = blackboard_payload()["courses"][0]
+    text = "Thông báo: lớp học bù vào thứ Năm, phòng A2.401. " * 30
+    courses = [{**course, "bb_id": f"_{c}_1", "announcements": [
+        {"bb_id": f"_{c}{i}_1", "title": f"Thông báo {i}", "text": text, "posted_at": "2026-09-28T02:00:00+00:00",
+         "url": f"{BB}/x"} for i in range(40)]} for c in range(1, 12)]
+    payload = {**full_payload(), "blackboard": {"status": "ok", "data": {"courses": courses}}}
+
+    response = api(client, "POST", f"/runs/{run_id}/finish", key, json=payload)
+
+    assert len(json.dumps(payload)) > 1_200_000
+    assert response.status_code == 200
