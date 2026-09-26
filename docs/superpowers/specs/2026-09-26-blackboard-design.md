@@ -3,7 +3,7 @@
 **Date:** 2026-09-26
 **Scope:** bring the student's Blackboard announcements, assignments and due dates, grades and new course materials into the School module
 **Owner:** Nguyen Khang Vy
-**Status:** Design approved in conversation, waiting for review of this document
+**Status:** Built (see docs/superpowers/plans/2026-09-26-blackboard.md)
 **Builds on:** [EduSoft-first Phase 1 design](2026-09-25-edusoft-first-phase1-design.md). The laptop agent, safety rules and sync API described there stay the same unless this document says otherwise.
 
 ---

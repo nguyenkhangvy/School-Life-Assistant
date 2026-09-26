@@ -64,6 +64,7 @@ Stack: Python 3.12, Flask, Jinja templates, MySQL 8, a little JavaScript.
 | Run the tests | `pytest` |
 | Run the tests on your MySQL | `$env:TEST_DATABASE_URL="mysql+pymysql://sla_app:...@localhost:3306/school_life_test?charset=utf8mb4"; pytest` (needs a separate, empty `school_life_test` database; the tests delete its tables) |
 | After pulling new code | `pip install -r requirements-dev.txt` and `flask db upgrade` |
+| Set up or change the Blackboard login | `sla-agent setup --blackboard` |
 
 The tests use a throwaway in-memory database by default, so they never touch your real data. GitHub runs them again on real MySQL for every pull request.
 
