@@ -48,3 +48,10 @@ def test_the_real_answers_become_valid_safe_data():
         assert all("<" not in a.text for a in course.announcements)
         assert all(a.due_at is None or a.due_at.tzinfo is not None for a in course.assignments)
     assert sum(len(c.announcements) + len(c.assignments) + len(c.materials) for c in section.courses) > 0
+
+
+def test_real_assignments_link_to_their_own_page():
+    urls = {a.name: a.url for c in read_blackboard(Replay(), REGISTERED).courses for a in c.assignments}
+
+    assert urls["Finding the problems and potential solutions"] == (
+        f"{BASE_URL}/webapps/blackboard/execute/displayIndividualContent?course_id=_35337_1&content_id=_452089_1")

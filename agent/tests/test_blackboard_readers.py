@@ -251,3 +251,15 @@ def test_answers_in_an_unexpected_shape_raise_source_changed():
 
     with pytest.raises(SourceChanged):
         read_blackboard(FakeApi(answers), [RegisteredCourse("IT093IU", "02")])
+
+
+def test_an_assignment_links_to_its_own_page_when_blackboard_names_it():
+    columns = [{**COLUMNS[0], "contentId": "_452089_1"}, COLUMNS[1], {**COLUMNS[4], "contentId": "javascript:alert(1)"}]
+
+    urls = {a.bb_id: a.url for a in assignments_from(columns, GRADES, "_101_1")}
+
+    assert urls == {
+        "_701_1": f"{BB}/webapps/blackboard/execute/displayIndividualContent?course_id=_101_1&content_id=_452089_1",
+        "_702_1": f"{BB}/webapps/blackboard/execute/launcher?type=Course&id=_101_1&url=",
+        "_705_1": f"{BB}/webapps/blackboard/execute/launcher?type=Course&id=_101_1&url=",
+    }

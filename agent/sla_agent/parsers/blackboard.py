@@ -44,6 +44,22 @@ def course_url(course_id):
     return f"{BASE_URL}/webapps/blackboard/execute/launcher?type=Course&id={quote(course_id)}&url="
 
 
+BB_ID = re.compile(r"_\d+_\d+")
+
+
+def content_url(course_id, content_id):
+    """Blackboard's own page for one item of a course, e.g. an assignment."""
+    return (f"{BASE_URL}/webapps/blackboard/execute/displayIndividualContent"
+            f"?course_id={quote(course_id)}&content_id={quote(content_id)}")
+
+
+def _assignment_url(column, course_id):
+    content_id = column.get("contentId")
+    if isinstance(content_id, str) and BB_ID.fullmatch(content_id):
+        return content_url(course_id, content_id)
+    return course_url(course_id)
+
+
 def _mentions(text, code):
     return re.search(rf"(?<![A-Z0-9]){re.escape(code)}(?![A-Z0-9])", text.upper()) is not None
 
@@ -144,7 +160,7 @@ def assignments_from(columns, grades, course_id):
             grade_text=(display.get("text") or None) if status == "graded" else None,
             status=status,
             feedback=feedback,
-            url=course_url(course_id),
+            url=_assignment_url(column, course_id),
         ))
     return result
 
