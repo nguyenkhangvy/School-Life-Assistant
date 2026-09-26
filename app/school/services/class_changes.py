@@ -85,7 +85,8 @@ def _date(match, posted_day):
 
 
 def _dates(sentence, posted_day):
-    """[(position, date)] in `sentence`, from the posting day on."""
+    """[(start, end, date)] in `sentence`, from the posting day on, in the order they appear; start and end
+    are the date's character positions."""
     found, taken = [], []
     for pattern in DATE_FORMATS:
         for match in pattern.finditer(sentence):
@@ -94,8 +95,8 @@ def _dates(sentence, posted_day):
             taken.append(match.span())
             day = _date(match, posted_day)
             if day is not None and day >= posted_day:
-                found.append((match.start(), day))
-    return found
+                found.append((match.start(), match.end(), day))
+    return sorted(found)
 
 
 def _time(match):
@@ -131,13 +132,18 @@ def read_announcement(title, text, posted_at):
         # Online words decide only when there is no cancel or make-up word: "make-up class online on 3/10"
         # is an online make-up class.
         deciding = [word for word in words if word[1] != "online"] or words
-        for position, day in _dates(sentence, posted_day):
-            kind = min(deciding, key=lambda word: abs(word[0] - position))[1]
+        dates = _dates(sentence, posted_day)
+        for i, (date_start, date_end, day) in enumerate(dates):
+            kind = min(deciding, key=lambda word: abs(word[0] - date_start))[1]
             if kind != "makeup":
                 found.append(Announced(kind, day))
                 continue
-            start, end = _times(sentence)
-            room = ROOM.search(sentence)
+            # A make-up's time and room come from the text after its date (up to the next date), or else
+            # from the text before it (back to the previous date).
+            after = sentence[date_end:dates[i + 1][0] if i + 1 < len(dates) else len(sentence)]
+            before = sentence[dates[i - 1][1] if i > 0 else 0:date_start]
+            start, end = _times(after if TIME.search(after) else before)
+            room = ROOM.search(after) or ROOM.search(before)
             online = any(k == "online" for _, k in words)
             found.append(Announced("makeup", day, start, end, "Online" if online else room and room.group(0)))
     return found

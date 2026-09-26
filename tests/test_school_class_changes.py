@@ -130,9 +130,28 @@ def test_each_date_takes_the_nearest_change_word():
     ("Make up class on 3/10 at 13h15", time(13, 15), None, None),
     ("Makeup class online on 3/10, 1:15 PM", time(13, 15), None, "Online"),
     ("Make-up lecture on 3/10 from 8:00 AM to 9:40 AM, room R109", time(8, 0), time(9, 40), "R109"),
+    ("Make-up class at 8:00 on 3/10", time(8, 0), None, None),
 ])
 def test_make_up_classes(title, start, end, room):
     assert read_announcement(title, "", POSTED) == [Announced("makeup", date(2026, 10, 3), start, end, room)]
+
+
+def test_a_make_up_takes_the_time_and_room_next_to_its_own_date():
+    title = "Class on Thursday 24/9 13:15-15:45 cancelled, make-up class on Saturday 3/10 8:00-9:40 room A2.401"
+
+    assert read_announcement(title, "", POSTED) == [
+        Announced("cancelled", date(2026, 9, 24)),
+        Announced("makeup", date(2026, 10, 3), time(8, 0), time(9, 40), "A2.401"),
+    ]
+
+
+def test_two_make_ups_in_one_sentence_keep_their_own_times():
+    title = "Make-up class on 1/10 at 8:00 and make-up class on 3/10 at 14:00 in R109"
+
+    assert read_announcement(title, "", POSTED) == [
+        Announced("makeup", date(2026, 10, 1), time(8, 0), None, None),
+        Announced("makeup", date(2026, 10, 3), time(14, 0), None, "R109"),
+    ]
 
 
 def row(title, posted, code="MA026IU", bb_course_id=5, text=""):
