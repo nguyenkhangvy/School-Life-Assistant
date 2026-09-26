@@ -20,7 +20,10 @@ CHANGE_WORDS = re.compile(
     r"|(?P<online>\bonline\b|\btrực tuyến\b)",
     re.IGNORECASE,
 )
-CLASS_WORDS = re.compile(r"\b(?:class(?:es)?|lectures?|sessions?|lessons?|lớp|buổi|học|tiết)\b", re.IGNORECASE)
+CLASS_WORDS = re.compile(
+    r"\b(?:class(?:es)?|lectures?|sessions?|lessons?|lớp|buổi|tiết|(?:học|dạy) (?:online|trực tuyến|bù)|nghỉ học)\b",
+    re.IGNORECASE,
+)
 
 MONTH_NAMES = {
     "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6, "july": 7, "august": 8,

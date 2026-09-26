@@ -72,7 +72,7 @@ def test_date_formats_and_vietnamese(title):
 
 
 @pytest.mark.parametrize("title", ["Lớp nghỉ ngày 24/09", "Hủy buổi học 24-9-2026", "No class on Sep 24",
-                                   "Class on 24/9 is cancelled"])
+                                   "Class on 24/9 is cancelled", "Nghỉ học ngày 24/9"])
 def test_cancel_words(title):
     assert read_announcement(title, "", POSTED) == [Announced("cancelled", date(2026, 9, 24))]
 
@@ -95,6 +95,7 @@ def test_plurals_and_word_forms(title, kind):
     "Online class, see https://example.com/10-11/12",  # dates inside links are ignored
     "Tell your classmates to submit online by 24/9",  # "classmates" is not a class word
     "The classroom booking system goes online on 24/9",  # nor is "classroom"
+    "Nộp bài trực tuyến trước ngày 24/9 cho môn học",  # a deadline, not a class
 ])
 def test_what_changes_nothing(title):
     assert read_announcement(title, "", POSTED) == []
@@ -143,6 +144,7 @@ def test_each_date_takes_the_nearest_change_word():
     ("Make-up class on 3/10 from 1:15 to 3:45 PM", time(13, 15), time(15, 45), None),
     ("Make-up class on 3/10, 1:15-3:45pm", time(13, 15), time(15, 45), None),
     ("Make-up class on 3/10 from 11:00 to 1:00 PM", time(11, 0), time(13, 0), None),
+    ("Thầy dạy bù ngày 3/10", None, None, None),
 ])
 def test_make_up_classes(title, start, end, room):
     assert read_announcement(title, "", POSTED) == [Announced("makeup", date(2026, 10, 3), start, end, room)]
