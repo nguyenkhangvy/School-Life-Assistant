@@ -275,6 +275,7 @@ def cmd_fetch(args):
         return 1
     folder = Path(args.save_html)
     edusoft = make_edusoft()
+    say("Reading EduSoft…")
     try:
         edusoft.login(state.student_id, password)
         files = {"home.html": edusoft.get_page("home")}
@@ -298,6 +299,7 @@ def cmd_fetch(args):
         except ParseError:
             registered = [RegisteredCourse(code, group) for code, group in state.registered_courses or []]
         blackboard.capture = {}
+        say(f"Reading Blackboard ({len(registered)} courses). This can take a few minutes; please wait…")
         try:
             blackboard.login(state.blackboard_username, blackboard_password)
             read_blackboard(blackboard, registered)

@@ -456,3 +456,11 @@ def test_fetch_falls_back_to_the_saved_course_list(world, tmp_path, monkeypatch)
     courses = _fetch_blackboard_with(world, tmp_path, monkeypatch, saved_courses=[["IT093IU", "02"]])
 
     assert courses == [("IT093IU", "02")]
+
+
+def test_fetch_says_what_it_is_reading_so_a_slow_run_doesnt_look_stuck(world, tmp_path, monkeypatch, capsys):
+    _fetch_blackboard_with(world, tmp_path, monkeypatch, saved_courses=[["IT093IU", "02"]])
+
+    out = capsys.readouterr().out
+    assert out.index("Reading EduSoft") < out.index("Reading Blackboard") < out.index("Saved ")
+    assert "few minutes" in out
