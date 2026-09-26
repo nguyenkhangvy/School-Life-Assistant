@@ -24,19 +24,19 @@
     </section>
 
     <section class="card">
-      <h2>Due soon</h2>
-      {% if due_soon %}
+      <h2>To submit</h2>
+      {% if to_submit %}
         <ul class="items">
-          {% for a in due_soon %}
-            <li class="item item-due">
-              <span class="item-time">{{ a.due_at | vn_time }}</span>
+          {% for a in to_submit %}
+            <li class="item item-due{% if a.due_at < now %} is-overdue{% endif %}">
+              <span class="item-time">{{ a.due_at | vn_time }}{% if a.due_at < now %} <span class="badge badge-overdue">Overdue</span>{% endif %}</span>
               <span class="item-title">{{ a.name }}</span>
-              <span class="item-meta">{{ a.course.name }}</span>
+              <span class="item-meta">{{ a.course.name }} · <a href="{{ a.url }}" target="_blank" rel="noopener noreferrer">Open assignment ↗</a></span>
             </li>
           {% endfor %}
         </ul>
       {% else %}
-        <p class="muted">Nothing due in the next 7 days.</p>
+        <p class="muted">Nothing left to submit.</p>
       {% endif %}
 
       <h2>Latest announcements</h2>

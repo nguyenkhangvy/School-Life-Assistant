@@ -92,15 +92,49 @@ def test_a_deadline_just_after_midnight_belongs_to_the_next_vietnam_day(app, bro
     assert [e["start"] for e in events if e["extendedProps"]["kind"] == "due"] == ["2026-10-03"]
 
 
-def test_overview_shows_due_soon_and_latest_announcements(app, browser, monkeypatch):
-    add_course(app, 1,
-               assignments=[{"bb_id": "x1", "name": "Lab 3", "due_at": datetime(2026, 10, 2, 16, 59), "status": "not_graded"},
-                            {"bb_id": "x2", "name": "Far away", "due_at": datetime(2026, 11, 30, 16, 59), "status": "not_graded"}],
-               announcements=[{"bb_id": f"a{i}", "title": f"Note {i}", "text": "t", "posted_at": datetime(2026, 9, 20 + i, 2, 0)}
-                              for i in range(5)])
-    monkeypatch.setattr("app.school.routes.utcnow", lambda: datetime(2026, 9, 29, 0, 30))
+def test_overview_shows_the_3_latest_announcements(app, browser):
+    add_course(app, 1, announcements=[{"bb_id": f"a{i}", "title": f"Note {i}", "text": "t",
+                                       "posted_at": datetime(2026, 9, 20 + i, 2, 0)} for i in range(5)])
 
     html = page(browser, "/school/")
 
-    assert "Due soon" in html and "Lab 3" in html and "Far away" not in html
-    assert "Note 4" in html and "Note 2" in html and "Note 1" not in html  # the 3 newest
+    assert "Note 4" in html and "Note 2" in html and "Note 1" not in html
+
+
+def test_to_submit_lists_what_i_havent_submitted_with_a_link(app, browser, monkeypatch):
+    add_course(app, 1, assignments=[
+        {"bb_id": "x1", "name": "Lab 3", "due_at": datetime(2026, 10, 2, 16, 59), "status": "not_graded"},
+        {"bb_id": "x2", "name": "Final report", "due_at": datetime(2026, 11, 30, 16, 59), "status": "not_graded"},
+        {"bb_id": "x3", "name": "Missed quiz", "due_at": datetime(2026, 9, 25, 16, 59), "status": "not_graded"},
+        {"bb_id": "x4", "name": "Long gone", "due_at": datetime(2026, 9, 1, 16, 59), "status": "not_graded"},
+        {"bb_id": "x5", "name": "Handed in", "due_at": datetime(2026, 10, 3, 16, 59), "status": "needs_grading"},
+        {"bb_id": "x6", "name": "Marked", "due_at": datetime(2026, 10, 4, 16, 59), "status": "graded", "score": 9.0},
+        {"bb_id": "x7", "name": "Excused", "due_at": datetime(2026, 10, 5, 16, 59), "status": "exempt"},
+        {"bb_id": "x8", "name": "Attendance", "due_at": None, "status": "not_graded"},
+    ])
+    add_course(app, make_user(app, email="binh@example.com"), name="Binh's Course", assignments=[
+        {"bb_id": "y1", "name": "Binh's lab", "due_at": datetime(2026, 10, 2, 16, 59), "status": "not_graded"}])
+    monkeypatch.setattr("app.school.routes.utcnow", lambda: datetime(2026, 9, 29, 0, 30))
+
+    soup = BeautifulSoup(page(browser, "/school/"), "html.parser")
+    rows = soup.find("h2", string="To submit").find_next("ul").find_all("li")
+
+    assert [r.find(class_="item-title").get_text(strip=True) for r in rows] == ["Missed quiz", "Lab 3", "Final report"]
+    assert "Overdue" in rows[0].get_text() and "Overdue" not in rows[1].get_text()
+    links = [r.find("a", string=lambda s: s and "Open assignment" in s) for r in rows]
+    assert all(l["href"] == BB and l["target"] == "_blank" and "noopener" in l["rel"] for l in links)
+
+
+def test_to_submit_says_when_nothing_is_left(browser):
+    assert "Nothing left to submit." in page(browser, "/school/")
+
+
+def test_done_deadlines_get_a_check_mark_in_the_calendar(app, browser):
+    add_course(app, 1, assignments=[
+        {"bb_id": "x1", "name": "Lab 3", "due_at": datetime(2026, 10, 2, 16, 59), "status": "needs_grading"},
+        {"bb_id": "x2", "name": "Lab 4", "due_at": datetime(2026, 10, 3, 16, 59), "status": "not_graded"}])
+
+    events = browser.get("/school/api/calendar", query_string={"start": "2026-09-28", "end": "2026-10-05"}).get_json()
+
+    assert sorted(e["title"] for e in events if e["extendedProps"]["kind"] == "due") == [
+        "Due 23:59: Lab 4 · Web Application Development", "✓ Due 23:59: Lab 3 · Web Application Development"]

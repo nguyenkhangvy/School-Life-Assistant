@@ -25,6 +25,9 @@ from app.timeutil import utcnow
 
 bp = Blueprint("school", __name__, url_prefix="/school")
 
+OVERDUE_DAYS = 7  # a missed assignment stays in "To submit" this long
+DONE = ("needs_grading", "graded", "exempt")
+
 
 @bp.app_template_filter("vn_time")
 def vn_time(moment):
@@ -110,9 +113,9 @@ def index():
     ).scalars().all()
     lines = system_lines([RunInfo(r.status, r.started_at, r.finished_at, r.error_code, r.error_message, r.sections)
                           for r in recent], now)
-    due_soon = db.session.execute(
-        select(SchoolBbAssignment).filter_by(user_id=current_user.id)
-        .where(SchoolBbAssignment.due_at >= now, SchoolBbAssignment.due_at < now + timedelta(days=7))
+    to_submit = db.session.execute(
+        select(SchoolBbAssignment).filter_by(user_id=current_user.id, status="not_graded")
+        .where(SchoolBbAssignment.due_at >= now - timedelta(days=OVERDUE_DAYS))
         .order_by(SchoolBbAssignment.due_at)
     ).scalars().all()
     latest_announcements = db.session.execute(
@@ -128,7 +131,8 @@ def index():
         tomorrow_items=schedule.items_on(current_user.id, today + timedelta(days=1)),
         next_exam=next_exam,
         changes=changes,
-        due_soon=due_soon,
+        to_submit=to_submit,
+        now=now,
         latest_announcements=latest_announcements,
     )
 
@@ -175,7 +179,8 @@ def calendar_feed():
     events = [_calendar_event(item) for item in items]
     for deadline in schedule.deadlines_between(current_user.id, schedule.day_start_utc(start), schedule.day_start_utc(end)):
         events.append({
-            "title": f"Due {vn_clock(deadline.due_at)}: {deadline.name} · {deadline.course.name}",
+            "title": f"{'✓ ' if deadline.status in DONE else ''}Due {vn_clock(deadline.due_at)}: "
+                     f"{deadline.name} · {deadline.course.name}",
             "start": schedule.vietnam_date(deadline.due_at).isoformat(),
             "allDay": True,
             "classNames": ["event-due"],
