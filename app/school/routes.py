@@ -152,15 +152,30 @@ def _wall_clock(moment_utc):
     return (moment_utc + schedule.VIETNAM_OFFSET).isoformat(timespec="seconds")
 
 
+CHANGE_TITLES = {"online": "Online", "makeup": "Make-up", "cancelled": "Cancelled"}
+
+
 def _calendar_event(item):
+    title = f"{item.label}: {item.title}" if item.label else item.title
+    css = f"event-{item.kind}"
+    if item.change:
+        title = f"{CHANGE_TITLES[item.change]}: {title}"
+        css = "event-cancelled" if item.change == "cancelled" else "event-changed"
     event = {
-        "title": f"{item.label}: {item.title}" if item.label else item.title,
+        "title": f"Make-up class: {item.title} (see announcement)" if item.all_day else title,
         "start": _wall_clock(item.start_at),
-        "classNames": [f"event-{item.kind}"],
+        "classNames": [css],
         "extendedProps": {"kind": item.kind, "code": item.code, "room": item.room},
     }
-    if item.end_at:
+    if item.all_day:
+        event["start"] = schedule.vietnam_date(item.start_at).isoformat()
+        event["allDay"] = True
+    elif item.end_at:
         event["end"] = _wall_clock(item.end_at)
+    if item.change:
+        event["extendedProps"]["change"] = item.change
+    if item.bb_course_id:
+        event["url"] = url_for("school.course", course_id=item.bb_course_id)
     return event
 
 

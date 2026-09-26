@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
     slotMinTime: "07:00:00",
     slotMaxTime: "19:00:00",
     allDaySlot: true,
-    allDayText: "Due",
+    allDayText: "All day",
     nowIndicator: true,
     height: "auto",
     slotLabelFormat: clock,
