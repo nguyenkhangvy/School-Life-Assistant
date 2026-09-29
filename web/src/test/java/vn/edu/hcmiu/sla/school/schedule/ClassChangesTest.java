@@ -2,10 +2,14 @@ package vn.edu.hcmiu.sla.school.schedule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -16,10 +20,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+
 import vn.edu.hcmiu.sla.school.schedule.ClassChanges.Announced;
 import vn.edu.hcmiu.sla.school.schedule.ClassChanges.ClassChange;
 import vn.edu.hcmiu.sla.school.schedule.ClassChanges.Posted;
 import vn.edu.hcmiu.sla.school.schedule.ClassChanges.Slot;
+import vn.edu.hcmiu.sla.school.schedule.ClassChanges.Source;
 
 /** Java twin of tests/test_school_class_changes.py. postedAt values are UTC. */
 class ClassChangesTest {
@@ -80,6 +88,33 @@ class ClassChangesTest {
     void theRealAnnouncements(Real announcement, Announced expected) {
         assertThat(ClassChanges.readAnnouncement(announcement.title(), announcement.text(), announcement.postedAt()))
                 .containsOnly(expected);
+    }
+
+    /** contract/samples/class-changes/sentences.json: the laptop agent's Python reader checks the same cases. */
+    static Stream<Arguments> sharedExamples() throws IOException {
+        JsonNode cases = JsonMapper.builder().build()
+                .readTree(Files.readString(Path.of("..", "contract", "samples", "class-changes", "sentences.json")))
+                .get("cases");
+        return cases.valueStream().map(c -> Arguments.of(c.get("name").asString(), c));
+    }
+
+    static LocalTime clock(JsonNode change, String field) {
+        return change.hasNonNull(field) ? LocalTime.parse(change.get(field).asString()) : null;
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("sharedExamples")
+    void everySharedExample(String name, JsonNode example) {
+        List<Announced> expected = example.get("changes").valueStream()
+                .map(c -> new Announced(c.get("kind").asString(), LocalDate.parse(c.get("day").asString()),
+                        clock(c, "start"), clock(c, "end"), c.hasNonNull("room") ? c.get("room").asString() : null))
+                .toList();
+
+        List<Announced> found = ClassChanges.readAnnouncement(example.get("title").asString(),
+                example.get("text").asString(), LocalDateTime.parse(example.get("posted_at").asString()));
+
+        // A title and a text that say the same thing give the same change twice; the file lists it once.
+        assertThat(List.copyOf(new LinkedHashSet<>(found))).isEqualTo(expected);
     }
 
     @Test
@@ -211,7 +246,7 @@ class ClassChangesTest {
     // ---- Changes by course and day -------------------------------------------------
 
     static Posted row(String title, LocalDateTime posted) {
-        return new Posted("MA026IU", 5, title, "", posted);
+        return new Posted("MA026IU", Source.course(5), title, "", posted);
     }
 
     @Test
@@ -221,7 +256,7 @@ class ClassChangesTest {
                 row("Online class on 24/9", LocalDateTime.of(2026, 9, 20, 0, 0))));
 
         assertThat(changes).containsExactly(Map.entry(new Slot("MA026IU", LocalDate.of(2026, 9, 24), "class"),
-                new ClassChange("MA026IU", 5, "cancelled", LocalDate.of(2026, 9, 24), null, null, null)));
+                new ClassChange("MA026IU", Source.course(5), "cancelled", LocalDate.of(2026, 9, 24), null, null, null)));
     }
 
     @Test
@@ -237,7 +272,7 @@ class ClassChangesTest {
     @Test
     void announcementsWithoutACourseCodeOrTimeAreSkipped() {
         assertThat(ClassChanges.changesFrom(List.of(row("Online class on 24/9", null),
-                new Posted(null, 5, "Online class on 24/9", "", POSTED)))).isEmpty();
+                new Posted(null, Source.course(5), "Online class on 24/9", "", POSTED)))).isEmpty();
     }
 
     @Test

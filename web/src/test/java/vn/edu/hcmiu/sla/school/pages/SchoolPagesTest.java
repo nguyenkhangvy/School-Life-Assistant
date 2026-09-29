@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ import vn.edu.hcmiu.sla.school.SchoolTestData.Meeting;
 import vn.edu.hcmiu.sla.school.TestClock;
 import vn.edu.hcmiu.sla.school.model.SchoolBbCourse;
 import vn.edu.hcmiu.sla.school.model.SchoolChange;
+import vn.edu.hcmiu.sla.school.model.SchoolMailJoined;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncRun;
 import vn.edu.hcmiu.sla.school.sync.DeviceKeys;
 
@@ -260,6 +262,21 @@ class SchoolPagesTest {
         assertThat(item.group(1)).contains("<a href=\"/school/courses/" + courseId + "\">See announcement</a>");
     }
 
+    @Test
+    void theOverviewShowsAnEventJoinedForToday() throws Exception {
+        db.persist(new SchoolMailJoined(an.id(), "a".repeat(64), LocalDate.of(2026, 9, 29), LocalTime.of(18, 0), null,
+                "Talkshow B", "Hall A2", false, false, LocalDateTime.of(2026, 9, 28, 1, 0)));
+        db.flush();
+        clock.set(LocalDateTime.of(2026, 9, 29, 0, 30)); // Tue 07:30 in Vietnam
+
+        String html = page("/school");
+
+        Matcher item = Pattern.compile("<li class=\"item item-event\">(.*?)</li>", Pattern.DOTALL).matcher(html);
+        assertThat(item.find()).isTrue();
+        assertThat(item.group(1)).contains("18:00–19:00", "<strong>Event:</strong>", "Talkshow B")
+                .containsPattern("Hall A2 · <a\\s+href=\"/school/mailbox#mail-" + "a".repeat(64) + "\">See email</a>");
+    }
+
     // ---- Timetable, exams, tuition --------------------------------------------------------
 
     @Test
@@ -272,7 +289,7 @@ class SchoolPagesTest {
 
     @Test
     void theTimetableLegendExplainsTheNewColours() throws Exception {
-        assertThat(page("/school/timetable")).contains("Online / make-up", "Cancelled");
+        assertThat(page("/school/timetable")).contains("Online / make-up", "Cancelled", "Joined event");
     }
 
     @Test
@@ -336,5 +353,19 @@ class SchoolPagesTest {
         assertThat(html).contains("Heads up", "Lab 3", "Fri 02/10 23:59", "8.5/10", "Good work", "Week 5 slides.pdf");
         assertThat(linkTo(html, BB)).contains("target=\"_blank\"", "rel=\"noopener noreferrer\"");
         assertThat(html.split("Open in Blackboard ↗", -1)).hasSize(5); // the course and its three items
+    }
+
+    @Test
+    void aClassChangedByEmailLinksToTheEmailInMailbox() throws Exception {
+        clock.set(LocalDateTime.of(2026, 9, 29, 0, 0)); // Tue 29/09 07:00 in Vietnam
+        data.course(an, "IT093IU", "Web Application Development", WEB_TUESDAY);
+        String key = "f".repeat(64);
+        data.save(data.emailChange(data.lecturerEmail(an, key, LocalDateTime.of(2026, 9, 28, 2, 0), null), "IT093IU",
+                "online", LocalDate.of(2026, 9, 29), null, null, null));
+
+        String html = page("/school");
+
+        assertThat(linkTo(html, "/school/mailbox#mail-" + key)).isNotEmpty();
+        assertThat(html).contains(">See email</a>");
     }
 }

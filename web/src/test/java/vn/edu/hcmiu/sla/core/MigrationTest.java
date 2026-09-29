@@ -45,6 +45,8 @@ class MigrationTest {
                 "users", "school_sync_devices", "school_sync_settings", "school_sync_runs", "school_changes",
                 "school_courses", "school_class_meetings", "school_exams", "school_tuition", "school_events",
                 "school_bb_courses", "school_bb_announcements", "school_bb_assignments", "school_bb_materials",
+                "school_mail", "school_mail_changes", "school_mail_choices", "school_mail_status", "school_mail_sessions",
+                "school_mail_settings", "school_mail_joined",
                 "flyway_schema_history");
     }
 
@@ -84,6 +86,24 @@ class MigrationTest {
         migrate(pythonMade, "classpath:db/migration", "classpath:db/later");
 
         assertThat(tables(pythonMade)).contains("later_items");
+    }
+
+    @Test
+    void aMailSettingsRowWithoutAutoDoneHasItOn() throws Exception {
+        // No row means auto-Done is on; a row written without the column means the same.
+        DataSource fresh = new DriverManagerDataSource(
+                "jdbc:h2:mem:fresh-" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1", "sa", "");
+        migrate(fresh, "classpath:db/migration");
+
+        try (Connection connection = fresh.getConnection(); Statement sql = connection.createStatement()) {
+            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
+                    + " VALUES (1, 'an@example.com', 'An', 'x', '2026-09-29 08:00:00')");
+            sql.execute("INSERT INTO school_mail_settings (user_id) VALUES (1)");
+            try (ResultSet row = sql.executeQuery("SELECT auto_done FROM school_mail_settings WHERE user_id = 1")) {
+                assertThat(row.next()).isTrue();
+                assertThat(row.getBoolean("auto_done")).isTrue();
+            }
+        }
     }
 
     @Test

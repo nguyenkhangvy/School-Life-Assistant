@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +34,7 @@ import vn.edu.hcmiu.sla.auth.AppUser;
 import vn.edu.hcmiu.sla.school.SchoolTestData;
 import vn.edu.hcmiu.sla.school.SchoolTestData.Meeting;
 import vn.edu.hcmiu.sla.school.model.SchoolBbCourse;
+import vn.edu.hcmiu.sla.school.model.SchoolMailJoined;
 
 /**
  * The Timetable's calendar feed: Java twin of the feed tests in tests/test_school_schedule_pages.py,
@@ -110,6 +113,12 @@ class CalendarFeedTest {
         return data.save(course);
     }
 
+    void join(AppUser who, LocalDate day, LocalTime start, LocalTime end, String place, boolean points) {
+        db.persist(new SchoolMailJoined(who.id(), "a".repeat(64), day, start, end, "[THƯ MỜI] Workshop A", place,
+                points, false, LocalDateTime.of(2026, 9, 28, 1, 0)));
+        db.flush();
+    }
+
     // ---- Classes and exams ------------------------------------------------------------
 
     @Test
@@ -125,6 +134,43 @@ class CalendarFeedTest {
                           "classNames": ["event-class"],
                           "extendedProps": {"kind": "class", "code": "IT093IU", "room": "A2.508"}}]
                         """, JsonCompareMode.STRICT));
+    }
+
+    // ---- Events joined from Mailbox (spec 2026-09-28-mailbox-events-design.md, 4.7) ----
+
+    @Test
+    void aJoinedEventIsGreenInTheCalendarAndLinksToItsEmail() throws Exception {
+        join(an, LocalDate.of(2026, 9, 29), LocalTime.of(14, 0), LocalTime.of(16, 0), "Hall A2", true);
+
+        mvc.perform(get("/school/api/calendar").param("start", NEXT_WEEK_START).param("end", NEXT_WEEK_END)
+                        .with(user(an)))
+                .andExpect(content().json("""
+                        [{"title": "★ Training points: [THƯ MỜI] Workshop A",
+                          "start": "2026-09-29T14:00:00",
+                          "end": "2026-09-29T16:00:00",
+                          "classNames": ["event-event"],
+                          "url": "/school/mailbox#mail-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                          "extendedProps": {"kind": "event", "code": null, "room": "Hall A2"}}]
+                        """, JsonCompareMode.STRICT));
+    }
+
+    @Test
+    void aJoinedSessionWithoutAnEndLastsAnHourNextToAClass() throws Exception {
+        data.course(an, "IT093IU", "Web Application Development", WEB_TUESDAY);
+        join(an, LocalDate.of(2026, 9, 29), LocalTime.of(9, 0), null, null, false);
+
+        List<Map<String, Object>> week = nextWeek();
+
+        assertThat(week).extracting(e -> e.get("title")).containsExactly("Web Application Development",
+                "Event: [THƯ MỜI] Workshop A");
+        assertThat(week.get(1)).containsEntry("start", "2026-09-29T09:00:00").containsEntry("end", "2026-09-29T10:00:00");
+    }
+
+    @Test
+    void someoneElsesJoinedEventsAreNeverInMyCalendar() throws Exception {
+        join(data.user("binh@example.com"), LocalDate.of(2026, 9, 29), LocalTime.of(14, 0), null, null, false);
+
+        assertThat(nextWeek()).isEmpty();
     }
 
     @Test
@@ -280,7 +326,8 @@ class CalendarFeedTest {
 
         assertThat(classes().stream().filter(e -> Boolean.TRUE.equals(e.get("allDay"))).toList()).singleElement()
                 .satisfies(note -> assertThat(List.of(note.get("title"), note.get("start"), note.get("classNames")))
-                        .containsExactly("Make-up class: " + PROBABILITY + " (see announcement)", "2026-09-26",
+                        .containsExactly("Make-up class: " + PROBABILITY + " (time not given, see announcement)",
+                                "2026-09-26",
                                 List.of("event-changed")));
     }
 
@@ -333,5 +380,100 @@ class CalendarFeedTest {
         announce(data.user("binh@example.com"), "MA026IU", "ONLINE CLASS ON SEPTEMBER 24", "", POSTED);
 
         assertThat(classes()).singleElement().extracting(e -> e.get("classNames")).isEqualTo(List.of("event-class"));
+    }
+
+    // ---- Class changes from lecturers' emails ----------------------------------------
+
+    static final String KEY = "e".repeat(64);
+    static final LocalDate SEPT_24 = LocalDate.of(2026, 9, 24);
+
+    @Test
+    void anEmailsChangeMarksTheClassAndLinksToTheEmail() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        data.save(data.emailChange(data.lecturerEmail(an, KEY, POSTED, null), "MA026IU", "online", SEPT_24, null, null,
+                null));
+
+        Map<String, Object> event = classes().get(0);
+
+        assertThat(event.get("title")).isEqualTo("Online: " + PROBABILITY);
+        assertThat(event.get("url")).isEqualTo("/school/mailbox#mail-" + KEY);
+    }
+
+    @Test
+    void aBlackboardCopyIsSkippedWhenTheAnnouncementIsStoredWhicheverCameFirst() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        Integer courseId = announce(an, "MA026IU", "Online class on September 24", "", POSTED);
+        data.save(data.emailChange(data.lecturerEmail(an, KEY, POSTED.minusMinutes(5), " online class on september 24 "),
+                "MA026IU", "online", SEPT_24, null, null, null));
+
+        Map<String, Object> event = classes().get(0);
+
+        assertThat(classes()).hasSize(1);
+        assertThat(event.get("url")).isEqualTo("/school/courses/" + courseId);
+    }
+
+    @Test
+    void aBlackboardCopyCountsWhileBlackboardHasNotSyncedIt() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        data.save(data.emailChange(data.lecturerEmail(an, KEY, POSTED, "Online class on September 24"), "MA026IU",
+                "online", SEPT_24, null, null, null));
+
+        assertThat(classes()).extracting(e -> props(e).get("change")).containsExactly("online");
+    }
+
+    @Test
+    void theSameChangeSentBothWaysIsOneClass() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        announce(an, "MA026IU", "Online class on September 24", "", POSTED);
+        data.save(data.emailChange(data.lecturerEmail(an, KEY, POSTED.plusHours(1), null), "MA026IU", "online",
+                SEPT_24, null, null, null));
+
+        assertThat(classes()).hasSize(1);
+        assertThat(classes().get(0).get("url")).isEqualTo("/school/mailbox#mail-" + KEY);
+    }
+
+    @Test
+    void aNewerEmailOverridesAnOlderAnnouncement() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        announce(an, "MA026IU", "Online class on September 24", "", POSTED);
+        data.save(data.emailChange(data.lecturerEmail(an, KEY, POSTED.plusHours(3), null), "MA026IU", "cancelled",
+                SEPT_24, null, null, null));
+
+        assertThat(classes()).extracting(e -> props(e).get("change")).containsExactly("cancelled");
+    }
+
+    @Test
+    void anEmailedMakeUpClassWithoutATimeSaysToSeeTheEmail() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        data.save(data.emailChange(data.lecturerEmail(an, KEY, POSTED, null), "MA026IU", "makeup",
+                LocalDate.of(2026, 9, 26), null, null, null));
+
+        assertThat(makeups()).singleElement().satisfies(note -> assertThat(List.of(note.get("title"), note.get("url")))
+                .containsExactly("Make-up class: " + PROBABILITY + " (time not given, see email)",
+                        "/school/mailbox#mail-" + KEY));
+    }
+
+    @Test
+    void aMakeUpByEmailKeepsTheCancellationByAnnouncement() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        announce(an, "MA026IU", "Cancel class on September 24", "", POSTED);
+        data.save(data.emailChange(data.lecturerEmail(an, KEY, POSTED.plusHours(3), null), "MA026IU", "makeup",
+                LocalDate.of(2026, 9, 26), LocalTime.of(8, 0), LocalTime.of(9, 40), "A2.401"));
+
+        List<Map<String, Object>> week = classes();
+
+        assertThat(week).extracting(e -> props(e).get("change")).containsExactly("cancelled", "makeup");
+        assertThat(week.get(1).get("start")).isEqualTo("2026-09-26T08:00:00");
+        assertThat(props(week.get(1)).get("room")).isEqualTo("A2.401");
+    }
+
+    @Test
+    void anotherUsersEmailsNeverChangeMyClasses() throws Exception {
+        data.course(an, "MA026IU", PROBABILITY, THU_24);
+        AppUser binh = data.user("binh@example.com");
+        data.save(data.emailChange(data.lecturerEmail(binh, KEY, POSTED, null), "MA026IU", "cancelled", SEPT_24, null,
+                null, null));
+
+        assertThat(classes()).extracting(e -> props(e).get("change")).containsOnlyNulls();
     }
 }
