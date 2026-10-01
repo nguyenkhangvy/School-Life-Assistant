@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.data.domain.Limit;
@@ -16,11 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
-import vn.edu.hcmiu.sla.core.Flash;
 import vn.edu.hcmiu.sla.school.VietnamTime;
 import vn.edu.hcmiu.sla.school.events.MyEvents;
 import vn.edu.hcmiu.sla.school.model.SchoolBbAnnouncement;
@@ -100,13 +100,13 @@ public class SchoolController {
 
     private SyncStatus.Status status(Integer userId, LocalDateTime now) {
         SchoolSyncSettings settings = syncRuns.settings(userId);
-        RunInfo latest = syncRuns.latestRun(userId).map(RunInfo::of).orElse(null);
-        LocalDateTime lastGood = syncRuns.latestRun(userId, SchoolSyncRun.SUCCESS, SchoolSyncRun.PARTIAL)
+        RunInfo latest = syncRuns.latestFullRun(userId).map(RunInfo::of).orElse(null);
+        LocalDateTime lastGood = syncRuns.latestFullRun(userId, SchoolSyncRun.SUCCESS, SchoolSyncRun.PARTIAL)
                 .map(SchoolSyncRun::getFinishedAt).orElse(null);
         List<SchoolSyncDevice> active = devices.findByUserIdAndRevokedAtIsNullOrderByCreatedAtAscIdAsc(userId);
         LocalDateTime lastSeen = active.stream().map(SchoolSyncDevice::getLastSeenAt).filter(Objects::nonNull)
                 .max(Comparator.naturalOrder()).orElse(null);
-        return SyncStatus.describe(now, settings.getIntervalHours(), settings.getSyncRequestedAt(), latest, lastGood,
+        return SyncStatus.describe(now, settings.getSyncRequestedAt(), latest, lastGood,
                 !active.isEmpty(), lastSeen);
     }
 
@@ -116,7 +116,7 @@ public class SchoolController {
         LocalDate today = VietnamTime.date(now);
         model.addAttribute("status", status(user.id(), now));
         model.addAttribute("systemLines", SyncStatus.systemLines(
-                runs.findTop10ByUserIdOrderByStartedAtDescIdDesc(user.id()).stream().map(RunInfo::of).toList(), now));
+                runs.recentRuns(user.id()).stream().map(RunInfo::of).toList(), now));
         model.addAttribute("today", today);
         model.addAttribute("todayItems", schedule.itemsOn(user.id(), today));
         model.addAttribute("tomorrowItems", schedule.itemsOn(user.id(), today.plusDays(1)));
@@ -128,6 +128,7 @@ public class SchoolController {
         model.addAttribute("tuitionNotice", TuitionBills.notice(bills, today));
         model.addAttribute("recentBills", TuitionBills.recent(bills, today));
         model.addAttribute("changes", changes.findTop10ByUserIdOrderByIdDesc(user.id()));
+        model.addAttribute("version", runs.version(user.id()));
         model.addAttribute("now", now);
         return "school/index";
     }
@@ -185,10 +186,16 @@ public class SchoolController {
         return "school/tuition";
     }
 
+    /** For live.js on Mailbox and Overview (docs/superpowers/specs/2026-10-01-live-sync-design.md, 4.3). */
+    @GetMapping("/api/version")
+    @ResponseBody
+    Map<String, Integer> version(@AuthenticationPrincipal AppUser user) {
+        return Map.of("version", runs.version(user.id()));
+    }
+
     @PostMapping("/sync-now")
-    String syncNow(@AuthenticationPrincipal AppUser user, RedirectAttributes redirect) {
+    String syncNow(@AuthenticationPrincipal AppUser user) {
         syncRuns.requestSync(user.id(), now());
-        Flash.success(redirect, "Sync requested. Your laptop will pick it up at its next check-in.");
-        return "redirect:/school";
+        return "redirect:/school"; // the status box says "Sync requested" and then updates itself (live.js)
     }
 }

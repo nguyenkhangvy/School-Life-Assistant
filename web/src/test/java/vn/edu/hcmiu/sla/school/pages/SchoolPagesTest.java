@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -159,7 +160,30 @@ class SchoolPagesTest {
 
         String html = page("/school");
 
-        assertThat(html).contains("EduSoft:", "IUPay:", "Blackboard:", "sla-agent setup --blackboard");
+        assertThat(html).contains("EduSoft:", "IUPay:", "Blackboard:", "Change it in Accounts.", "Open Accounts →");
+    }
+
+    @Test
+    void mailOnlyRunsUpdateTheOutlookLineButNeverHideTheOtherSystems() throws Exception {
+        deviceKeys.create(an.id(), "My laptop", LocalDateTime.of(2026, 9, 1, 0, 0));
+        clock.set(LocalDateTime.of(2026, 10, 1, 8, 0)); // 15:00 in Vietnam
+        Map<String, String> ok = Map.of("status", "ok");
+        SchoolSyncRun full = new SchoolSyncRun(an.id(), null, "scheduled", LocalDateTime.of(2026, 10, 1, 7, 0));
+        full.finish(SchoolSyncRun.SUCCESS, LocalDateTime.of(2026, 10, 1, 7, 0), null, null);
+        full.setSections(Map.of("timetable", ok, "exams", ok, "iupay", ok, "outlook", ok));
+        db.persist(full);
+        for (int minute = 10; minute < 30; minute++) {
+            SchoolSyncRun mail = new SchoolSyncRun(an.id(), null, "mail", LocalDateTime.of(2026, 10, 1, 7, minute));
+            mail.finish(SchoolSyncRun.SUCCESS, LocalDateTime.of(2026, 10, 1, 7, minute), null, null);
+            mail.setSections(Map.of("outlook", ok));
+            db.persist(mail);
+        }
+        db.flush();
+
+        String html = page("/school").replaceAll("\\s+", " ");
+
+        assertThat(html).contains("Synced at 14:00", "EduSoft:</strong> synced at 14:00",
+                "IUPay:</strong> synced at 14:00", "Outlook:</strong> synced at 14:29");
     }
 
     @Test
@@ -172,7 +196,8 @@ class SchoolPagesTest {
         db.persist(run);
         db.flush();
 
-        mvc.perform(post("/school/sync-now").with(user(an)).with(csrf())).andExpect(redirectedUrl("/school"));
+        mvc.perform(post("/school/sync-now").with(user(an)).with(csrf())).andExpect(redirectedUrl("/school"))
+                .andExpect(flash().attributeCount(0)); // the status box says it, and updates itself
 
         mvc.perform(get("/api/school/sync/check").header("Authorization", "Bearer " + key))
                 .andExpect(jsonPath("$.reason").value("requested"));
@@ -347,7 +372,8 @@ class SchoolPagesTest {
     void theTimetableShowsEveningsAndNamesOwnEventsInTheLegend() throws Exception {
         assertThat(page("/school/timetable")).contains("legend-mine", "My event");
         assertThat(mvc.perform(get("/js/timetable.js")).andReturn().getResponse().getContentAsString())
-                .contains("slotMaxTime: \"23:00:00\"");
+                .contains("var DAY_START = \"07:00:00\"", "var DAY_END = \"23:00:00\"", "\"Show more\"",
+                        "\"Show less\"", "localStorage", "scrollTime: DAY_START");
     }
 
     // ---- Timetable, exams, tuition --------------------------------------------------------
@@ -531,5 +557,93 @@ class SchoolPagesTest {
 
         assertThat(linkTo(html, "/school/mailbox#mail-" + key)).isNotEmpty();
         assertThat(html).contains(">See email</a>");
+    }
+
+    // ---- Pages that update themselves ------------------------------------------------------
+
+    SchoolSyncRun finishedRun(AppUser who, String trigger, String status) {
+        SchoolSyncRun run = new SchoolSyncRun(who.id(), null, trigger, LocalDateTime.of(2026, 10, 1, 7, 0));
+        if (!status.equals(SchoolSyncRun.RUNNING)) {
+            run.finish(status, LocalDateTime.of(2026, 10, 1, 7, 1), null, null);
+        }
+        db.persist(run);
+        db.flush();
+        return run;
+    }
+
+    int version() throws Exception {
+        String json = mvc.perform(get("/school/api/version").with(user(an))).andReturn().getResponse()
+                .getContentAsString();
+        return Integer.parseInt(json.replaceAll("\\D", ""));
+    }
+
+    @Test
+    void theVersionMovesWhenASyncStartsAndWhenItEnds() throws Exception {
+        assertThat(version()).isZero();
+        SchoolSyncRun full = finishedRun(an, "scheduled", SchoolSyncRun.SUCCESS);
+        finishedRun(data.user("binh@example.com"), "mail", SchoolSyncRun.SUCCESS); // another user's: no effect
+        int finished = version();
+        assertThat(finished).isEqualTo(2 * full.getId() + 1);
+
+        SchoolSyncRun running = finishedRun(an, "mail", SchoolSyncRun.RUNNING);
+        int started = version();
+        running.finish(SchoolSyncRun.SUCCESS, LocalDateTime.of(2026, 10, 1, 7, 2), null, null);
+        db.flush();
+        int ended = version();
+
+        assertThat(started).isEqualTo(2 * running.getId()).isGreaterThan(finished);
+        assertThat(ended).isEqualTo(2 * running.getId() + 1);
+    }
+
+    @Test
+    void theOverviewIsBusyOnlyWhileASyncIsRequestedOrRunning() throws Exception {
+        deviceKeys.create(an.id(), "My laptop", LocalDateTime.of(2026, 9, 1, 0, 0));
+        clock.set(LocalDateTime.of(2026, 10, 1, 7, 30));
+        finishedRun(an, "scheduled", SchoolSyncRun.SUCCESS); // 07:00-07:01
+        assertThat(page("/school")).doesNotContain("data-busy");
+
+        mvc.perform(post("/school/sync-now").with(user(an)).with(csrf()));
+        assertThat(page("/school")).contains("data-busy=\"true\"", "waiting for your laptop");
+
+        SchoolSyncRun run = new SchoolSyncRun(an.id(), null, "manual", LocalDateTime.of(2026, 10, 1, 7, 31));
+        db.persist(run); // the laptop started
+        db.flush();
+        clock.set(LocalDateTime.of(2026, 10, 1, 7, 32));
+        assertThat(page("/school")).contains("data-busy=\"true\"", "Syncing…");
+
+        run.finish(SchoolSyncRun.SUCCESS, LocalDateTime.of(2026, 10, 1, 7, 32), null, null);
+        db.flush();
+        assertThat(page("/school")).doesNotContain("data-busy").contains("Synced at");
+    }
+
+    @Test
+    void theVersionNeedsLogin() throws Exception {
+        mvc.perform(get("/school/api/version")).andExpect(redirectedUrl("/auth/login"));
+    }
+
+    @Test
+    void theOverviewMarksItsLiveAreasAndLoadsTheScript() throws Exception {
+        SchoolSyncRun run = finishedRun(an, "scheduled", SchoolSyncRun.SUCCESS);
+
+        String html = page("/school");
+
+        assertThat(html).contains("data-version=\"" + (2 * run.getId() + 1) + "\"", "src=\"/js/live.js\"");
+        for (String area : List.of("status", "notice", "today", "tomorrow", "to-submit", "announcements", "next-exam",
+                "bills", "changes")) {
+            assertThat(html).contains("data-live=\"" + area + "\"");
+        }
+    }
+
+    @Test
+    void theStatusCardLinksToAccountsOnlyWhileSomethingIsPaused() throws Exception {
+        deviceKeys.create(an.id(), "My laptop", LocalDateTime.of(2026, 9, 1, 0, 0));
+        finishedRun(an, "scheduled", SchoolSyncRun.SUCCESS);
+
+        assertThat(page("/school")).doesNotContain("Open Accounts →");
+    }
+
+    @Test
+    void withoutBlackboardCoursesThePagePointsToAccounts() throws Exception {
+        assertThat(page("/school/courses")).contains("Set up Blackboard in <a href=\"/school/accounts\">Accounts</a>");
     }
 }

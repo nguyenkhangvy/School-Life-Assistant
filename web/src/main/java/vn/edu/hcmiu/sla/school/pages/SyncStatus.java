@@ -24,6 +24,7 @@ public final class SyncStatus {
     }
 
     static final String RETRY = "It will be tried again automatically.";
+    static final Duration LAPTOP_SILENT = Duration.ofHours(1); // the laptop checks in every minute while it's on
     static final List<String> PART_ORDER = List.of("timetable", "exams", "tuition", "iupay", "blackboard", "outlook");
 
     /** What a status says: state, headline, and what to do. */
@@ -32,7 +33,7 @@ public final class SyncStatus {
 
     static final Map<String, Problem> PROBLEMS = Map.of(
             "bad_credentials", new Problem("paused", "Paused: EduSoft rejected your student ID or password",
-                    "Run `sla-agent setup` on your laptop to enter them again."),
+                    "Enter them again in Accounts (open School-Life-Assistant on your laptop)."),
             "extra_verification", new Problem("paused", "Paused: EduSoft asked for extra verification",
                     "Automatic sync can't pass a CAPTCHA or code. Save the pages from your browser "
                             + "and use `sla-agent import`."),
@@ -45,7 +46,7 @@ public final class SyncStatus {
 
     static final Map<String, Problem> BLACKBOARD_PROBLEMS = Map.of(
             "bad_credentials", new Problem("paused", "Paused: Blackboard rejected your username or password",
-                    "Run `sla-agent setup --blackboard` on your laptop to enter them again."),
+                    "Enter them again in Accounts (open School-Life-Assistant on your laptop)."),
             "extra_verification", new Problem("paused", "Paused: Blackboard asked for extra verification",
                     "Automatic Blackboard sync can't pass a CAPTCHA, code or Microsoft sign-in."),
             "network", new Problem("failed", "Sync failed: Blackboard couldn't be reached", RETRY),
@@ -67,14 +68,14 @@ public final class SyncStatus {
             "extra_verification", new Problem("failed", "Sync failed: IUPay now asks for a captcha",
                     "Tuition shows the last bills known. Check IUPay in your browser; the agent never passes a captcha."),
             "bad_credentials", new Problem("failed", "Sync failed: IUPay didn't recognise your student ID",
-                    "Check the student ID with `sla-agent status`; run `sla-agent setup` if it is wrong."),
+                    "Check the student ID in Accounts (open School-Life-Assistant on your laptop)."),
             "source_changed", new Problem("failed", "Sync failed: IUPay's data format has changed",
                     "sla-agent needs an update to read it."));
 
     /** IUPay's own words on its line; other codes use FAILURE_HINTS. IUPay never pauses. */
     static final Map<String, String> IUPAY_HINTS = Map.of(
             "extra_verification", "now asks for a captcha; tuition shows the last bills known.",
-            "bad_credentials", "didn't recognise your student ID; check it with `sla-agent status`.");
+            "bad_credentials", "didn't recognise your student ID; check it in Accounts.");
 
     static final Map<String, String> PART_NAMES = Map.of(
             "timetable", "timetable", "exams", "exam schedule", "tuition", "tuition", "iupay", "tuition (IUPay)",
@@ -91,8 +92,8 @@ public final class SyncStatus {
             new SystemParts("Outlook", List.of("outlook")));
 
     static final Map<String, String> PAUSE_HINTS = Map.of(
-            "EduSoft/bad_credentials", "paused: wrong student ID or password. Run `sla-agent setup`.",
-            "Blackboard/bad_credentials", "paused: wrong username or password. Run `sla-agent setup --blackboard`.",
+            "EduSoft/bad_credentials", "paused: wrong student ID or password. Change it in Accounts.",
+            "Blackboard/bad_credentials", "paused: wrong username or password. Change it in Accounts.",
             "EduSoft/extra_verification", "paused: asked for extra verification (CAPTCHA or code).",
             "Blackboard/extra_verification",
             "paused: asked for extra verification (CAPTCHA, code or Microsoft sign-in).");
@@ -186,23 +187,37 @@ public final class SyncStatus {
         return lines;
     }
 
-    static String laptopWarning(LocalDateTime now, int intervalHours, LocalDateTime lastSeenAt) {
-        if (lastSeenAt == null) {
-            return "Your laptop hasn't checked in yet. Run `sla-agent setup` on it.";
+    static final List<String> OPTIONAL_SYSTEMS = List.of("Blackboard", "Outlook");
+
+    /** Every system, for the Accounts page: its status-card line, or "not set up" / "never synced" without one. */
+    public static List<SystemLine> accountLines(List<RunInfo> runs, LocalDateTime now) {
+        List<SystemLine> lines = systemLines(runs, now);
+        List<SystemLine> all = new ArrayList<>();
+        for (SystemParts system : SYSTEMS) {
+            all.add(lines.stream().filter(line -> line.name().equals(system.name())).findFirst()
+                    .orElse(new SystemLine(system.name(), "none",
+                            OPTIONAL_SYSTEMS.contains(system.name()) ? "not set up" : "never synced")));
         }
-        if (Duration.between(lastSeenAt, now).compareTo(Duration.ofHours(2L * intervalHours)) > 0) {
+        return all;
+    }
+
+    static String laptopWarning(LocalDateTime now, LocalDateTime lastSeenAt) {
+        if (lastSeenAt == null) {
+            return "Your laptop hasn't checked in yet. Open School-Life-Assistant on it to set it up.";
+        }
+        if (Duration.between(lastSeenAt, now).compareTo(LAPTOP_SILENT) > 0) {
             return "Your laptop hasn't checked in since " + VietnamTime.when(lastSeenAt) + ".";
         }
         return null;
     }
 
-    public static Status describe(LocalDateTime now, int intervalHours, LocalDateTime syncRequestedAt, RunInfo latest,
+    public static Status describe(LocalDateTime now, LocalDateTime syncRequestedAt, RunInfo latest,
             LocalDateTime lastGoodFinishedAt, boolean hasDevice, LocalDateTime lastSeenAt) {
         if (!hasDevice) {
             return new Status("no_device", "Not set up yet",
-                    "Add your laptop on the Devices page, then run `sla-agent setup` on it.", null, null);
+                    "Add your laptop on the Devices page, then open School-Life-Assistant on it.", null, null);
         }
-        String warning = laptopWarning(now, intervalHours, lastSeenAt);
+        String warning = laptopWarning(now, lastSeenAt);
 
         boolean running = latest != null && latest.status().equals(SchoolSyncRun.RUNNING);
         if (running && Duration.between(latest.startedAt(), now).compareTo(Scheduling.RUN_TIMEOUT) < 0) {
@@ -210,7 +225,7 @@ public final class SyncStatus {
         }
         if (syncRequestedAt != null && (latest == null || syncRequestedAt.isAfter(latest.startedAt()))) {
             return new Status("requested", "Sync requested, waiting for your laptop",
-                    "Your laptop checks in every 15 minutes while it's on.", lastGoodFinishedAt, warning);
+                    "Your laptop checks in every minute while it's on.", lastGoodFinishedAt, warning);
         }
         if (latest == null) {
             return new Status("never", "Never synced", "Your laptop will sync at its next check-in.",

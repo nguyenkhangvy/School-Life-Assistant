@@ -1,11 +1,12 @@
+import logging
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sla_contract.schema import Exams, Timetable
+from sla_contract.schema import Exams, MailItem, Outlook, Timetable
 
 from agent.tests.fakes import FakeBlackboard, FakeEduSoft, FakeIupay, FakeServer
 from sla_agent import cli, credentials
-from sla_agent.errors import BadCredentials, DeviceKeyRejected, ExtraVerification
+from sla_agent.errors import BadCredentials, DeviceKeyRejected, ExtraVerification, OutlookBlocked, RunInProgress
 from sla_agent.state import State, agent_home, load_state, save_state
 
 SERVER = "https://sla.example.com"
@@ -38,6 +39,7 @@ class World:
         monkeypatch.setattr(cli, "PARSERS", PARSERS)
         self.blackboard = FakeBlackboard()
         monkeypatch.setattr(cli, "make_blackboard", lambda: self.blackboard)
+        monkeypatch.setattr(cli, "task_program", lambda: None)
         self.iupay = FakeIupay()
         monkeypatch.setattr(cli, "make_iupay", lambda: self.iupay)
 
@@ -197,7 +199,7 @@ def test_sync_now_while_paused_explains_how_to_fix_it(world, capsys):
 
     assert world.edusoft.logins == []
     assert world.iupay.calls == [STUDENT]
-    assert "sla-agent setup" in capsys.readouterr().out
+    assert "in Accounts" in capsys.readouterr().out
 
 
 # ---- fetch --save-html ---------------------------------------------------------
@@ -284,7 +286,7 @@ def test_status_shows_a_pause_and_what_to_do(world, capsys):
 
     out = capsys.readouterr().out
     assert STUDENT in out
-    assert "sla-agent setup" in out
+    assert "in Accounts" in out
 
 
 def test_forget_removes_secrets_state_and_the_task(world, isolated_agent):
@@ -355,7 +357,7 @@ def test_status_shows_blackboard(world, capsys):
 
     out = capsys.readouterr().out
     assert "Blackboard" in out
-    assert "sla-agent setup --blackboard" in out
+    assert "in Accounts" in out
 
 
 def test_forget_removes_the_blackboard_password_too(world, isolated_agent):
@@ -599,3 +601,265 @@ def test_open_mail_for_an_email_that_is_gone(monkeypatch, messages):
     assert cli.main(["open-mail", "sla-mail:00AB12"]) == 1
 
     assert messages == ["This email is no longer in your Outlook Inbox."]
+
+
+NEW_MAIL = datetime(2026, 10, 1, 1, 0, tzinfo=timezone.utc)
+
+
+def mail_configured(mail_newest=None):
+    configure()
+    state = load_state()
+    state.outlook_account, state.mail_newest = ME, mail_newest
+    save_state(state)
+
+
+def inbox(address, since, context):
+    return Outlook(since=since, connected=True,
+                   emails=[MailItem(key="a" * 64, entry_id="00AB", received_at=NEW_MAIL)])
+
+
+def never(*args, **kwargs):
+    raise AssertionError("must not be called")
+
+
+def test_run_uploads_new_mail_between_full_syncs(world, monkeypatch):
+    mail_configured("2026-09-30T00:00:00+00:00")
+    world.server.due = False
+    monkeypatch.setattr(cli, "newest_received", lambda address: NEW_MAIL)
+    monkeypatch.setattr(cli, "read_outlook", inbox)
+
+    assert cli.main(["run"]) == 0
+
+    assert world.server.starts == ["mail"]
+    [(_, result)] = world.server.finishes
+    assert list(result.sections()) == ["outlook"]
+    assert (world.edusoft.logins, world.iupay.calls, world.blackboard.logins) == ([], [], [])
+    assert load_state().mail_newest == NEW_MAIL.isoformat()
+
+
+def test_a_quiet_minute_contacts_nothing_and_logs_nothing(world, monkeypatch, caplog):
+    mail_configured(NEW_MAIL.isoformat())
+    world.server.due = False
+    monkeypatch.setattr(cli, "newest_received", lambda address: NEW_MAIL)
+
+    with caplog.at_level(logging.INFO):
+        assert cli.main(["run"]) == 0
+
+    assert world.server.starts == []
+    assert [r.getMessage() for r in caplog.records if r.levelno >= logging.INFO] == []
+
+
+def test_the_mail_check_needs_outlook_set_up(world, monkeypatch):
+    configure()
+    world.server.due = False
+    monkeypatch.setattr(cli, "newest_received", never)
+
+    assert cli.main(["run"]) == 0
+
+    assert world.server.starts == []
+
+
+def test_a_due_full_sync_wins_over_the_mail_check(world, monkeypatch):
+    mail_configured()
+    monkeypatch.setattr(cli, "newest_received", never)
+    monkeypatch.setattr(cli, "read_outlook", inbox)
+
+    assert cli.main(["run"]) == 0
+
+    assert world.server.starts == ["scheduled"]
+    assert load_state().mail_newest == NEW_MAIL.isoformat()
+
+
+def test_a_mail_sync_refused_during_a_full_sync_ends_quietly(world, monkeypatch, caplog):
+    mail_configured()
+    world.server.due = False
+    world.server.start_error = RunInProgress("running")
+    monkeypatch.setattr(cli, "newest_received", lambda address: NEW_MAIL)
+
+    with caplog.at_level(logging.INFO):
+        assert cli.main(["run"]) == 0
+
+    assert [r for r in caplog.records if r.levelno >= logging.WARNING] == []
+    assert load_state().mail_newest is None
+
+
+def older_inbox(address, since, context):
+    """The upload lacks the newest email (unreadable, or older than the semester): only an older one goes up."""
+    return Outlook(since=since, connected=True,
+                   emails=[MailItem(key="b" * 64, entry_id="00CD", received_at=NEW_MAIL - timedelta(hours=1))])
+
+
+def empty_inbox(address, since, context):
+    return Outlook(since=since, connected=True, emails=[])
+
+
+def blocked(address, since, context):
+    raise OutlookBlocked("Outlook didn't answer in time")
+
+
+@pytest.mark.parametrize("read", [older_inbox, empty_inbox, blocked])
+def test_a_newest_email_the_mail_sync_cannot_upload_is_tried_once_not_every_minute(world, monkeypatch, read):
+    mail_configured("2026-09-30T00:00:00+00:00")
+    world.server.due = False
+    monkeypatch.setattr(cli, "newest_received", lambda address: NEW_MAIL)
+    monkeypatch.setattr(cli, "read_outlook", read)
+
+    for _ in range(3):
+        assert cli.main(["run"]) == 0
+
+    assert world.server.starts == ["mail"]
+
+
+def test_a_full_sync_never_moves_the_newest_time_back(world, monkeypatch):
+    mail_configured(NEW_MAIL.isoformat())
+    monkeypatch.setattr(cli, "read_outlook", older_inbox)
+
+    assert cli.main(["run"]) == 0
+
+    assert world.server.starts == ["scheduled"]
+    assert load_state().mail_newest == NEW_MAIL.isoformat()
+
+
+def test_schedule_reinstalls_the_task_with_this_python(world, capsys, monkeypatch):
+    configure()
+    monkeypatch.setattr(cli, "windowless_python", lambda: r"C:\IU_SCHOOL\p\.venv\Scripts\pythonw.exe")
+
+    assert cli.main(["schedule"]) == 0
+
+    assert world.tasks == ["installed"]
+    assert r"C:\IU_SCHOOL\p\.venv\Scripts\pythonw.exe every minute" in capsys.readouterr().out
+
+
+def test_status_warns_when_the_task_points_to_a_python_that_is_gone(world, capsys, monkeypatch):
+    configure()
+    monkeypatch.setattr(cli, "task_program", lambda: r"C:\IU SCHOOL\old\.venv\Scripts\pythonw.exe")
+
+    cli.main(["status"])
+
+    assert "Run `sla-agent schedule`" in capsys.readouterr().out
+
+
+# ---- the window's link type and shortcuts --------------------------------------------
+
+WINDOW_COMMAND = ("HKCU", r"Software\Classes\sla-agent\shell\open\command")
+
+
+def test_setup_adds_the_window_link_type_and_the_shortcuts(world, isolated_agent, capsys):
+    world.answer_setup()
+
+    assert cli.main(["setup"]) == 0
+
+    assert isolated_agent.registry.keys[WINDOW_COMMAND][""].endswith('-m sla_agent window "%1"')
+    assert [path.name for path in isolated_agent.shell.root.rglob("*.lnk")] == ["School-Life-Assistant.lnk"] * 2
+    assert "every minute" in capsys.readouterr().out
+
+
+def test_setup_says_when_the_shortcuts_could_not_be_made_but_keeps_the_rest(world, monkeypatch, capsys):
+    from sla_agent import shortcuts
+
+    def blocked(*args):
+        raise RuntimeError("blocked")
+
+    monkeypatch.setattr(shortcuts, "make", blocked)
+    world.answer_setup()
+
+    assert cli.main(["setup"]) == 0
+
+    assert "Couldn't make the Desktop and Start menu shortcuts" in capsys.readouterr().out
+    assert world.tasks == ["installed"]
+
+
+def test_schedule_also_points_the_links_and_shortcuts_at_this_python(world, isolated_agent, monkeypatch):
+    configure()
+    python = r"C:\IU_SCHOOL\p\.venv\Scripts\pythonw.exe"
+    monkeypatch.setattr(cli, "windowless_python", lambda: python)
+
+    assert cli.main(["schedule"]) == 0
+
+    keys = isolated_agent.registry.keys
+    assert keys[WINDOW_COMMAND][""] == f'"{python}" -m sla_agent window "%1"'
+    assert keys[("HKCU", r"Software\Classes\sla-mail\shell\open\command")][""] == f'"{python}" -m sla_agent open-mail "%1"'
+    assert all(path.read_text(encoding="utf-8").startswith(f"{python} -m sla_agent window")
+               for path in isolated_agent.shell.root.rglob("*.lnk"))
+
+
+def test_forget_removes_the_window_link_type_and_the_shortcuts(world, isolated_agent, tmp_path):
+    from sla_agent import mail_link, shortcuts
+
+    configure()
+    mail_link.register_window("pythonw.exe")
+    shortcuts.make("pythonw.exe", tmp_path)
+
+    assert cli.main(["forget"]) == 0
+
+    assert not [path for _, path in isolated_agent.registry.keys if "sla-agent" in path]
+    assert not list(isolated_agent.shell.root.rglob("*.lnk"))
+
+
+def test_window_opens_the_accounts_window(world, monkeypatch):
+    from sla_agent import window
+
+    opened = []
+    monkeypatch.setattr(window, "main", lambda tools, link=None: opened.append(link) or 0)
+
+    assert cli.main(["window", "sla-agent:accounts"]) == 0
+
+    assert opened == ["sla-agent:accounts"]
+
+
+def test_window_without_tkinter_points_to_the_terminal(world, monkeypatch, capsys):
+    import sys
+
+    import sla_agent
+
+    monkeypatch.delitem(sys.modules, "sla_agent.window", raising=False)
+    monkeypatch.delattr(sla_agent, "window", raising=False)
+    monkeypatch.setitem(sys.modules, "tkinter", None)
+
+    assert cli.main(["window"]) == 1
+
+    assert "sla-agent setup" in capsys.readouterr().out
+
+
+def test_status_says_where_to_set_up_blackboard_and_outlook(world, capsys):
+    configure()
+
+    cli.main(["status"])
+
+    out = capsys.readouterr().out
+    assert "Blackboard:  not set up (set it up in Accounts" in out
+    assert "Outlook:     not set up (set it up in Accounts" in out
+
+
+def test_not_set_up_mentions_the_window(world, capsys):
+    assert cli.main(["status"]) == 1
+    assert "School-Life-Assistant.cmd" in capsys.readouterr().out
+
+
+def test_a_sync_never_undoes_an_account_changed_while_it_ran(world, monkeypatch):
+    from sla_agent import accounts
+
+    configure(paused="bad_credentials")  # EduSoft paused: the sync skips it, IUPay still runs
+    read_bills = world.iupay.read_bills
+
+    def meanwhile(student_id):  # the student enters the right password in the window during the sync
+        assert accounts.change_edusoft(load_state(), STUDENT, "new-pass", cli.tools()).ok
+        return read_bills(student_id)
+
+    monkeypatch.setattr(world.iupay, "read_bills", meanwhile)
+
+    cli.main(["run"])
+
+    assert load_state().paused is None
+    assert credentials.load_edusoft(STUDENT) == "new-pass"
+    assert load_state().last_result is not None  # the sync's own result is saved too
+
+
+def test_the_windows_own_look_never_starts_outlook(monkeypatch):
+    from sla_agent.errors import OutlookNotSetUp
+
+    monkeypatch.setattr(cli, "running_outlook", lambda: None)
+    monkeypatch.setattr(cli, "open_outlook", never)
+
+    with pytest.raises(OutlookNotSetUp, match="isn't open"):
+        cli.find_open_outlook_accounts()
