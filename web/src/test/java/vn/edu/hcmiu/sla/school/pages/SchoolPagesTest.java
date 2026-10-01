@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -40,7 +41,9 @@ import vn.edu.hcmiu.sla.school.TestClock;
 import vn.edu.hcmiu.sla.school.model.SchoolBbCourse;
 import vn.edu.hcmiu.sla.school.model.SchoolChange;
 import vn.edu.hcmiu.sla.school.model.SchoolMailJoined;
+import vn.edu.hcmiu.sla.school.model.SchoolMyEvent;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncRun;
+import vn.edu.hcmiu.sla.school.model.SchoolTuitionBill;
 import vn.edu.hcmiu.sla.school.sync.DeviceKeys;
 
 /**
@@ -149,14 +152,14 @@ class SchoolPagesTest {
         SchoolSyncRun run = new SchoolSyncRun(an.id(), null, "scheduled", LocalDateTime.of(2026, 9, 28, 1, 0));
         run.finish(SchoolSyncRun.PARTIAL, LocalDateTime.of(2026, 9, 28, 1, 5), null, null);
         run.setSections(Map.of("timetable", Map.of("status", "ok"), "exams", Map.of("status", "ok"),
-                "tuition", Map.of("status", "ok"),
+                "tuition", Map.of("status", "ok"), "iupay", Map.of("status", "ok"),
                 "blackboard", Map.of("status", "failed", "error_code", "bad_credentials", "error_message", "rejected")));
         db.persist(run);
         db.flush();
 
         String html = page("/school");
 
-        assertThat(html).contains("EduSoft:", "Blackboard:", "sla-agent setup --blackboard");
+        assertThat(html).contains("EduSoft:", "IUPay:", "Blackboard:", "sla-agent setup --blackboard");
     }
 
     @Test
@@ -277,6 +280,76 @@ class SchoolPagesTest {
                 .containsPattern("Hall A2 · <a\\s+href=\"/school/mailbox#mail-" + "a".repeat(64) + "\">See email</a>");
     }
 
+    @Test
+    void theOverviewShowsATuitionNoticeWhileSomethingIsUnpaid() throws Exception {
+        data.bill(an, "E0000020001", "unpaid", 40_000_000, 2_000_000, LocalDate.of(2026, 10, 15), null);
+        data.bill(an, "E0000020002", "paying", 1_105_650, 0, LocalDate.of(2026, 10, 10), null);
+        clock.set(LocalDateTime.of(2026, 10, 1, 1, 0));
+
+        String html = page("/school");
+
+        assertThat(html).contains("Tuition to pay: 39,105,650 VND", "due 10/10/2026", "See tuition →")
+                .doesNotContain("tuition-notice is-overdue");
+    }
+
+    @Test
+    void theTuitionNoticeTurnsRedOnceItIsOverdue() throws Exception {
+        data.bill(an, "E0000020002", "unpaid", 1_105_650, 0, LocalDate.of(2026, 10, 10), null);
+        clock.set(LocalDateTime.of(2026, 10, 12, 1, 0));
+
+        assertThat(page("/school")).contains("tuition-notice is-overdue", "overdue since 10/10/2026");
+    }
+
+    @Test
+    void noTuitionNoticeWhenEverythingIsPaid() throws Exception {
+        data.bill(an, "E0000014104", "paid", 65_250_000, 0, null, LocalDate.of(2026, 9, 30));
+        data.bill(data.user("binh@example.com"), "E0000099999", "unpaid", 5_000_000, 0, LocalDate.of(2026, 10, 15),
+                null);
+
+        assertThat(page("/school")).doesNotContain("Tuition to pay", "E0000099999");
+    }
+
+    @Test
+    void theBillsListHasBillsToPayAndPaymentsFromTheLast30Days() throws Exception {
+        data.bill(an, "E0000020001", "unpaid", 40_000_000, 0, LocalDate.of(2026, 10, 15), null);
+        data.bill(an, "E0000014104", "paid", 65_250_000, 0, null, LocalDate.of(2026, 9, 30));
+        data.bill(an, "E0000000208", "paid", 40_273_756, 0, null, LocalDate.of(2026, 8, 31)); // 31 days before 01/10
+        clock.set(LocalDateTime.of(2026, 10, 1, 1, 0));
+
+        String bills = section(page("/school"), "Bills");
+
+        assertThat(bills).contains("New:", "Thu Học Phí E0000020001: 40,000,000 VND", ", due 15/10/2026", "(Unpaid)",
+                "Paid Wed 30/09:", "Thu Học Phí E0000014104: 65,250,000 VND", "Đóng qua kênh EduBill", "See all →")
+                .doesNotContain("E0000000208");
+        assertThat(bills.indexOf("E0000020001")).isLessThan(bills.indexOf("E0000014104"));
+    }
+
+    @Test
+    void theBillsListSaysWhenThereIsNothingNew() throws Exception {
+        assertThat(section(page("/school"), "Bills")).contains("No new bills or payments in the last 30 days.");
+    }
+
+    @Test
+    void theOverviewShowsTodaysOwnEventWithAnEditLink() throws Exception {
+        SchoolMyEvent event = data.myEvent(an, "<b>Tự học</b>", LocalDate.of(2026, 9, 29), null, LocalTime.of(17, 0),
+                LocalTime.of(19, 0));
+        clock.set(LocalDateTime.of(2026, 9, 29, 0, 30)); // Tue 07:30 in Vietnam
+
+        String html = page("/school");
+
+        Matcher item = Pattern.compile("<li class=\"item item-mine\">(.*?)</li>", Pattern.DOTALL).matcher(html);
+        assertThat(item.find()).isTrue();
+        assertThat(item.group(1)).contains("17:00–19:00", "<strong>My event:</strong>", "&lt;b&gt;Tự học&lt;/b&gt;")
+                .contains("href=\"/school/events/" + event.getId() + "/edit?day=2026-09-29\">Edit</a>");
+    }
+
+    @Test
+    void theTimetableShowsEveningsAndNamesOwnEventsInTheLegend() throws Exception {
+        assertThat(page("/school/timetable")).contains("legend-mine", "My event");
+        assertThat(mvc.perform(get("/js/timetable.js")).andReturn().getResponse().getContentAsString())
+                .contains("slotMaxTime: \"23:00:00\"");
+    }
+
     // ---- Timetable, exams, tuition --------------------------------------------------------
 
     @Test
@@ -304,11 +377,65 @@ class SchoolPagesTest {
         assertThat(page("/school/exams")).contains("No exams published yet");
     }
 
-    @Test
-    void theTuitionPageShowsBalanceAndDueDate() throws Exception {
-        data.tuition(an, 12_500_000, LocalDate.of(2026, 10, 15), "Chưa đóng");
+    static final LocalDateTime CHECKED = LocalDateTime.of(2026, 9, 30, 4, 14); // Wed 30/09 11:14 in Vietnam
 
-        assertThat(page("/school/tuition")).contains("12,500,000", "15/10/2026", "Chưa đóng");
+    @Test
+    void theTuitionPageShowsWhatIsLeftToPaySoonestDueFirst() throws Exception {
+        data.tuitionChecked(an, CHECKED);
+        data.bill(an, "E0000020001", "unpaid", 40_000_000, 2_000_000, LocalDate.of(2026, 10, 15), null);
+        data.bill(an, "E0000020002", "paying", 1_105_650, 0, LocalDate.of(2026, 10, 10), null);
+        clock.set(LocalDateTime.of(2026, 10, 1, 1, 0));
+
+        String html = page("/school/tuition");
+
+        assertThat(html).contains("38,000,000 VND", "due 15/10/2026", "Unpaid", "bill E0000020001",
+                "1,105,650 VND", "due 10/10/2026", "Payment in progress").doesNotContain("No tuition to pay");
+        assertThat(html.indexOf("Thu Học Phí E0000020002")).isLessThan(html.indexOf("Thu Học Phí E0000020001"));
+        assertThat(html.split("Pay on IUPay ↗", -1)).hasSize(3);
+    }
+
+    @Test
+    void aBillPastItsDueDateSaysSinceWhen() throws Exception {
+        data.tuitionChecked(an, CHECKED);
+        data.bill(an, "E0000020003", "partly_paid", 3_000_000, 0, LocalDate.of(2026, 10, 15), null);
+        clock.set(LocalDateTime.of(2026, 10, 20, 1, 0));
+
+        assertThat(page("/school/tuition")).contains("overdue since 15/10/2026", "is-overdue",
+                "Partly paid, check IUPay for the rest");
+    }
+
+    @Test
+    void withEverythingPaidTheTuitionPageSaysSoAndListsThePaymentsNewestFirst() throws Exception {
+        data.tuitionChecked(an, CHECKED);
+        data.bill(an, "4073743", "paid", 36_900_000, 0, null, LocalDate.of(2025, 10, 1));
+        data.bill(an, "E0000014104", "paid", 65_250_000, 0, null, LocalDate.of(2026, 9, 30));
+
+        String html = page("/school/tuition");
+
+        assertThat(html).contains("No tuition to pay", "Last checked on IUPay: Wed 30/09 11:14");
+        String paid = section(html, "Paid");
+        assertThat(paid).contains("65,250,000", "30/09/2026", "Đóng qua kênh EduBill", "36,900,000", "01/10/2025");
+        assertThat(paid.indexOf("Thu Học Phí E0000014104")).isLessThan(paid.indexOf("Thu Học Phí 4073743"));
+    }
+
+    @Test
+    void aDescriptionIsShownAsTextNotHtml() throws Exception {
+        data.tuitionChecked(an, CHECKED);
+        db.persist(new SchoolTuitionBill(an.id(), "E0000020009", "20261", null, "<b>Học phí</b>\nIT093IU", null,
+                1_000, 0, 0, "unpaid", null, null, null));
+        db.flush();
+
+        assertThat(page("/school/tuition")).contains("&lt;b&gt;Học phí&lt;/b&gt;").doesNotContain("<b>Học phí</b>");
+    }
+
+    @Test
+    void theTuitionPageShowsOnlyMyBills() throws Exception {
+        AppUser binh = data.user("binh@example.com");
+        data.tuitionChecked(binh, CHECKED);
+        data.bill(binh, "E0000099999", "unpaid", 5_000_000, 0, LocalDate.of(2026, 10, 15), null);
+        data.tuitionChecked(an, CHECKED);
+
+        assertThat(page("/school/tuition")).doesNotContain("E0000099999").contains("No tuition to pay");
     }
 
     @Test
@@ -320,6 +447,43 @@ class SchoolPagesTest {
     @Test
     void theTuitionPageSaysWhenNothingIsSynced() throws Exception {
         assertThat(page("/school/tuition")).contains("No tuition information yet");
+    }
+
+    @Test
+    void theTimetableListsMyEventsWithTheirClashes() throws Exception {
+        data.course(an, "IT093IU", "Web Application Development",
+                new Meeting(LocalDateTime.of(2026, 10, 5, 10, 15), LocalDateTime.of(2026, 10, 5, 12, 45), "A2.401"));
+        SchoolMyEvent event = data.myEvent(an, "<b>Tự học buổi tối</b>", LocalDate.of(2026, 10, 5),
+                LocalDate.of(2026, 12, 20), LocalTime.of(17, 0), LocalTime.of(19, 0), DayOfWeek.MONDAY,
+                DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY);
+        data.myEvent(an, "Gym", LocalDate.of(2026, 10, 8), null, LocalTime.of(6, 0), LocalTime.of(7, 0));
+        data.myEvent(data.user("binh@example.com"), "Binh's plan", LocalDate.of(2026, 10, 8), null,
+                LocalTime.of(6, 0), LocalTime.of(7, 0));
+
+        String mine = section(page("/school/timetable"), "My events");
+
+        assertThat(mine).contains("&lt;b&gt;Tự học buổi tối&lt;/b&gt;", "Every week on Mon, Tue, Wed", "05/10–20/12",
+                "17:00–19:00", "⚠ 1 clash", "href=\"/school/events/" + event.getId() + "/edit\"")
+                .contains("Gym", "Once", "08/10", "06:00–07:00", "✓ No conflict").doesNotContain("Binh");
+        assertThat(mine.indexOf("Tự học")).isLessThan(mine.indexOf("Gym")); // soonest first day first
+    }
+
+    @Test
+    void anEventWithEveryDaySkippedSaysNoDaysLeft() throws Exception {
+        SchoolMyEvent event = data.myEvent(an, "Gym", LocalDate.of(2026, 10, 8), null, LocalTime.of(6, 0),
+                LocalTime.of(7, 0));
+        event.skip(LocalDate.of(2026, 10, 8));
+        db.flush();
+
+        assertThat(section(page("/school/timetable"), "My events")).contains("No days left");
+    }
+
+    @Test
+    void theTimetableOffersANewEventAndSaysWhenThereAreNone() throws Exception {
+        String html = page("/school/timetable");
+
+        assertThat(linkTo(html, "/school/events/new")).contains("class=\"button\"");
+        assertThat(section(html, "My events")).contains("No events of your own yet.");
     }
 
     // ---- Courses ---------------------------------------------------------------------------

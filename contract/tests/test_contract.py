@@ -33,7 +33,6 @@ def test_a_complete_upload_is_accepted():
 
     meeting = finish.timetable.data.courses[0].meetings[0]
     assert meeting.start_at.utcoffset().total_seconds() == 7 * 3600
-    assert finish.tuition.data.balance == 12500000
 
 
 def test_times_without_a_timezone_are_rejected():
@@ -59,7 +58,7 @@ def test_a_class_that_ends_before_it_starts_is_rejected():
         ("date_of_birth",),
         ("timetable", "data", "student_id"),
         ("timetable", "data", "courses", 0, "student_name"),
-        ("tuition", "data", "bank_account"),
+        ("exams", "data", "bank_account"),
     ],
 )
 def test_unknown_fields_are_rejected_so_no_extra_personal_data_gets_in(path):
@@ -77,7 +76,7 @@ def test_unknown_fields_are_rejected_so_no_extra_personal_data_gets_in(path):
     "section",
     [
         {"status": "ok"},
-        {"status": "failed", "error_message": "Tuition table not found"},
+        {"status": "failed", "error_message": "Exam table not found"},
         {"status": "failed", "error_code": "made_up_code", "error_message": "x"},
         {"status": "done", "data": {}},
     ],
@@ -85,7 +84,7 @@ def test_unknown_fields_are_rejected_so_no_extra_personal_data_gets_in(path):
 )
 def test_each_part_is_either_ok_with_data_or_failed_with_a_reason(section):
     payload = full_payload()
-    payload["tuition"] = section
+    payload["exams"] = section
 
     with pytest.raises(ValidationError):
         FinishRun.model_validate(payload)
@@ -113,11 +112,11 @@ def _failed(code="edusoft_changed"):
     "changes, expected",
     [
         ({}, "success"),
-        ({"tuition": _failed()}, "partial"),
-        ({"timetable": _failed(), "exams": _failed(), "tuition": _failed()}, "failed"),
-        ({"exams": None, "tuition": None}, "success"),
+        ({"exams": _failed()}, "partial"),
+        ({"timetable": _failed(), "exams": _failed()}, "failed"),
+        ({"exams": None}, "success"),
         (
-            {"timetable": None, "exams": None, "tuition": None,
+            {"timetable": None, "exams": None,
              "error_code": "bad_credentials", "error_message": "EduSoft rejected the password"},
             "failed",
         ),
@@ -141,7 +140,7 @@ def test_a_blackboard_section_is_accepted_next_to_edusoft():
 
     finish = FinishRun.model_validate(payload)
 
-    assert list(finish.sections()) == ["timetable", "exams", "tuition", "blackboard"]
+    assert list(finish.sections()) == ["timetable", "exams", "blackboard"]
     assert finish.blackboard.data.courses[0].assignments[0].score == 8.5
 
 
@@ -185,7 +184,7 @@ def test_an_outlook_section_is_accepted_next_to_the_others():
 
     finish = FinishRun.model_validate(payload)
 
-    assert list(finish.sections()) == ["timetable", "exams", "tuition", "outlook"]
+    assert list(finish.sections()) == ["timetable", "exams", "outlook"]
     first, second, third = finish.outlook.data.emails
     assert first.class_changes[0].kind == "online"
     assert second.categories == ["event", "training_points"]
@@ -240,6 +239,94 @@ def test_a_failed_outlook_part_says_why(code):
     })
 
     assert finish.overall_status() == "partial"
+
+
+# ---- IUPay ---------------------------------------------------------------------
+
+
+# The student's bills as the agent uploads them: every bill IUPay lists, paid or not.
+def iupay_payload(name="finish-iupay.json"):
+    return _sample(name)["iupay"]["data"]
+
+
+def test_iupay_bills_are_accepted_next_to_the_others():
+    payload = full_payload()
+    payload["iupay"] = {"status": "ok", "data": iupay_payload()}
+
+    finish = FinishRun.model_validate(payload)
+
+    assert list(finish.sections()) == ["timetable", "exams", "iupay"]
+    first = finish.iupay.data.bills[0]
+    assert (first.bill_no, first.status, first.paid_on.isoformat(), first.amount, first.discount) == (
+        "E0000014104", "paid", "2026-09-30", 65_250_000, 0)
+    assert (first.due_date, first.channel) == (None, "Đóng qua kênh EduBill")
+
+
+def test_bills_still_to_pay_carry_their_due_date():
+    finish = FinishRun.model_validate(_sample("finish-iupay-unpaid.json"))
+
+    assert [(b.status, b.due_date.isoformat(), b.paid_on) for b in finish.iupay.data.bills] == [
+        ("unpaid", "2027-02-15", None), ("paying", "2027-01-31", None), ("partly_paid", "2026-12-31", None)]
+    assert (finish.iupay.data.bills[1].discount, finish.iupay.data.bills[2].fee_type) == (0, None)
+
+
+def test_no_bills_is_a_valid_answer():
+    finish = FinishRun.model_validate({"iupay": {"status": "ok", "data": {"bills": []}}})
+
+    assert finish.overall_status() == "success"
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda p: p["bills"][0].update(amount=-1),
+        lambda p: p["bills"][0].update(status="cancelled"),
+        lambda p: p["bills"].append(dict(p["bills"][0])),
+        lambda p: p["bills"][0].update(student_name="Nguyen Van An"),
+        lambda p: p["bills"][0].update(description="   "),
+        lambda p: p["bills"][0].update(bill_no="E" * 41),
+        lambda p: p["bills"][0].update(paid_on="30/09/2026"),
+        lambda p: p["bills"][0].update(amount=12.5),
+        lambda p: p.update(bills=p["bills"] * 72),
+    ],
+    ids=["negative-amount", "unknown-status", "same-bill-twice", "extra-field", "blank-description",
+         "bill-number-too-long", "bad-date", "fraction", "too-many-bills"],
+)
+def test_bad_iupay_data_is_rejected(change):
+    data = iupay_payload()
+    change(data)
+
+    with pytest.raises(ValidationError):
+        FinishRun.model_validate({"iupay": {"status": "ok", "data": data}})
+
+
+@pytest.mark.parametrize("code", ["network", "extra_verification", "bad_credentials", "source_changed"])
+def test_a_failed_iupay_part_says_why(code):
+    finish = FinishRun.model_validate({
+        "timetable": full_payload()["timetable"],
+        "iupay": {"status": "failed", "error_code": code, "error_message": "IUPay problem"},
+    })
+
+    assert finish.overall_status() == "partial"
+
+
+def test_an_old_agents_tuition_part_is_accepted_but_not_counted():
+    finish = FinishRun.model_validate(_sample("finish-old-agent-tuition.json"))
+
+    assert list(finish.sections()) == ["timetable"]
+    assert finish.tuition.status == "failed"
+    assert finish.overall_status() == "success"
+
+
+def test_an_old_tuition_part_alone_is_not_an_upload():
+    with pytest.raises(ValidationError):
+        FinishRun.model_validate({"tuition": _sample("finish-old-agent-tuition.json")["tuition"]})
+
+
+def test_a_whole_run_error_cannot_carry_an_old_tuition_part_either():
+    with pytest.raises(ValidationError):
+        FinishRun.model_validate(json.loads(
+            (SAMPLES / "invalid" / "whole-run-error-with-old-tuition.json").read_text(encoding="utf-8")))
 
 
 # ---- contract/samples/: the Java website's tests check the same files ----------

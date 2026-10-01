@@ -2,13 +2,10 @@
   "schema_version": 1,
   "error_code": "bad_credentials",
   "error_message": "EduSoft rejected the password",
-  "tuition": {
+  "iupay": {
     "status": "ok",
     "data": {
-      "term_code": "20261",
-      "amount_due": 12500000,
-      "amount_paid": 0,
-      "balance": 12500000
+      "bills": []
     }
   }
 }

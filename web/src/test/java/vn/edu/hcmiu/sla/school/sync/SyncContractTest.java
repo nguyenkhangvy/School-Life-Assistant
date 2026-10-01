@@ -8,6 +8,7 @@ import static vn.edu.hcmiu.sla.school.sync.Payloads.blackboardPayload;
 import static vn.edu.hcmiu.sla.school.sync.Payloads.bytes;
 import static vn.edu.hcmiu.sla.school.sync.Payloads.failed;
 import static vn.edu.hcmiu.sla.school.sync.Payloads.fullPayload;
+import static vn.edu.hcmiu.sla.school.sync.Payloads.iupayPayload;
 import static vn.edu.hcmiu.sla.school.sync.Payloads.list;
 import static vn.edu.hcmiu.sla.school.sync.Payloads.ok;
 import static vn.edu.hcmiu.sla.school.sync.Payloads.outlookPayload;
@@ -15,6 +16,7 @@ import static vn.edu.hcmiu.sla.school.sync.Payloads.outlookPayload;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -54,8 +56,6 @@ class SyncContractTest {
 
         var meeting = finish.timetable().data().courses().get(0).meetings().get(0);
         assertThat(meeting.startAt().getOffset()).isEqualTo(ZoneOffset.ofHours(7));
-        assertThat(finish.tuition().data().balance()).isEqualTo(12_500_000L);
-        assertThat(finish.tuition().data().statusText()).isEqualTo("Chưa đóng");
     }
 
     @Test
@@ -79,7 +79,7 @@ class SyncContractTest {
                 List.of("date_of_birth"),
                 List.of("timetable", "data", "student_id"),
                 List.of("timetable", "data", "courses", 0, "student_name"),
-                List.of("tuition", "data", "bank_account"));
+                List.of("exams", "data", "bank_account"));
     }
 
     @ParameterizedTest
@@ -98,10 +98,10 @@ class SyncContractTest {
     static Stream<Arguments> badParts() {
         return Stream.of(
                 Arguments.of("ok-without-data", Map.of("status", "ok")),
-                Arguments.of("failed-without-code", Map.of("status", "failed", "error_message", "Tuition table not found")),
+                Arguments.of("failed-without-code", Map.of("status", "failed", "error_message", "Exam table not found")),
                 Arguments.of("unknown-error-code", failed("made_up_code", "x")),
                 Arguments.of("unknown-status", Map.of("status", "done", "data", Map.of())),
-                Arguments.of("ok-with-an-error", Map.of("status", "ok", "data", at(fullPayload(), "tuition", "data"),
+                Arguments.of("ok-with-an-error", Map.of("status", "ok", "data", at(fullPayload(), "exams", "data"),
                         "error_code", "unknown")));
     }
 
@@ -109,7 +109,7 @@ class SyncContractTest {
     @MethodSource("badParts")
     void eachPartIsEitherOkWithDataOrFailedWithAReason(String name, Map<String, Object> part) {
         Map<String, Object> payload = fullPayload();
-        payload.put("tuition", part);
+        payload.put("exams", part);
 
         assertRefused(payload);
     }
@@ -144,17 +144,14 @@ class SyncContractTest {
         Map<String, Object> wholeRunError = new HashMap<>();
         wholeRunError.put("timetable", null);
         wholeRunError.put("exams", null);
-        wholeRunError.put("tuition", null);
         wholeRunError.put("error_code", "bad_credentials");
         wholeRunError.put("error_message", "EduSoft rejected the password");
         Map<String, Object> onlyTimetable = new HashMap<>();
         onlyTimetable.put("exams", null);
-        onlyTimetable.put("tuition", null);
         return Stream.of(
                 Arguments.of("all-ok", Map.of(), "success"),
-                Arguments.of("one-failed", Map.of("tuition", failedPart()), "partial"),
-                Arguments.of("all-failed", Map.of("timetable", failedPart(), "exams", failedPart(), "tuition", failedPart()),
-                        "failed"),
+                Arguments.of("one-failed", Map.of("exams", failedPart()), "partial"),
+                Arguments.of("all-failed", Map.of("timetable", failedPart(), "exams", failedPart()), "failed"),
                 Arguments.of("only-timetable-sent", onlyTimetable, "success"),
                 Arguments.of("whole-run-error", wholeRunError, "failed"));
     }
@@ -181,7 +178,7 @@ class SyncContractTest {
 
         FinishRun finish = read(payload);
 
-        assertThat(finish.sections().keySet()).containsExactly("timetable", "exams", "tuition", "blackboard");
+        assertThat(finish.sections().keySet()).containsExactly("timetable", "exams", "blackboard");
         assertThat(finish.blackboard().data().courses().get(0).assignments().get(0).score()).isEqualTo(8.5);
     }
 
@@ -228,7 +225,7 @@ class SyncContractTest {
 
         FinishRun finish = read(payload);
 
-        assertThat(finish.sections().keySet()).containsExactly("timetable", "exams", "tuition", "outlook");
+        assertThat(finish.sections().keySet()).containsExactly("timetable", "exams", "outlook");
         var emails = finish.outlook().data().emails();
         assertThat(emails.get(0).classChanges().get(0).kind()).isEqualTo("online");
         assertThat(emails.get(1).categories()).containsExactly("event", "training_points");
@@ -310,6 +307,96 @@ class SyncContractTest {
         assertThat(finish.overallStatus()).isEqualTo("partial");
     }
 
+    // ---- IUPay ------------------------------------------------------------------
+
+    @Test
+    void iupayBillsAreAcceptedNextToTheOthers() {
+        Map<String, Object> payload = fullPayload();
+        payload.put("iupay", ok(iupayPayload()));
+
+        FinishRun finish = read(payload);
+
+        assertThat(finish.sections().keySet()).containsExactly("timetable", "exams", "iupay");
+        var first = finish.iupay().data().bills().get(0);
+        assertThat(List.of(first.billNo(), first.status(), first.paidOn(), first.amount(), first.discount()))
+                .containsExactly("E0000014104", "paid", LocalDate.of(2026, 9, 30), 65_250_000L, 0L);
+        assertThat(first.dueDate()).isNull();
+    }
+
+    @Test
+    void missingDiscountAndFeeMeanZero() {
+        var bills = read(new HashMap<>(Map.of("iupay", ok(Payloads.iupayUnpaidPayload())))).iupay().data().bills();
+
+        assertThat(bills).extracting(b -> b.status() + " " + b.discount() + " " + b.fee() + " " + b.dueDate())
+                .containsExactly("unpaid 2000000 0 2027-02-15", "paying 0 0 2027-01-31", "partly_paid 0 0 2026-12-31");
+    }
+
+    @Test
+    void noBillsIsAValidAnswer() {
+        FinishRun finish = read(new HashMap<>(Map.of("iupay", ok(Map.of("bills", List.of())))));
+
+        assertThat(finish.overallStatus()).isEqualTo("success");
+    }
+
+    static Stream<Arguments> badIupayData() {
+        return Stream.<Arguments>of(
+                Arguments.of("negative-amount", (Consumer<Map<String, Object>>) p -> at(p, "bills", 0).put("amount", -1)),
+                Arguments.of("unknown-status", (Consumer<Map<String, Object>>) p -> at(p, "bills", 0)
+                        .put("status", "cancelled")),
+                Arguments.of("same-bill-twice", (Consumer<Map<String, Object>>) p -> list(p, "bills")
+                        .add(new HashMap<>(at(p, "bills", 0)))),
+                Arguments.of("extra-field", (Consumer<Map<String, Object>>) p -> at(p, "bills", 0)
+                        .put("student_name", "Nguyen Van An")),
+                Arguments.of("blank-description", (Consumer<Map<String, Object>>) p -> at(p, "bills", 0)
+                        .put("description", "   ")),
+                Arguments.of("bill-number-too-long", (Consumer<Map<String, Object>>) p -> at(p, "bills", 0)
+                        .put("bill_no", "E".repeat(41))),
+                Arguments.of("bad-date", (Consumer<Map<String, Object>>) p -> at(p, "bills", 0)
+                        .put("paid_on", "30/09/2026")),
+                Arguments.of("fraction", (Consumer<Map<String, Object>>) p -> at(p, "bills", 0).put("amount", 12.5)),
+                Arguments.of("too-many-bills", (Consumer<Map<String, Object>>) p -> {
+                    List<Object> bills = new ArrayList<>();
+                    for (int i = 0; i < 72; i++) {
+                        bills.addAll(list(p, "bills"));
+                    }
+                    p.put("bills", bills);
+                }));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("badIupayData")
+    void badIupayDataIsRejected(String name, Consumer<Map<String, Object>> change) {
+        Map<String, Object> data = iupayPayload();
+        change.accept(data);
+
+        assertRefused(new HashMap<>(Map.of("iupay", ok(data))));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"network", "extra_verification", "bad_credentials", "source_changed"})
+    void aFailedIupayPartSaysWhy(String code) {
+        FinishRun finish = read(Map.of(
+                "timetable", fullPayload().get("timetable"),
+                "iupay", failed(code, "IUPay problem")));
+
+        assertThat(finish.overallStatus()).isEqualTo("partial");
+    }
+
+    @Test
+    void anOldAgentsTuitionPartIsAcceptedButNotCounted() throws IOException {
+        FinishRun finish = json.read(Files.readAllBytes(Payloads.SAMPLES.resolve("finish-old-agent-tuition.json")),
+                FinishRun.class);
+
+        assertThat(finish.sections().keySet()).containsExactly("timetable");
+        assertThat(finish.tuition().ok()).isFalse();
+        assertThat(finish.overallStatus()).isEqualTo("success");
+    }
+
+    @Test
+    void anOldTuitionPartAloneIsNotAnUpload() {
+        assertRefused(new HashMap<>(Map.of("tuition", failed("edusoft_changed", "Headers changed"))));
+    }
+
     // ---- contract/samples/: the Python tests check the same files --------------
 
     static Stream<Path> samples(Path folder) throws IOException {
@@ -386,7 +473,7 @@ class SyncContractTest {
         Map<String, Object> numberAsText = fullPayload();
         at(numberAsText, "timetable", "data", "courses", 0).put("course_code", 93);
         Map<String, Object> fraction = fullPayload();
-        at(fraction, "tuition", "data").put("amount_due", 12.5);
+        at(fraction, "exams", "data", "exams", 0).put("duration_min", 90.5);
 
         assertRefused(numberAsText);
         assertRefused(fraction);

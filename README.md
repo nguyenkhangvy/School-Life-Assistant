@@ -2,7 +2,7 @@
 
 One web app for IU students, built by a team of 3 for the Web Application Development course:
 
-- **School** (Vy): EduSoft timetable, exams and tuition, and Blackboard courses, synced automatically from a laptop, on one calendar.
+- **School** (Vy): EduSoft timetable and exams, IUPay tuition bills, Blackboard courses, and your own events (once or repeating, with conflict checks), synced automatically from a laptop, on one calendar.
 - **Expense**: expense management.
 - **Health**: health management.
 
@@ -53,7 +53,7 @@ In PowerShell, from the `web` folder unless it says otherwise:
 | Start the site | `.\mvnw.cmd spring-boot:run` |
 | Run the tests | `.\mvnw.cmd test` (an in-memory database, never yours) |
 | After pulling new code | nothing: new tables and changes are applied when the site starts |
-| After renaming or deleting a migration | `.\mvnw.cmd clean`, or the old copy stays in `target/` |
+| After renaming or deleting a migration or a Java class (yours or pulled) | `.\mvnw.cmd clean`, or the old copy stays in `target/`; a deleted entity left there stops the site from starting |
 | Run the laptop agent's tests (project folder, agent installed) | `pytest` |
 
 Git Bash works too: `cd web && ./mvnw spring-boot:run`. GitHub runs the website's tests on an in-memory database and on MySQL, and the agent's tests, for every pull request.
@@ -62,7 +62,7 @@ Git Bash works too: `cd web && ./mvnw spring-boot:run`. GitHub runs the website'
 
 ## The laptop agent (School sync)
 
-Only needed to sync your own EduSoft and Blackboard into the School pages. It runs on your laptop, keeps your passwords in Windows Credential Manager, reads EduSoft and Blackboard there, and uploads only your timetable, exams, tuition and Blackboard courses to the site, with a device key.
+Only needed to sync your own EduSoft and Blackboard into the School pages. It runs on your laptop, keeps your passwords in Windows Credential Manager, reads EduSoft and Blackboard there, and uploads only your timetable, exams, IUPay tuition bills and Blackboard courses to the site, with a device key. IUPay needs only your student ID: the agent makes the same requests as IUPay's search page and keeps only the bills.
 
 1. **Install it** (Python 3.12), in the project folder:
 

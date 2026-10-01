@@ -1,14 +1,19 @@
 package vn.edu.hcmiu.sla.school;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.EntityManager;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
 import vn.edu.hcmiu.sla.auth.User;
+import vn.edu.hcmiu.sla.school.events.Details;
+import vn.edu.hcmiu.sla.school.events.Occurrences;
 import vn.edu.hcmiu.sla.school.model.SchoolBbAnnouncement;
 import vn.edu.hcmiu.sla.school.model.SchoolBbAssignment;
 import vn.edu.hcmiu.sla.school.model.SchoolBbCourse;
@@ -17,7 +22,9 @@ import vn.edu.hcmiu.sla.school.model.SchoolCourse;
 import vn.edu.hcmiu.sla.school.model.SchoolExam;
 import vn.edu.hcmiu.sla.school.model.SchoolMail;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChange;
-import vn.edu.hcmiu.sla.school.model.SchoolTuition;
+import vn.edu.hcmiu.sla.school.model.SchoolMyEvent;
+import vn.edu.hcmiu.sla.school.model.SchoolTuitionBill;
+import vn.edu.hcmiu.sla.school.model.SchoolTuitionStatus;
 
 /** Rows for School page tests, saved straight into the test database. All times are UTC. */
 public final class SchoolTestData {
@@ -55,9 +62,33 @@ public final class SchoolTestData {
         db.flush();
     }
 
-    public void tuition(AppUser user, long balance, LocalDate dueDate, String statusText) {
-        db.persist(new SchoolTuition(user.id(), "20261", balance, 0, balance, dueDate, statusText, List.of()));
+    /** An IUPay bill: description "Thu Học Phí " + its number; a paid bill was paid through EduBill. */
+    public void bill(AppUser user, String billNo, String status, long amount, long discount, LocalDate dueDate,
+            LocalDate paidOn) {
+        boolean paid = SchoolTuitionBill.PAID.equals(status);
+        db.persist(new SchoolTuitionBill(user.id(), billNo, "20261", "Academic year 2026-2027 - Semester 1",
+                "Thu Học Phí " + billNo, "Thu Học Phí", amount, discount, 0, status, dueDate, paidOn,
+                paid ? "Đóng qua kênh EduBill" : null));
         db.flush();
+    }
+
+    /** IUPay was read at this UTC time. */
+    public void tuitionChecked(AppUser user, LocalDateTime utc) {
+        db.persist(new SchoolTuitionStatus(user.id(), utc));
+        db.flush();
+    }
+
+    /** One of the student's own events: every week on these days, or once on the first day when none are given. */
+    public SchoolMyEvent myEvent(AppUser user, String title, LocalDate first, LocalDate last, LocalTime start,
+            LocalTime end, DayOfWeek... weekdays) {
+        Occurrences.Rule rule = weekdays.length == 0
+                ? new Occurrences.Rule(first, first, Occurrences.ONCE, 1, Set.of(), Set.of())
+                : new Occurrences.Rule(first, last, Occurrences.WEEKS, 1, EnumSet.of(weekdays[0], weekdays), Set.of());
+        SchoolMyEvent event = new SchoolMyEvent(user.id(), LocalDateTime.of(2026, 9, 28, 0, 0));
+        event.set(new Details(title, null, null, rule, start, end), LocalDateTime.of(2026, 9, 28, 0, 0));
+        db.persist(event);
+        db.flush();
+        return event;
     }
 
     /** A Blackboard course; add announcements, assignments and materials to it before calling {@link #save}. */

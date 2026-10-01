@@ -2,10 +2,14 @@ package vn.edu.hcmiu.sla.school.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.persistence.EntityManager;
 
@@ -17,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import vn.edu.hcmiu.sla.auth.User;
 import vn.edu.hcmiu.sla.auth.UserRepository;
+import vn.edu.hcmiu.sla.school.events.Details;
+import vn.edu.hcmiu.sla.school.events.Occurrences;
 
 /** The School classes fit the tables the Python site made, including the JSON and TEXT columns. */
 @SpringBootTest
@@ -50,15 +56,55 @@ class SchoolTablesTest {
     }
 
     @Test
-    void tuitionItemsAreKeptAsJson() {
-        SchoolTuition tuition = new SchoolTuition(userId, "20261", 12_500_000, 0, 12_500_000,
-                LocalDate.of(2026, 10, 15), "Chưa đóng", List.of(new SchoolTuition.Item("Học phí", 12_500_000)));
-        db.persist(tuition);
+    void aTuitionBillIsKept() {
+        SchoolTuitionBill bill = new SchoolTuitionBill(userId, "E0000020001", "20262",
+                "Academic year 2026-2027 - Semester 2", "Thu Học Phí HK 2\nIT093IU", "Thu Học Phí", 40_000_000,
+                2_000_000, 0, "unpaid", LocalDate.of(2027, 2, 15), null, null);
+        db.persist(bill);
 
-        SchoolTuition again = reloaded(tuition, tuition.getId());
+        SchoolTuitionBill again = reloaded(bill, bill.getId());
 
-        assertThat(again.getItems()).containsExactly(new SchoolTuition.Item("Học phí", 12_500_000));
-        assertThat(again.getStatusText()).isEqualTo("Chưa đóng");
+        assertThat(List.of(again.getBillNo(), again.getDescription(), again.getStatus()))
+                .containsExactly("E0000020001", "Thu Học Phí HK 2\nIT093IU", "unpaid");
+        assertThat(List.of(again.getPayable(), again.getFee())).containsExactly(38_000_000L, 0L);
+        assertThat(again.getDueDate()).isEqualTo(LocalDate.of(2027, 2, 15));
+        assertThat(again.isPaid()).isFalse();
+    }
+
+    @Test
+    void anOwnEventKeepsItsRuleAndSkippedDays() {
+        SchoolMyEvent event = new SchoolMyEvent(userId, SEPT_28);
+        event.set(new Details("Tự học buổi tối", "Library", "Chapter 3", new Occurrences.Rule(LocalDate.of(2026, 10, 5),
+                LocalDate.of(2026, 12, 20), Occurrences.WEEKS, 1,
+                EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY), Set.of()),
+                LocalTime.of(17, 0), LocalTime.of(19, 0)), SEPT_28);
+        event.skip(LocalDate.of(2026, 10, 6));
+        db.persist(event);
+
+        SchoolMyEvent again = reloaded(event, event.getId());
+
+        assertThat(List.of(again.getTitle(), again.getPlace(), again.getRepeatKind(), again.getWeekdays()))
+                .containsExactly("Tự học buổi tối", "Library", "weeks", "1,2,3");
+        assertThat(again.rule().skipped()).containsExactly(LocalDate.of(2026, 10, 6));
+        assertThat(Occurrences.all(again.rule())).hasSize(32);
+        assertThat(again.details().start()).isEqualTo(LocalTime.of(17, 0));
+    }
+
+    @Test
+    void changingTheRuleDropsSkippedDaysThatAreNoLongerDaysOfIt() {
+        SchoolMyEvent event = new SchoolMyEvent(userId, SEPT_28);
+        Occurrences.Rule monTueWed = new Occurrences.Rule(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 12, 20),
+                Occurrences.WEEKS, 1, EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY), Set.of());
+        event.set(new Details("Tự học", null, null, monTueWed, LocalTime.of(17, 0), LocalTime.of(19, 0)), SEPT_28);
+        event.skip(LocalDate.of(2026, 10, 6)); // a Tuesday
+        event.skip(LocalDate.of(2026, 10, 7)); // a Wednesday
+        db.persist(event);
+
+        event.set(new Details("Tự học", null, null, new Occurrences.Rule(monTueWed.first(), monTueWed.last(),
+                Occurrences.WEEKS, 1, EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY), Set.of()),
+                LocalTime.of(17, 0), LocalTime.of(19, 0)), SEPT_28);
+
+        assertThat(reloaded(event, event.getId()).rule().skipped()).containsExactly(LocalDate.of(2026, 10, 6));
     }
 
     @Test
