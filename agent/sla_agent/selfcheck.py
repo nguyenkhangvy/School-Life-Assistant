@@ -2,6 +2,8 @@
 The setup runs it on a new app before using it, and CI and the release run it on every build. The app has no
 console, so the answer is the exit code; the problems go to agent.log."""
 
+import sys
+
 from sla_agent import __version__
 
 
@@ -13,6 +15,16 @@ def tk_with_its_files():
 
 def outlook_link():
     import win32com.client  # noqa: F401  (pywin32: reads classic Outlook, makes the shortcuts)
+
+
+def outlook_dates():
+    """A COM date read, as each email's received time is: pywin32 needs win32timezone for it, a module it imports
+    from C, where PyInstaller can't see it. Without it every email is skipped."""
+    import pythoncom
+    import win32com.client
+
+    pythoncom.CoInitialize()
+    win32com.client.Dispatch("Scripting.FileSystemObject").GetFile(sys.executable).DateCreated
 
 
 def credential_manager():
@@ -35,7 +47,7 @@ def https_certificates():
     ssl.create_default_context(cafile=certifi.where())
 
 
-CHECKS = (tk_with_its_files, outlook_link, credential_manager, data_contract, https_certificates)
+CHECKS = (tk_with_its_files, outlook_link, outlook_dates, credential_manager, data_contract, https_certificates)
 
 
 def problems(expected_version, checks=None):
