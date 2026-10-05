@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initialView: narrow ? "listWeek" : "timeGridWeek",
     firstDay: 1,
     headerToolbar: narrow
-      ? { left: "prev,next today wholeDay", center: "", right: "listWeek,timeGridDay,dayGridMonth" }
+      ? { left: "prev,next today wholeDay", center: "", right: "listWeek,timeGridWeek,timeGridDay,dayGridMonth" }
       : { left: "prev,next today wholeDay", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek" },
     customButtons: {
       wholeDay: {
@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     },
     footerToolbar: narrow ? { center: "title" } : false,
+    navLinks: narrow, // on a phone the week's columns are narrow: a day's name opens that day in full
     buttonText: { today: "Today", month: "Month", week: "Week", day: "Day", list: "List" },
     slotMinTime: wholeDay ? "00:00:00" : DAY_START,
     slotMaxTime: wholeDay ? "24:00:00" : DAY_END,
@@ -141,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
     eventTimeFormat: clock,
     noEventsText: "No classes, exams or events in this period.",
     views: {
-      timeGridWeek: { titleFormat: weekTitle },
+      timeGridWeek: { titleFormat: weekTitle, displayEventEnd: !narrow }, // a phone's columns fit only the start
       listWeek: { titleFormat: weekTitle },
       timeGridDay: { titleFormat: dayTitle },
     },

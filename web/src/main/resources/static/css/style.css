@@ -240,6 +240,17 @@ code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 .fc .event-title { font-size: 0.85rem; line-height: 1.25; }
 .fc .event-room { font-size: 0.8rem; opacity: 0.9; }
 .fc .fc-list-event .event-time { display: none; }
+/* Phone: the week's seven columns are about 40px wide, so smaller words that may break anywhere, cut off at the
+   bottom of their block. A day's name opens that day in full (timetable.js). */
+@media (max-width: 700px) {
+  .fc .fc-timeGridWeek-view .fc-col-header-cell-cushion { padding: 2px 0; font-size: 0.75rem; }
+  .fc .fc-timeGridWeek-view .fc-timegrid-axis-cushion,
+  .fc .fc-timeGridWeek-view .fc-timegrid-slot-label-cushion { padding: 0 2px; font-size: 0.7rem; }
+  .fc .fc-timeGridWeek-view .fc-event-main { padding: 1px; overflow: hidden; }
+  .fc .fc-timeGridWeek-view .event-time,
+  .fc .fc-timeGridWeek-view .event-title,
+  .fc .fc-timeGridWeek-view .event-room { font-size: 0.65rem; line-height: 1.2; overflow-wrap: anywhere; }
+}
 
 .system-lines { list-style: none; margin: 0 0 8px; padding: 0; }
 .system-lines li { margin: 2px 0; }
