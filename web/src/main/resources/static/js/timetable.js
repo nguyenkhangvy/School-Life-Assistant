@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
     now: function () {
       return new Date(Date.now() + VIETNAM_OFFSET_MS); // "now" in Vietnam, for the red now-line
     },
-    initialView: narrow ? "listWeek" : "timeGridWeek",
+    initialView: "timeGridWeek",
     firstDay: 1,
     headerToolbar: narrow
       ? { left: "prev,next today wholeDay", center: "", right: "listWeek,timeGridWeek,timeGridDay,dayGridMonth" }
