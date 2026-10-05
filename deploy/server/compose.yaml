@@ -15,7 +15,7 @@ services:
     build: ../../web
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL:?Put the database's address in deploy/oracle/.env}
+      DATABASE_URL: ${DATABASE_URL:?Put the database's address in deploy/server/.env}
       # Caddy handles https; this lets the site's redirects use https too.
       SERVER_FORWARD_HEADERS_STRATEGY: framework
     # web/Dockerfile gives Java 60% of the memory it sees: 600 MB here, not 60% of the whole VM.
@@ -29,7 +29,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      SITE_ADDRESS: ${SITE_ADDRESS:?Put the site's address in deploy/oracle/.env}
+      SITE_ADDRESS: ${SITE_ADDRESS:?Put the site's address in deploy/server/.env}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       # The HTTPS certificate, kept across restarts.

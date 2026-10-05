@@ -1,4 +1,4 @@
-"""The server's scripts (deploy/oracle; README, "Always on: AWS Lightsail"), run by bash with git and docker
+"""The server's scripts (deploy/server; README, "Always on: AWS Lightsail"), run by bash with git and docker
 replaced by fakes that write down each call."""
 
 import gzip
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-ORACLE = Path(__file__).resolve().parents[1] / "oracle"
+SERVER = Path(__file__).resolve().parents[1] / "server"
 
 if sys.platform == "win32":
     # Git's bash, with its tools (sed, gzip...) on PATH. WSL's bash can't see Windows paths. git.exe is in Git\cmd,
@@ -47,10 +47,10 @@ AIVEN = "DATABASE_URL=mysql://avnadmin:Sup3rSecret@mysql-sla.aivencloud.com:1234
 
 
 def run(script, tmp_path, env_file=None, **settings):
-    """A copy of deploy/oracle/<script> in tmp_path/oracle, with its .env, started from tmp_path."""
-    folder = tmp_path / "oracle"
+    """A copy of deploy/server/<script> in tmp_path/server, with its .env, started from tmp_path."""
+    folder = tmp_path / "server"
     folder.mkdir(exist_ok=True)
-    shutil.copy(ORACLE / script, folder / script)
+    shutil.copy(SERVER / script, folder / script)
     (folder / "compose.yaml").write_text("")
     if env_file is not None:
         (folder / ".env").write_text(env_file, newline="\n")

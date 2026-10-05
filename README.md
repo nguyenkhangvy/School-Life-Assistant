@@ -84,7 +84,7 @@ Online, the site is https://school-life-assistant.duckdns.org. It runs from `web
 
 ### Always on: AWS Lightsail
 
-A Lightsail server never sleeps, so the site opens at once. Caddy gives it HTTPS, at a free DuckDNS address. The settings are in `deploy/oracle`, named after Oracle Cloud, which was tried first: nothing in it is Oracle's, and it runs on any Ubuntu server. This is done once, in about an hour.
+A Lightsail server never sleeps, so the site opens at once. Caddy gives it HTTPS, at a free DuckDNS address. The settings are in `deploy/server`; nothing in them is Lightsail's, so they run on any Ubuntu server. This is done once, in about an hour.
 
 1. **The account.** Sign up at aws.amazon.com and choose the **Free plan**: AWS gives $100–200 of credit and doesn't charge the card, but closes the account after 6 months (see "AWS's limits" below). The card must be a Visa or Mastercard that allows international online payments; AWS takes $1 to check it and gives it back.
 2. **The server.** Open Lightsail, check that the region at the top says **Singapore** (near Aiven's database), and **Create instance**: **Linux/Unix**, **OS Only → Ubuntu 24.04 LTS**, network **Dual-stack**, size **$12** (2 GB of memory). Leave automatic snapshots off: the data is on Aiven, not on the server.
@@ -102,7 +102,7 @@ A Lightsail server never sleeps, so the site opens at once. Caddy gives it HTTPS
 
    ```bash
    git clone --branch main https://github.com/nguyenkhangvy/School-Life-Assistant.git
-   cd School-Life-Assistant/deploy/oracle
+   cd School-Life-Assistant/deploy/server
    cp .env.example .env
    nano .env
    ```
@@ -113,12 +113,12 @@ A Lightsail server never sleeps, so the site opens at once. Caddy gives it HTTPS
 8. **Backups.** Run `crontab -e` (choose nano if asked) and add this line. Every night at 02:00 in Vietnam (19:00 on the server's UTC clock) it saves the database in `~/sla-backups`, keeping the last 14:
 
    ```
-   0 19 * * * bash ~/School-Life-Assistant/deploy/oracle/backup.sh >> ~/sla-backups.log 2>&1
+   0 19 * * * bash ~/School-Life-Assistant/deploy/server/backup.sh >> ~/sla-backups.log 2>&1
    ```
 
-   Run `bash ~/School-Life-Assistant/deploy/oracle/backup.sh` once now: it should end with `Saved …`. The top of `backup.sh` says how to restore one.
+   Run `bash ~/School-Life-Assistant/deploy/server/backup.sh` once now: it should end with `Saved …`. The top of `backup.sh` says how to restore one.
 
-**New versions** don't go online here by themselves: once a merge to `main` has passed GitHub's tests, run `bash ~/School-Life-Assistant/deploy/oracle/update.sh` on the server. It builds the new version while the old one keeps running, then restarts the site, which logs everyone out.
+**New versions** don't go online here by themselves: once a merge to `main` has passed GitHub's tests, run `bash ~/School-Life-Assistant/deploy/server/update.sh` on the server. It builds the new version while the old one keeps running, then restarts the site, which logs everyone out.
 
 **AWS's limits.** The Free plan ends 6 months after the account was opened, or sooner if the credit runs out. AWS then closes the account and the site goes offline; it keeps everything for 90 days in case you switch to the paid plan, then deletes it. On the paid plan this server costs $12 a month. Lightsail charges for a server as long as it exists, even when stopped (only deleting it stops that), and for a static IP that isn't attached. The data is on Aiven either way.
 
