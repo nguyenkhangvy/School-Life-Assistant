@@ -3,7 +3,7 @@
 **Date:** 2026-10-06
 **Scope:** every account gets one role. Students keep School, Groups and Friends. Auditors read the audit log and statistics. Admins manage accounts. Also new: Profile and password change, deactivating accounts (soft delete), the Users page, the audit log and the Statistics page.
 **Owner:** Nguyen Khang Vy
-**Status:** Draft, waiting for review. Each of the three stages (§12) gets its own plan.
+**Status:** Approved 2026-10-06. Stage 1 (roles and profile): docs/superpowers/plans/2026-10-06-site-roles-stage1.md. Stages 2 and 3 get their own plans.
 **Builds on:** [Java website](2026-09-26-java-website-design.md) (modules, menu, rules for the Java code), [Friends and groups](2026-10-06-friends-and-groups-design.md) (paging, "Sort by … then by", Find people) and [Connect button](2026-10-04-connect-button-design.md) (the Connect page and the laptop's trade-in). Everything there stays the same unless this document says otherwise.
 
 ---
