@@ -24,10 +24,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
+import vn.edu.hcmiu.sla.auth.Role;
 
 class LayoutTest {
 
-    static final AppUser AN = new AppUser(1, "an@example.com", "An", "x");
+    static final AppUser AN = new AppUser(1, "an@example.com", "An", "x", Role.STUDENT, true);
 
     /** The real site, with whichever modules exist: nothing here depends on which ones (see NavigationTest). */
     @Nested

@@ -11,11 +11,12 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.transaction.CannotCreateTransactionException;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
+import vn.edu.hcmiu.sla.auth.Role;
 import vn.edu.hcmiu.sla.core.Navigation.NavItem;
 
 class NavigationTest {
 
-    static final AppUser AN = new AppUser(7, "an@example.com", "An", "x");
+    static final AppUser AN = new AppUser(7, "an@example.com", "An", "x", Role.STUDENT, true);
     static final NavModule FRIENDS = new NavModule("Friends", "/social/friends");
 
     @Test

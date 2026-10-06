@@ -88,7 +88,7 @@ class LoginTest {
 
     @Test
     void logOutNeedsAFormWithItsSecurityCode() throws Exception {
-        AppUser an = new AppUser(1, "an@example.com", "An", "x");
+        AppUser an = new AppUser(1, "an@example.com", "An", "x", Role.STUDENT, true);
 
         mvc.perform(post("/auth/logout").with(user(an))).andExpect(status().isForbidden());
         mvc.perform(post("/auth/logout").with(user(an)).with(csrf())).andExpect(redirectedUrl("/auth/login"));
