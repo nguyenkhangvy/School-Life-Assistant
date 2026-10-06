@@ -96,14 +96,14 @@ class LayoutTest {
         @TestConfiguration
         static class FriendsWithTwo {
             @Bean
-            @Order(Ordered.HIGHEST_PRECEDENCE) // before the real Friends count, which would say 0
-            NavModule friendsNav() {
+            @Order(Ordered.HIGHEST_PRECEDENCE) // before the real Friends count, which would say 0; names differ from SocialModule's beans
+            NavModule testFriendsMenu() {
                 return new NavModule("Friends", "/social/friends");
             }
 
             @Bean
             @Order(Ordered.HIGHEST_PRECEDENCE)
-            NavCount friendsCount() {
+            NavCount twoFriendRequestsWaiting() {
                 return new NavCount("Friends", userId -> 2);
             }
         }
