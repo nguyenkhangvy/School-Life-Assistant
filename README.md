@@ -4,6 +4,7 @@ One web app for IU students, built by a team of 3 for the Web Application Develo
 
 - **School** (Vy): EduSoft timetable and exams, IUPay tuition bills, Blackboard courses, and your own events (once or repeating, with conflict checks), synced automatically from a laptop, on one calendar.
 - **Friends** (Vy): find other students by display name and add them as friends, to invite them into groups. Groups and group events come next ([design](docs/superpowers/specs/2026-10-06-friends-and-groups-design.md)).
+- **Accounts and roles**: every account is a Student, an Auditor or an Admin, and has a Profile and a Password page ([design](docs/superpowers/specs/2026-10-06-site-roles-design.md)).
 
 Design: [the website](docs/superpowers/specs/2026-09-26-java-website-design.md) and [the School sync](docs/superpowers/specs/2026-09-25-edusoft-first-phase1-design.md).
 
@@ -195,9 +196,29 @@ The laptop agent uploads its data in the format set by `contract/sla_contract/sc
 
 ---
 
+## Accounts and roles
+
+Every account has one role. Everyone who registers is a Student.
+
+| Role | Sees |
+|---|---|
+| Student | School, Groups, Friends |
+| Auditor | Audit log and Statistics, read-only (coming soon) |
+| Admin | Users, Audit log and Statistics (coming soon) |
+
+Every role has **Profile** (name and email) and **Change password**. Which role may open which address is one list at the top of `web/src/main/java/vn/edu/hcmiu/sla/core/SecurityConfig.java`; `AccessListTest` fails when a page's address isn't in it. A deactivated account can't log in, its laptop stops syncing and other students don't see it; its data stays.
+
+**The first Admin.** Staff accounts have no School, so the Admin is an account of its own, not your student account:
+
+1. Register the admin account on the site, as anyone does.
+2. Write its email in the settings: `SITE_ADMIN_EMAIL=admin@example.com` in `.env` on your laptop, or in `deploy/server/.env` on the server.
+3. Restart the site (on the server: `bash ~/School-Life-Assistant/deploy/server/update.sh`). While the site has no active Admin, that account becomes one; once it has one, the setting does nothing.
+
+---
+
 ## Rules for the Java code
 
-1. URLs start with the module name (`/school/...`, `/social/...`), tables with the module name (`school_...`, `social_...`).
+1. URLs start with the module name (`/school/...`, `/social/...`), tables with the module name (`school_...`, `social_...`). Site-wide pages (`/account`, and `/admin` for staff) and tables (`users`) have no module name.
 2. Every table with user data has `user_id` → `users (id)`. A Social table may point at `users (id)` from more than one column instead, such as a friendship's two students.
 3. Every query is filtered by the logged-in user (`@AuthenticationPrincipal AppUser user`, then `user.id()`). To load one row, use both id and owner, so another user's row gives 404:
 
@@ -206,10 +227,10 @@ The laptop agent uploads its data in the format set by `contract/sla_contract/sc
            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
    ```
 
-   Social rows are shared between students (a friendship has two), so there each button checks the student's place instead: Friends only acts on a pair the student is part of, and an unknown person (or yourself) gives 404.
+   Social rows are shared between students (a friendship has two), so there each button checks the student's place instead: Friends only acts on a pair the student is part of, and an unknown person (or yourself) gives 404. Friends also leaves out anyone who isn't an active Student (deactivated, or a staff role): they aren't found, as an unknown person isn't.
 
 4. Forms use `th:action="@{/school/...}"`, which adds the security code (CSRF) by itself. After a change, redirect and show a message with `Flash.success(redirect, "Saved.")`.
-5. Changing a table means a new migration file in `web/src/main/resources/db/migration/`; never edit a migration that is already on `main`. Name it `V<date>_<module>_<number>__<what>.sql`, with module 1 for School and 2 for Social: `V20261001_1_1__new_table.sql`, then `…_1_2__…`, `…_1_3__…` for more that day. `MigrationNamingTest` checks every name.
+5. Changing a table means a new migration file in `web/src/main/resources/db/migration/`; never edit a migration that is already on `main`. Name it `V<date>_<module>_<number>__<what>.sql`, with module 0 for site-wide tables (Site), 1 for School and 2 for Social: `V20261001_1_1__new_table.sql`, then `…_1_2__…`, `…_1_3__…` for more that day. `MigrationNamingTest` checks every name.
 
 ---
 
