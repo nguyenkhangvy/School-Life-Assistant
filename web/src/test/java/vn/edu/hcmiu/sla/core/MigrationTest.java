@@ -126,12 +126,11 @@ class MigrationTest {
      * A database made by every migration, with two accounts: ids 1 (An) and 2 (Binh). Flyway and the test share one
      * connection that is never closed: H2 2.4 loses a CHECK's list of values (status IN (...)) once the connection
      * that created the table closes, and then refuses every row ("Check constraint invalid"). MySQL doesn't, and
-     * the site's own tests keep Flyway's connection open in the pool.
+     * the site's own tests keep Flyway's connection open in the pool. Call destroy() when done, which closes it.
      */
-    static DataSource freshWithTwoAccounts() throws Exception {
-        DataSource fresh = new SingleConnectionDataSource(
-                "jdbc:h2:mem:fresh-" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1", "sa", "",
-                true);
+    static SingleConnectionDataSource freshWithTwoAccounts() throws Exception {
+        SingleConnectionDataSource fresh = new SingleConnectionDataSource(
+                "jdbc:h2:mem:fresh-" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE", "sa", "", true);
         migrate(fresh, "classpath:db/migration");
         try (Connection connection = fresh.getConnection(); Statement sql = connection.createStatement()) {
             sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
@@ -151,19 +150,26 @@ class MigrationTest {
         "(1, 2, 1, 'accepted', '2026-10-06 08:00:00', NULL)",                  // accepted, but no time
         "(1, 2, 1, 'pending', '2026-10-06 08:00:00', '2026-10-06 09:00:00')"}) // a time, but still pending
     void theFriendshipsTableRefusesBadRows(String values) throws Exception {
-        try (Connection connection = freshWithTwoAccounts().getConnection(); Statement sql = connection.createStatement()) {
+        SingleConnectionDataSource database = freshWithTwoAccounts();
+        try (Statement sql = database.getConnection().createStatement()) {
             assertThatThrownBy(() -> sql.execute(FRIENDSHIP + values)).isInstanceOf(SQLException.class)
                     .hasMessageContaining("Check constraint violation");
+        } finally {
+            database.destroy();
         }
     }
 
     @Test
     void twoStudentsHaveOneFriendshipRow() throws Exception {
-        try (Connection connection = freshWithTwoAccounts().getConnection(); Statement sql = connection.createStatement()) {
+        SingleConnectionDataSource database = freshWithTwoAccounts();
+        try (Statement sql = database.getConnection().createStatement()) {
             sql.execute(FRIENDSHIP + "(1, 2, 1, 'pending', '2026-10-06 08:00:00', NULL)");
 
             assertThatThrownBy(() -> sql.execute(FRIENDSHIP + "(1, 2, 2, 'pending', '2026-10-06 08:05:00', NULL)"))
-                    .isInstanceOf(SQLException.class);
+                    .isInstanceOfSatisfying(SQLException.class,
+                            duplicate -> assertThat(duplicate.getSQLState()).isEqualTo("23505")); // unique key
+        } finally {
+            database.destroy();
         }
     }
 }

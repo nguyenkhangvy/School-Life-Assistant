@@ -3,14 +3,19 @@ package vn.edu.hcmiu.sla.social.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import vn.edu.hcmiu.sla.auth.User;
@@ -31,6 +36,9 @@ class SocialTablesTest {
 
     @Autowired
     SocialFriendshipRepository friendships;
+
+    @Autowired
+    JdbcTemplate jdbc;
 
     Integer an;
     Integer binh;
@@ -102,5 +110,35 @@ class SocialTablesTest {
     @Test
     void aStudentCantSendThemselvesARequest() {
         assertThatThrownBy(() -> SocialFriendship.request(an, an, OCT_6)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    /**
+     * The table's own rules, on whichever database the tests run on: H2 here, MySQL in GitHub's second run (MigrationTest
+     * checks them on a fresh H2 database only). Each bad row names the rule that refused it.
+     */
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', value = {
+        "blocked  |                     | ck_social_friendships_status",   // not a status
+        "accepted |                     | ck_social_friendships_accepted", // accepted, but no time
+        "pending  | 2026-10-06 09:00:00 | ck_social_friendships_accepted"}) // a time, but still pending
+    void theTableRefusesBadRows(String status, String acceptedAt, String rule) {
+        Timestamp accepted = acceptedAt == null ? null : Timestamp.valueOf(acceptedAt);
+
+        assertThatThrownBy(() -> jdbc.update("INSERT INTO social_friendships"
+                + " (user_low_id, user_high_id, requested_by_id, status, created_at, accepted_at)"
+                + " VALUES (?, ?, ?, ?, '2026-10-06 08:00:00', ?)", an, binh, an, status, accepted))
+                .isInstanceOf(DataAccessException.class)
+                .hasMessageContaining(rule);
+    }
+
+    @Test
+    void theTableKeepsOneRowPerPair() {
+        friendships.saveAndFlush(SocialFriendship.request(an, binh, OCT_6));
+
+        assertThatThrownBy(() -> jdbc.update("INSERT INTO social_friendships"
+                + " (user_low_id, user_high_id, requested_by_id, status, created_at)"
+                + " VALUES (?, ?, ?, 'pending', '2026-10-06 08:00:00')", an, binh, binh))
+                .isInstanceOf(DataAccessException.class)
+                .hasMessageContaining("uq_social_friendships_pair");
     }
 }
