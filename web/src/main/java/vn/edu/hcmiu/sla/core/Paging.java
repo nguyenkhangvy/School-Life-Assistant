@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 public record Paging(int page, long first, long last, long total, String previous, String next, List<Link> links) {
 
     static final int ALL_LINKS_UP_TO = 7; // more pages than this: the first, the last, and the current one's neighbours
+    public static final int MAX_PAGE = 1_000_000; // far past any real list; page × 100 rows still fits an int
 
     /** A link to a page; href is null for a gap ("…"). */
     public record Link(String label, String href, boolean current) {
@@ -47,12 +48,16 @@ public record Paging(int page, long first, long last, long total, String previou
         return "Showing " + rows + " of " + total + " " + (total == 1 ? one : many);
     }
 
-    /** The page number in a URL: "3" is 3; missing, not a number, or below 1 is 1. */
+    /**
+     * The page number in a URL: "3" is 3; missing, not a number, or below 1 is 1; anything above {@link #MAX_PAGE} is
+     * MAX_PAGE, which a list then turns into its last page.
+     */
     public static int number(String text) {
-        try {
-            return Math.max(1, Integer.parseInt(text.strip()));
-        } catch (NumberFormatException | NullPointerException notANumber) {
+        String digits = text == null ? "" : text.strip();
+        if (!digits.matches("\\d+")) {
             return 1;
         }
+        digits = digits.replaceFirst("^0+(?=\\d)", "");
+        return digits.length() > 7 ? MAX_PAGE : Math.max(1, Math.min(MAX_PAGE, Integer.parseInt(digits)));
     }
 }

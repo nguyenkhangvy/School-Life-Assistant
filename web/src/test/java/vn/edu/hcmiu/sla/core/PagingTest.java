@@ -78,6 +78,13 @@ class PagingTest {
         assertThat(Paging.number("abc")).isEqualTo(1);
         assertThat(Paging.number("0")).isEqualTo(1);
         assertThat(Paging.number("-2")).isEqualTo(1);
-        assertThat(Paging.number("99999999999")).isEqualTo(1);
+    }
+
+    @Test
+    void aHugePageNumberIsCappedSoItBecomesTheLastPage() {
+        assertThat(Paging.number("2147483647")).isEqualTo(Paging.MAX_PAGE);
+        assertThat(Paging.number("99999999999")).isEqualTo(Paging.MAX_PAGE);
+        assertThat(Paging.number("0001000000")).isEqualTo(Paging.MAX_PAGE);
+        assertThat((long) Paging.MAX_PAGE * 100).isLessThan(Integer.MAX_VALUE); // page × 100 rows still fits an int
     }
 }

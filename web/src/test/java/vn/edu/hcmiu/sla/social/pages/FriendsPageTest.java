@@ -156,6 +156,7 @@ class FriendsPageTest {
         assertThat(page("/social/friends?q=lan&page=2")).contains("Showing 21–25 of 25 people").contains("Lan 25");
         assertThat(page("/social/friends?q=lan&page=abc")).contains("Showing 1–20 of 25 people");
         assertThat(page("/social/friends?q=lan&page=7")).contains("Showing 21–25 of 25 people");
+        assertThat(page("/social/friends?q=lan&page=2147483647")).contains("Showing 21–25 of 25 people");
     }
 
     @Test
