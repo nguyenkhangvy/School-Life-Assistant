@@ -16,14 +16,38 @@ import vn.edu.hcmiu.sla.core.Navigation.NavItem;
 
 class NavigationTest {
 
-    static final AppUser AN = new AppUser(7, "an@example.com", "An", "x", Role.STUDENT, true);
+    static final AppUser AN = account(Role.STUDENT);
     static final NavModule FRIENDS = new NavModule("Friends", "/social/friends");
+
+    static AppUser account(Role role) {
+        return new AppUser(7, "an@example.com", "An", "x", role, true);
+    }
 
     @Test
     void everyModuleIsListedAndComingSoonUntilItRegisters() {
         assertThat(new Navigation(List.of(), List.of()).navItems(AN))
                 .extracting(NavItem::label, NavItem::path)
                 .containsExactly(tuple("School", null), tuple("Groups", null), tuple("Friends", null));
+    }
+
+    @Test
+    void eachRoleHasItsOwnMenu() {
+        Navigation navigation = new Navigation(List.of(), List.of());
+
+        assertThat(navigation.navItems(account(Role.AUDITOR))).extracting(NavItem::label, NavItem::path)
+                .containsExactly(tuple("Audit log", null), tuple("Statistics", null));
+        assertThat(navigation.navItems(account(Role.ADMIN))).extracting(NavItem::label, NavItem::path)
+                .containsExactly(tuple("Users", null), tuple("Audit log", null), tuple("Statistics", null));
+    }
+
+    @Test
+    void staffMenusLeaveOutTheStudentModulesEvenOnceTheyExist() {
+        Navigation navigation = new Navigation(List.of(new NavModule("School", "/school"), FRIENDS,
+                new NavModule("Users", "/admin/users")), List.of());
+
+        assertThat(navigation.navItems(account(Role.ADMIN))).extracting(NavItem::label, NavItem::path)
+                .containsExactly(tuple("Users", "/admin/users"), tuple("Audit log", null), tuple("Statistics", null));
+        assertThat(navigation.navItems(AN)).extracting(NavItem::label).containsExactly("School", "Groups", "Friends");
     }
 
     @Test
@@ -42,12 +66,14 @@ class NavigationTest {
     }
 
     @Test
-    void nothingIsCountedWhenLoggedOutOrForAModuleNotBuiltYet() {
-        NavCount two = new NavCount("Friends", userId -> 2);
+    void loggedOutThereIsNoMenu() {
+        assertThat(new Navigation(List.of(FRIENDS), List.of(new NavCount("Friends", userId -> 2))).navItems(null))
+                .isEmpty();
+    }
 
-        assertThat(new Navigation(List.of(FRIENDS), List.of(two)).navItems(null))
-                .extracting(NavItem::count).containsExactly(0, 0, 0);
-        assertThat(new Navigation(List.of(), List.of(two)).navItems(AN))
+    @Test
+    void nothingIsCountedForAModuleNotBuiltYet() {
+        assertThat(new Navigation(List.of(), List.of(new NavCount("Friends", userId -> 2))).navItems(AN))
                 .extracting(NavItem::count).containsExactly(0, 0, 0);
     }
 

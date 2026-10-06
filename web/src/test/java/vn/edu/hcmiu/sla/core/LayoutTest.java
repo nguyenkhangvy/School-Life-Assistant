@@ -67,6 +67,22 @@ class LayoutTest {
         }
 
         @Test
+        void staffSeeTheirOwnPagesComingSoonAndNoStudentModules() throws Exception {
+            String auditor = mvc.perform(get("/").with(user(account(users, Role.AUDITOR))))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            assertThat(auditor)
+                    .contains("<span class=\"nav-soon\" title=\"Coming soon\">Audit log</span>")
+                    .contains("<span class=\"nav-soon\" title=\"Coming soon\">Statistics</span>")
+                    .doesNotContain(">School<").doesNotContain(">Friends<");
+            assertThat(auditor.split("class=\"card module-card", -1)).hasSize(3); // Audit log, Statistics
+
+            String admin = mvc.perform(get("/").with(user(account(users, Role.ADMIN))))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            assertThat(admin).contains("<span class=\"nav-soon\" title=\"Coming soon\">Users</span>");
+            assertThat(admin.split("class=\"card module-card", -1)).hasSize(4); // Users, Audit log, Statistics
+        }
+
+        @Test
         void theMenuIsHiddenUntilYouLogIn() throws Exception {
             mvc.perform(get("/auth/login"))
                     .andExpect(content().string(not(containsString("Log out"))));
