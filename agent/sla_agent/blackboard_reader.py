@@ -7,6 +7,7 @@ from sla_agent.parsers.blackboard import (
     assignments_from,
     course_url,
     materials_from,
+    released_columns,
     select_current_courses,
     walk_contents,
 )
@@ -25,6 +26,8 @@ def read_blackboard(client, registered):
         grades = client.api_all(f"/v2/courses/{cid}/gradebook/users/{me}?limit=100")
         top = client.api_all(f"/v1/courses/{cid}/contents?limit=100")
         tree = walk_contents(top, lambda item_id: client.api_all(f"/v1/courses/{cid}/contents/{item_id}/children?limit=100"))
+        columns = released_columns(columns, {item.get("id") for item, _ in tree},
+                                   lambda item_id: client.api(f"/v1/courses/{cid}/contents/{item_id}"))
         result.append(BbCourse(
             bb_id=cid,
             course_code=code,
