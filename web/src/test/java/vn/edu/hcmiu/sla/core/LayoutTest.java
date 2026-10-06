@@ -83,6 +83,15 @@ class LayoutTest {
         }
 
         @Test
+        void theMenuEndsWithProfileAndLogOutForEveryRole() throws Exception {
+            for (Role role : Role.values()) {
+                mvc.perform(get("/").with(user(account(users, role))))
+                        .andExpect(content().string(containsString("<a href=\"/account\">Profile</a>")))
+                        .andExpect(content().string(containsString("Log out")));
+            }
+        }
+
+        @Test
         void theMenuIsHiddenUntilYouLogIn() throws Exception {
             mvc.perform(get("/auth/login"))
                     .andExpect(content().string(not(containsString("Log out"))));
