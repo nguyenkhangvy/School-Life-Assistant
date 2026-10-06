@@ -44,6 +44,11 @@ a { color: var(--accent); }
 .site-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
 .site-nav a { text-decoration: none; }
 .nav-soon { color: var(--muted); }
+.nav-count {
+  display: inline-block; min-width: 1.5em; margin-left: 4px; padding: 0 6px;
+  font-size: 0.8rem; font-weight: 700; line-height: 1.5; text-align: center;
+  color: #fff; background: var(--error); border-radius: 999px;
+}
 
 .container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
 
