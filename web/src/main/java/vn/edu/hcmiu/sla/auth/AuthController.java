@@ -67,8 +67,10 @@ public class AuthController {
         if (errors.hasErrors()) {
             return "auth/register";
         }
-        User user = users.save(new User(form.getEmail(), form.getDisplayName(),
-                passwords.encode(form.getPassword()), LocalDateTime.now(ZoneOffset.UTC)));
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        User account = new User(form.getEmail(), form.getDisplayName(), passwords.encode(form.getPassword()), now);
+        account.loggedIn(now); // registering logs the new account in: its first login
+        User user = users.save(account);
         logIn(AppUser.of(user), request, response);
         SavedRequest page = asked.getRequest(request, response);
         return "redirect:" + (page != null ? page.getRedirectUrl() : "/");

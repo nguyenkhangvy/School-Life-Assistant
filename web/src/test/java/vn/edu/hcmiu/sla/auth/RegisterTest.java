@@ -59,6 +59,17 @@ class RegisterTest {
     }
 
     @Test
+    void registeringMakesAStudentAndCountsAsTheFirstLogin() throws Exception {
+        mvc.perform(register("an@example.com", "An", "correct-horse-8", "correct-horse-8"))
+                .andExpect(redirectedUrl("/"));
+
+        User user = users.findByEmail("an@example.com").orElseThrow();
+        assertThat(user.getRole()).isEqualTo(Role.STUDENT);
+        assertThat(user.getCreatedBy()).isNull();
+        assertThat(user.getLastLoginAt()).isEqualTo(user.getCreatedAt());
+    }
+
+    @Test
     void aNonBreakingSpacePastedAroundTheEmailOrNameIsRemoved() throws Exception {
         // Copied from Word, Outlook or a web page; Python's strip() removes it, Java's strip() doesn't.
         mvc.perform(register("an@example.com ", " An ", "correct-horse-8", "correct-horse-8"))

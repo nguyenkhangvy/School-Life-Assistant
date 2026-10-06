@@ -8,6 +8,7 @@
   <section class="card narrow">
     <h1>Log in</h1>
     <p th:if="${param.error}" class="flash flash-error">Email or password is incorrect.</p>
+    <p th:if="${param.deactivated}" class="flash flash-error">This account has been deactivated. Ask the site's admin to turn it back on.</p>
     <form method="post" th:action="@{/auth/login}" novalidate>
       <div class="field">
         <label for="email">Email</label>
