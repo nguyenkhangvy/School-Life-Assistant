@@ -171,7 +171,7 @@ class FriendsPageTest {
     void requestsWaitingShowInTheMenu() throws Exception {
         data.request(data.person("Lan"), an, NOW);
 
-        assertThat(page("/")).contains("<a href=\"/social/friends\">Friends"
+        assertThat(page("/")).contains("<a href=\"/social/friends\" aria-label=\"Friends, 1 waiting for you\">Friends"
                 + "<span class=\"nav-count\" title=\"1 waiting for you\">1</span></a>");
     }
 

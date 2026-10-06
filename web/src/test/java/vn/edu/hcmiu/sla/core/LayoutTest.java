@@ -114,7 +114,7 @@ class LayoutTest {
         @Test
         void aModulesCountComesAfterItsLabel() throws Exception {
             mvc.perform(get("/").with(user(AN)))
-                    .andExpect(content().string(containsString("<a href=\"/social/friends\">Friends"
+                    .andExpect(content().string(containsString("<a href=\"/social/friends\" aria-label=\"Friends, 2 waiting for you\">Friends"
                             + "<span class=\"nav-count\" title=\"2 waiting for you\">2</span></a>")));
         }
     }

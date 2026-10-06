@@ -14,7 +14,7 @@
     <a class="brand" th:href="@{/}">School-Life-Assistant</a>
     <nav class="site-nav" sec:authorize="isAuthenticated()">
       <th:block th:each="item : ${navItems}">
-        <a th:if="${item.path != null}" th:href="@{${item.path}}" th:with="count=${item.count()}"><th:block th:text="${item.label}">School</th:block><span th:if="${count > 0}" class="nav-count" th:title="|${count} waiting for you|" th:text="${count}">2</span></a>
+        <a th:if="${item.path != null}" th:href="@{${item.path}}" th:with="count=${item.count()}" th:attr="aria-label=${count > 0 ? item.label + ', ' + count + ' waiting for you' : null}"><th:block th:text="${item.label}">School</th:block><span th:if="${count > 0}" class="nav-count" th:title="|${count} waiting for you|" th:text="${count}">2</span></a>
         <span th:if="${item.path == null}" class="nav-soon" title="Coming soon" th:text="${item.label}">School</span>
       </th:block>
       <form method="post" th:action="@{/auth/logout}" class="inline">
