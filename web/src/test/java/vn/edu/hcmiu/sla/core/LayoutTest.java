@@ -18,6 +18,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
@@ -44,7 +46,7 @@ class LayoutTest {
                     .andExpect(content().string(containsString("href=\"/css/style.css\"")))
                     .andReturn().getResponse().getContentAsString();
 
-            assertThat(page.split("class=\"card module-card", -1)).hasSize(2); // School
+            assertThat(page.split("class=\"card module-card", -1)).hasSize(4); // School, Groups, Friends
         }
 
         @Test
@@ -82,6 +84,38 @@ class LayoutTest {
             mvc.perform(get("/").with(user(AN)))
                     .andExpect(content().string(containsString("<a href=\"/school\">School</a>")))
                     .andExpect(content().string(containsString("<a class=\"card module-card\" href=\"/school\">")));
+        }
+    }
+
+    @Nested
+    @SpringBootTest
+    @AutoConfigureMockMvc
+    @Import(WithACount.FriendsWithTwo.class)
+    class WithACount {
+
+        @TestConfiguration
+        static class FriendsWithTwo {
+            @Bean
+            @Order(Ordered.HIGHEST_PRECEDENCE) // before the real Friends count, which would say 0; names differ from SocialModule's beans
+            NavModule testFriendsMenu() {
+                return new NavModule("Friends", "/social/friends");
+            }
+
+            @Bean
+            @Order(Ordered.HIGHEST_PRECEDENCE)
+            NavCount twoFriendRequestsWaiting() {
+                return new NavCount("Friends", userId -> 2);
+            }
+        }
+
+        @Autowired
+        MockMvc mvc;
+
+        @Test
+        void aModulesCountComesAfterItsLabel() throws Exception {
+            mvc.perform(get("/").with(user(AN)))
+                    .andExpect(content().string(containsString("<a href=\"/social/friends\" aria-label=\"Friends, 2 waiting for you\">Friends"
+                            + "<span class=\"nav-count\" title=\"2 waiting for you\">2</span></a>")));
         }
     }
 

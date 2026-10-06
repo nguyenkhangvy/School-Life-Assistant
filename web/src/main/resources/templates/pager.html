@@ -1,0 +1,16 @@
+<!doctype html>
+<!--/* Links to the other pages of a long list (core.Paging). A page uses it with
+     <nav th:replace="~{pager :: pager(${paging})}"></nav>; it shows nothing when everything fits on one page. */-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="pager(paging)" class="pager" aria-label="Pages" th:if="${paging.links.size() > 1}">
+  <a th:if="${paging.previous != null}" th:href="${paging.previous}" rel="prev">← Previous</a>
+  <th:block th:each="link : ${paging.links}">
+    <span th:if="${link.href == null}" class="pager-gap">…</span>
+    <a th:if="${link.href != null}" th:href="${link.href}" th:text="${link.label}"
+       th:attr="aria-current=${link.current ? 'page' : null}">2</a>
+  </th:block>
+  <a th:if="${paging.next != null}" th:href="${paging.next}" rel="next">Next →</a>
+</nav>
+</body>
+</html>

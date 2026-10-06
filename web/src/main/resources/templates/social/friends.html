@@ -1,0 +1,105 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+  <title>Friends · School-Life-Assistant</title>
+</head>
+<body>
+<main>
+  <!--/* docs/superpowers/specs/2026-10-06-friends-and-groups-design.md, 4.2 */-->
+  <h1>Friends</h1>
+  <p class="muted">Add friends to invite them into groups.</p>
+
+  <section class="card">
+    <h2>Find people</h2>
+    <form method="get" th:action="@{/social/friends}" class="search-form" role="search">
+      <div class="field">
+        <label for="q">Display name</label>
+        <input id="q" type="search" name="q" th:value="${q}" minlength="2" maxlength="100" placeholder="e.g. Lan Anh">
+      </div>
+      <button type="submit" class="button">Search</button>
+    </form>
+    <p class="field-error" th:if="${searchError != null}" th:text="${searchError}">Type at least 2 letters.</p>
+    <th:block th:if="${results != null}">
+      <p class="muted" th:if="${results.isEmpty()}" th:text="|No one found for “${q}”.|">No one found for “zz”.</p>
+      <th:block th:unless="${results.isEmpty()}">
+        <p class="muted" th:text="${paging.showing('person', 'people')}">Showing 1–20 of 45 people</p>
+        <ul class="person-list">
+          <li class="person" th:each="person : ${results}">
+            <strong th:text="${person.name}">Lan Anh</strong>
+            <div class="person-actions" th:switch="${person.standing.name()}">
+              <form th:case="'NONE'" method="post" th:action="@{/social/friends/{id}/add(id=${person.id})}" class="inline">
+                <input type="hidden" name="q" th:value="${q}"><input type="hidden" name="page" th:value="${paging.page}">
+                <button type="submit" class="button">Add friend</button>
+              </form>
+              <form th:case="'SENT'" method="post" th:action="@{/social/friends/{id}/cancel(id=${person.id})}" class="inline">
+                <input type="hidden" name="q" th:value="${q}"><input type="hidden" name="page" th:value="${paging.page}">
+                <span class="muted">Request sent</span> · <button type="submit" class="link-button">Cancel request</button>
+              </form>
+              <form th:case="'RECEIVED'" method="post" th:action="@{/social/friends/{id}/accept(id=${person.id})}" class="inline">
+                <input type="hidden" name="q" th:value="${q}"><input type="hidden" name="page" th:value="${paging.page}">
+                <button type="submit" class="button">Accept</button>
+              </form>
+              <span th:case="'FRIENDS'" class="friends-done">Friends ✓</span>
+            </div>
+          </li>
+        </ul>
+        <nav th:replace="~{pager :: pager(${paging})}"></nav>
+      </th:block>
+    </th:block>
+  </section>
+
+  <section class="card">
+    <h2>Requests for you</h2>
+    <p class="muted" th:if="${forYou.isEmpty()}">No requests.</p>
+    <ul class="person-list" th:unless="${forYou.isEmpty()}">
+      <li class="person" th:each="request : ${forYou}">
+        <div>
+          <strong th:text="${request.name}">Binh</strong>
+          <span class="muted" th:text="|Sent ${@schoolFormat.date(request.sentAt)}|">Sent 05/10/2026</span>
+        </div>
+        <div class="person-actions">
+          <form method="post" th:action="@{/social/friends/{id}/accept(id=${request.userId})}" class="inline">
+            <button type="submit" class="button">Accept</button>
+          </form>
+          <form method="post" th:action="@{/social/friends/{id}/decline(id=${request.userId})}" class="inline">
+            <button type="submit" class="link-button">Decline</button>
+          </form>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Requests you sent</h2>
+    <p class="muted" th:if="${sent.isEmpty()}">No requests.</p>
+    <ul class="person-list" th:unless="${sent.isEmpty()}">
+      <li class="person" th:each="request : ${sent}">
+        <div>
+          <strong th:text="${request.name}">Cuong</strong>
+          <span class="muted" th:text="|Sent ${@schoolFormat.date(request.sentAt)}|">Sent 06/10/2026</span>
+        </div>
+        <form method="post" th:action="@{/social/friends/{id}/cancel(id=${request.userId})}" class="inline">
+          <button type="submit" class="link-button">Cancel</button>
+        </form>
+      </li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Your friends</h2>
+    <p class="muted" th:if="${friends.isEmpty()}">No friends yet. Find people above.</p>
+    <ul class="person-list" th:unless="${friends.isEmpty()}">
+      <li class="person" th:each="friend : ${friends}">
+        <strong th:text="${friend.name}">Lan</strong>
+        <form method="post" th:action="@{/social/friends/{id}/remove(id=${friend.userId})}" class="inline"
+              th:data-confirm="|Remove ${friend.name} from your friends?|">
+          <button type="submit" class="link-button danger">Remove</button>
+        </form>
+      </li>
+    </ul>
+  </section>
+
+  <script th:src="@{/js/confirm.js}" defer></script>
+</main>
+</body>
+</html>
