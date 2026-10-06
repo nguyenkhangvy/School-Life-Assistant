@@ -13,6 +13,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import vn.edu.hcmiu.sla.auth.User;
+import vn.edu.hcmiu.sla.auth.UserRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncDevice;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncDeviceRepository;
 
@@ -33,9 +35,11 @@ public class DeviceKeys {
     }
 
     private final SchoolSyncDeviceRepository devices;
+    private final UserRepository users;
 
-    public DeviceKeys(SchoolSyncDeviceRepository devices) {
+    public DeviceKeys(SchoolSyncDeviceRepository devices, UserRepository users) {
         this.devices = devices;
+        this.users = users;
     }
 
     public static String hashKey(String rawKey) {
@@ -88,13 +92,18 @@ public class DeviceKeys {
         return device;
     }
 
-    /** The active device for this key, or empty. */
+    /**
+     * The active device for this key, or empty; empty too while its owner isn't an active Student (deactivated, or a
+     * staff role: spec 2026-10-06-site-roles-design.md, 4.6). The key isn't cancelled, so it works again once the
+     * owner is an active Student.
+     */
     @Transactional(readOnly = true)
     public Optional<SchoolSyncDevice> authenticate(String rawKey) {
         if (rawKey == null || rawKey.isEmpty()) {
             return Optional.empty();
         }
-        return devices.findByTokenHashAndRevokedAtIsNull(hashKey(rawKey));
+        return devices.findByTokenHashAndRevokedAtIsNull(hashKey(rawKey))
+                .filter(device -> users.findById(device.getUserId()).filter(User::isActiveStudent).isPresent());
     }
 
     /** Like {@link #authenticate}, and records that the laptop checked in now. */
