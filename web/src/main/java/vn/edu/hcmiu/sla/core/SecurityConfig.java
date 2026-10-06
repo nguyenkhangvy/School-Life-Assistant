@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,21 +19,38 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import vn.edu.hcmiu.sla.auth.AccountCheck;
 import vn.edu.hcmiu.sla.auth.AppUserDetailsService;
 import vn.edu.hcmiu.sla.auth.LoggedIn;
+import vn.edu.hcmiu.sla.auth.Role;
 import vn.edu.hcmiu.sla.auth.UserRepository;
 import vn.edu.hcmiu.sla.auth.WerkzeugPasswordEncoder;
 
-/** Every page needs login except login, register and static files. Every form carries a CSRF token. */
+/**
+ * Who may open what (docs/superpowers/specs/2026-10-06-site-roles-design.md, 4.2): the lists below, read top to
+ * bottom; AccessListTest checks that every page is in one. Every form carries a CSRF token. Method security is on, so
+ * an action can check the role a second time with @PreAuthorize.
+ */
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
+    static final String[] ANYONE = {"/auth/login", "/auth/register", "/css/**", "/js/**", "/error"};
+    static final String[] STUDENTS = {"/school/**", "/social/**"};
+    static final String[] ADMINS = {"/admin/users/**"};
+    static final String[] STAFF = {"/admin/audit-log/**", "/admin/statistics/**"};
+    static final String[] EVERY_ROLE = {"/", "/account/**", "/auth/logout"};
+
     @Bean
-    SecurityFilterChain pages(HttpSecurity http, LoggedIn loggedIn, UserRepository users,
+    SecurityFilterChain pages(HttpSecurity http, LoggedIn loggedIn, Refusals refusals, UserRepository users,
             SecurityContextRepository logins) throws Exception {
         http
                 .authorizeHttpRequests(pages -> pages
-                        .requestMatchers("/auth/login", "/auth/register", "/css/**", "/js/**", "/error").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers(ANYONE).permitAll()
+                        .requestMatchers(STUDENTS).hasRole(Role.STUDENT.name())
+                        .requestMatchers(ADMINS).hasRole(Role.ADMIN.name())
+                        .requestMatchers(STAFF).hasAnyRole(Role.AUDITOR.name(), Role.ADMIN.name())
+                        .requestMatchers(EVERY_ROLE).authenticated()
+                        .anyRequest().authenticated()) // a mistyped address: "Page not found", for any role
                 .addFilterBefore(new AccountCheck(users, logins), AuthorizationFilter.class)
+                .exceptionHandling(refused -> refused.accessDeniedHandler(refusals))
                 .formLogin(login -> login
                         .loginPage("/auth/login")
                         .usernameParameter("email")

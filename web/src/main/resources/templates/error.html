@@ -6,9 +6,22 @@
 <body>
 <main>
   <section class="card narrow">
-    <h1 th:text="${status == 404} ? 'Page not found' : 'Something went wrong'">Page not found</h1>
-    <p th:if="${status == 404}">That page doesn't exist, or it isn't yours.</p>
-    <p th:unless="${status == 404}">Please go back and try again.</p>
+    <th:block th:if="${status == 404}">
+      <h1>Page not found</h1>
+      <p>That page doesn't exist, or it isn't yours.</p>
+    </th:block>
+    <th:block th:if="${status == 403}">
+      <h1 th:if="${refusal != null}" th:text="${refusal.title}">You can't open this page</h1>
+      <h1 th:unless="${refusal != null}">You can't open this page</h1>
+      <p th:if="${refusal != null and refusal.text != null}" th:text="${refusal.text}">Your account is a student account: it can open School, Groups and Friends.</p>
+      <form th:if="${refusal != null and refusal.offerLogOut}" id="log-out-to-switch" method="post" th:action="@{/auth/logout}">
+        <button type="submit" class="button">Log out</button>
+      </form>
+    </th:block>
+    <th:block th:unless="${status == 404 or status == 403}">
+      <h1>Something went wrong</h1>
+      <p>Please go back and try again.</p>
+    </th:block>
     <p><a th:href="@{/}">Back to the start page</a></p>
   </section>
 </main>
