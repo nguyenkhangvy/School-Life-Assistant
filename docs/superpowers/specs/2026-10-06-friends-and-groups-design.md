@@ -3,7 +3,7 @@
 **Date:** 2026-10-06
 **Scope:** a new Social module. Students add friends by display name. Anyone can create a club or group, find groups, ask to join (a Leader or Sub-leader approves) or be invited by a friend. Leaders and Sub-leaders publish events, once or repeating; members answer Going or Not going, and an event they are going to shows on their School Timetable.
 **Owner:** Nguyen Khang Vy
-**Status:** Draft, waiting for review
+**Status:** Approved 2026-10-06. Stage 1 (Friends): docs/superpowers/plans/2026-10-06-friends.md. Stages 2 and 3 get their own plans.
 **Builds on:** [Java website](2026-09-26-java-website-design.md) (modules, menu, rules for the Java code), [My events](2026-09-30-my-events-design.md) (repeat rules, the event form, conflict marks) and [Mailbox events](2026-09-28-mailbox-events-design.md) (the conflict mark on Join). Everything there stays the same unless this document says otherwise.
 
 ---
