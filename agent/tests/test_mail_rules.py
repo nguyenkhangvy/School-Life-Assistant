@@ -1,6 +1,7 @@
 """Sorting one email on the laptop (spec 2026-09-28-outlook-mailbox-design.md, section 5)."""
 
 import logging
+import unicodedata
 from datetime import date, datetime, time, timezone
 
 import pytest
@@ -96,9 +97,27 @@ def test_name_handles():
      ["system_notice"]),
     ("Submission received", "", "bb@hcmiu.edu.vn", ["class"]),
     ("Hello", "Nothing to see.", "friend@example.com", []),
+    # Words written with other accents are other words; written without accents they still count.
+    ("Lớp học bóng rổ miễn phí cho sinh viên", "", "clbbongro@hcmiu.edu.vn", []),
+    ("Thử mới vị trà sữa – giảm giá 30%", "", "promo@shop.vn", ["promotion"]),
+    ("Thong bao hoc phi hoc ky 1", "", "oss@hcmiu.edu.vn", ["money"]),
+    ("Xuất hoá đơn điện tử số 123", "", "noreply@kiemtrahoadon.com.vn", ["money"]),
+    (unicodedata.normalize("NFD", "Giảm giá 30% cho sinh viên"), "", "promo@shop.vn", ["promotion"]),
+    # "không bắt buộc" is not required.
+    ("Workshop kỹ năng mềm (không bắt buộc)", "", "oss@hcmiu.edu.vn", ["event"]),
+    ("Khảo sát ý kiến sinh viên (không bắt buộc)", "", "oss@hcmiu.edu.vn", ["school_task"]),
+    ("Sinh viên năm nhất bắt buộc tham gia buổi định hướng", "", "oss@hcmiu.edu.vn", ["school_task"]),
+    # A reply to a ticket is still about the ticket.
+    ("RE: FW: [Ticket: 4521] Lỗi đăng nhập", "", "oss@hcmiu.edu.vn", ["requests_account"]),
+    # Only IU offices and staff give school tasks.
+    ("Khảo sát nhận voucher 50k", "", "survey@brand.com", ["promotion"]),
+    ("Nhờ các bạn làm khảo sát đồ án", "", "an.nv@student.hcmiu.edu.vn", []),
+    ("Khảo sát về phòng thí nghiệm", "", "lab@mp.hcmiu.edu.vn", ["school_task"]),
 ], ids=["invoice", "scholarship", "residence", "civic-education", "survey", "workshop", "job-talk-no-points",
         "ielts-top-two", "befood-prize-is-not-money", "contest", "form-receipt", "ticket", "password", "sharepoint",
-        "receipt", "nothing"])
+        "receipt", "nothing", "basketball-is-not-scholarship", "try-new-is-not-invitation", "no-accents",
+        "tone-on-a", "accents-typed-apart", "not-required-event", "not-required-survey", "required", "ticket-reply", "brand-survey",
+        "classmate-survey", "iu-subdomain-survey"])
 def test_categories(subject, text, address, expected):
     assert categories(email(subject, text, address, name=address), False) == expected
 

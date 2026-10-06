@@ -7,7 +7,9 @@ field for text."""
 
 import logging
 import re
+import unicodedata
 from dataclasses import dataclass
+from functools import lru_cache
 from datetime import datetime, timedelta, timezone
 
 from sla_contract.schema import MailClassChange, MailItem, MailSession
@@ -30,9 +32,11 @@ MAX_CATEGORIES = 2
 MAX_DATES = 30
 MAX_CLASS_CHANGES = 10
 
-# Words are written as they are read; they are compared without accents or letter case.
-SCHOOL_TASK_WORDS = ("khảo sát", "survey", "tạm trú", "cư trú", "sinh hoạt công dân", "bảo hiểm y tế", "BHYT",
-                     "bắt buộc")
+# Words are written as they are read; they are compared without letter case, and with accents only when the email
+# writes them (see Words).
+SCHOOL_TASK_WORDS = ("khảo sát", "survey", "tạm trú", "cư trú", "sinh hoạt công dân", "bảo hiểm y tế", "BHYT")
+REQUIRED_WORDS = ("bắt buộc",)  # a school task too, but not right after NOT: "không bắt buộc" is optional
+NOT = "không"
 MONEY_WORDS = ("học bổng", "scholarship", "hóa đơn", "invoice", "học phí", "tuition", "thanh toán", "payment",
                "lệ phí")
 EVENT_WORDS = ("thư mời", "workshop", "talkshow", "chuyên đề", "hội thảo", "seminar", "webinar", "cuộc thi",
@@ -66,19 +70,64 @@ class Context:
     bb_courses: tuple = ()  # (Blackboard course name, course code)
 
 
-def _phrase(words):
-    """A pattern matching any of `words` as whole words, on folded text."""
-    parts = [r"\s+".join(re.escape(part) for part in fold(word).split()) for word in words]
-    return re.compile(r"\b(?:" + "|".join(parts) + r")\b")
+@lru_cache(maxsize=None)
+def _fold_letter(letter):
+    return fold(letter)
 
 
-SCHOOL_TASK = _phrase(SCHOOL_TASK_WORDS)
-MONEY = _phrase(MONEY_WORDS)
-EVENT = _phrase(EVENT_WORDS)
-ACCOUNT = _phrase(ACCOUNT_WORDS)
-PROMOTION = _phrase(PROMOTION_WORDS)
-TRAINING = _phrase([TRAINING_POINTS])
-TEAMS_ADDED = _phrase(TEAMS_ADDED_WORDS)
+@lru_cache(maxsize=8)
+def _folded(text):
+    """fold(text), and for each of its letters the place in `text` it comes from."""
+    folded, places = [], []
+    for place, letter in enumerate(text):
+        for f in _fold_letter(letter):
+            folded.append(f)
+            places.append(place)
+    return "".join(folded), places
+
+
+def _accents(word):
+    """A word's accent marks in no order, so it doesn't matter where the tone mark sits: "hoá" and "hóa" give the
+    same."""
+    word = word.lower()
+    marks = sorted(c for c in unicodedata.normalize("NFD", word) if unicodedata.combining(c))
+    return "".join(marks) + "đ" * word.count("đ")
+
+
+class Words:
+    """Words to look for, as whole words, in any letter case. Written without accents they always count; written with
+    accents, only with their own, wherever the tone mark sits ("học bóng" is not "học bổng", "hoá" is "hóa")."""
+
+    def __init__(self, words, unless_after=None):
+        self.accents = {}  # folded words -> the accents of each way they are written
+        for word in words:
+            self.accents.setdefault(fold(word), set()).add(tuple(_accents(part) for part in word.split()))
+        parts = [r"\s+".join(re.escape(part) for part in folded.split()) for folded in self.accents]
+        self.pattern = re.compile(r"\b(?:" + "|".join(parts) + r")\b")
+        self.unless_after = unless_after and re.compile(r"\b" + re.escape(fold(unless_after)) + r"\s+$")
+
+    def search(self, text):
+        text = unicodedata.normalize("NFC", text or "")
+        folded, places = _folded(text)
+        for match in self.pattern.finditer(folded):
+            if self.unless_after and self.unless_after.search(folded, 0, match.start()):
+                continue
+            as_written = text[places[match.start()]:places[match.end() - 1] + 1]
+            written = tuple(_accents(word) for word in as_written.split())
+            if not any(written) or written in self.accents[" ".join(match.group().split())]:
+                return True
+        return False
+
+
+SCHOOL_TASK = Words(SCHOOL_TASK_WORDS)
+REQUIRED = Words(REQUIRED_WORDS, unless_after=NOT)
+MONEY = Words(MONEY_WORDS)
+EVENT = Words(EVENT_WORDS)
+ACCOUNT = Words(ACCOUNT_WORDS)
+PROMOTION = Words(PROMOTION_WORDS)
+TRAINING = Words([TRAINING_POINTS])
+TEAMS_ADDED = Words(TEAMS_ADDED_WORDS)
+TICKET = re.compile(r"\s*(?:(?:re|fw|fwd)\s*:\s*)*\[ticket:")  # on folded text; replies and forwards too
 
 
 def _domain(address):
@@ -117,8 +166,7 @@ def is_microsoft_notice(email):
     domain = _domain(email.sender_address)
     if any(domain == d or domain.endswith("." + d) for d in MICROSOFT_DOMAINS):
         return True
-    subject = fold(email.subject)
-    return "microsoft teams" in subject and bool(TEAMS_ADDED.search(subject))
+    return "microsoft teams" in fold(email.subject) and TEAMS_ADDED.search(email.subject)
 
 
 def blackboard_lecturer(email):
@@ -157,12 +205,12 @@ def is_from_lecturer(email, context):
 
 def categories(email, from_lecturer):
     """Spec 5.2 and 5.3: at most two categories, in ORDER."""
-    subject = fold(email.subject)
-    both = subject + "\n" + fold(email.text)
+    subject = email.subject
+    both = subject + "\n" + email.text
     found = set()
     if from_lecturer or email.sender_address.lower() == BLACKBOARD_SENDER:
         found.add("class")
-    if SCHOOL_TASK.search(subject):
+    if _is_iu_staff_address(email.sender_address) and (SCHOOL_TASK.search(subject) or REQUIRED.search(subject)):
         found.add("school_task")
     if MONEY.search(subject):
         found.add("money")
@@ -170,7 +218,7 @@ def categories(email, from_lecturer):
         found.add("event")
     if TRAINING.search(both):
         found.add("training_points")
-    if subject.startswith("[ticket:") or ACCOUNT.search(subject):
+    if TICKET.match(fold(subject)) or ACCOUNT.search(subject):
         found.add("requests_account")
     if is_microsoft_notice(email):
         found.update(("system_notice", "class") if TEAMS_ADDED.search(subject) else ("system_notice",))
