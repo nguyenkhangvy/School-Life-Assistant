@@ -209,7 +209,8 @@ def test_unavailable_materials_are_left_out():
 # ---- The whole section --------------------------------------------------------------
 
 class FakeApi:
-    """Answers like BlackboardClient.api_all; `refused` paths answer [] (HTTP 403)."""
+    """Answers like BlackboardClient.api_all and .api; `refused` paths answer [] (HTTP 403),
+    and .api answers None (HTTP 403) for a path it has no answer for."""
 
     def __init__(self, answers, refused=()):
         self.answers, self.refused, self.user_id, self.asked = answers, set(refused), "_77_1", []
@@ -219,6 +220,10 @@ class FakeApi:
         if any(path.startswith(r) for r in self.refused):
             return []
         return self.answers.get(path.split("?")[0], [])
+
+    def api(self, path):
+        self.asked.append(path)
+        return self.answers.get(path)
 
 
 def section_answers():
@@ -250,6 +255,40 @@ def test_a_course_that_hides_its_grades_still_syncs_the_rest():
 
     assert {a.status for a in web.assignments} == {"not_graded"}
     assert len(web.announcements) == 1
+
+
+def test_an_assignment_whose_page_is_not_released_yet_is_left_out():
+    # As on 2026-10-06: the lecturer made Lab 02-09 ahead of time. The gradebook lists them all, but
+    # students see only Lab 01's page, and Blackboard refuses the others (HTTP 403) until released.
+    answers = section_answers()
+    answers["/v2/courses/_101_1/gradebook/columns"] = [
+        {**COLUMNS[0], "id": "_801_1", "name": "Lab 01 – Final", "contentId": "_452310_1"},
+        {**COLUMNS[0], "id": "_803_1", "name": "Lab 03 – Final", "contentId": "_453830_1"},
+        COLUMNS[1],
+    ]
+    answers["/v1/courses/_101_1/contents"] = [item("_452310_1", "Lab 01 – Final", "resource/x-bb-assignment")]
+
+    [web] = read_blackboard(FakeApi(answers), [RegisteredCourse("IT093IU", "02")]).courses
+
+    assert [a.name for a in web.assignments] == ["Lab 01 – Final", "Participation"]
+
+
+def test_a_released_assignment_page_outside_the_walked_folders_is_asked_for_and_kept():
+    answers = section_answers()
+    answers["/v2/courses/_101_1/gradebook/columns"] = [
+        {**COLUMNS[0], "id": "_801_1", "name": "Lab 01", "contentId": "_452310_1"},
+        {**COLUMNS[0], "id": "_802_1", "name": "Deep lab", "contentId": "_460000_1"},
+        COLUMNS[1],
+    ]
+    answers["/v1/courses/_101_1/contents"] = [item("_452310_1", "Lab 01", "resource/x-bb-assignment")]
+    answers["/v1/courses/_101_1/contents/_460000_1"] = item("_460000_1", "Deep lab", "resource/x-bb-assignment")
+    api = FakeApi(answers)
+
+    [web] = read_blackboard(api, [RegisteredCourse("IT093IU", "02")]).courses
+
+    assert [a.name for a in web.assignments] == ["Lab 01", "Deep lab", "Participation"]
+    assert [path for path in api.asked if "/contents/_" in path and "/children" not in path] == [
+        "/v1/courses/_101_1/contents/_460000_1"]
 
 
 def test_answers_in_an_unexpected_shape_raise_source_changed():

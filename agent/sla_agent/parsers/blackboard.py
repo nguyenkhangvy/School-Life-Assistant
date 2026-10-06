@@ -63,11 +63,24 @@ def content_url(course_id, content_id):
             f"?course_id={quote(course_id)}&content_id={quote(content_id)}")
 
 
+def _content_id(column):
+    """The id of the course item (the assignment's page) a gradebook column belongs to, if Blackboard names one."""
+    content_id = column.get("contentId") if isinstance(column, dict) else None
+    return content_id if isinstance(content_id, str) and BB_ID.fullmatch(content_id) else None
+
+
 def _assignment_url(column, course_id):
-    content_id = column.get("contentId")
-    if isinstance(content_id, str) and BB_ID.fullmatch(content_id):
-        return content_url(course_id, content_id)
-    return course_url(course_id)
+    content_id = _content_id(column)
+    return content_url(course_id, content_id) if content_id else course_url(course_id)
+
+
+def released_columns(columns, seen_ids, fetch_item):
+    """The gradebook columns whose assignment page the student can open. The gradebook also lists
+    assignments a lecturer made ahead of time; Blackboard hides their pages from students and refuses
+    them (fetch_item answers None) until they are released. Only pages not in `seen_ids` are fetched."""
+    return [column for column in columns
+            if (content_id := _content_id(column)) is None or content_id in seen_ids
+            or fetch_item(content_id) is not None]
 
 
 def _mentions(text, code):
