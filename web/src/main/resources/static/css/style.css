@@ -116,6 +116,12 @@ form.inline { display: inline; }
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 .link-button.danger { color: var(--error); }
+
+/* Paging (core.Paging, templates/pager.html) */
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+.pager a { padding: 6px 10px; text-decoration: none; border-radius: 6px; }
+.pager a[aria-current="page"] { color: var(--accent-text); background: var(--accent); font-weight: 700; }
+.pager-gap { padding: 6px 4px; color: var(--muted); }
 code { font-family: ui-monospace, Consolas, monospace; font-size: 0.95em; }
 
 /* School: sync status card */
