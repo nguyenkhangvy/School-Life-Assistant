@@ -9,13 +9,16 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 
+import vn.edu.hcmiu.sla.auth.AccountCheck;
 import vn.edu.hcmiu.sla.auth.AppUserDetailsService;
 import vn.edu.hcmiu.sla.auth.LoggedIn;
+import vn.edu.hcmiu.sla.auth.UserRepository;
 import vn.edu.hcmiu.sla.auth.WerkzeugPasswordEncoder;
 
 /** Every page needs login except login, register and static files. Every form carries a CSRF token. */
@@ -23,11 +26,13 @@ import vn.edu.hcmiu.sla.auth.WerkzeugPasswordEncoder;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain pages(HttpSecurity http, LoggedIn loggedIn) throws Exception {
+    SecurityFilterChain pages(HttpSecurity http, LoggedIn loggedIn, UserRepository users,
+            SecurityContextRepository logins) throws Exception {
         http
                 .authorizeHttpRequests(pages -> pages
                         .requestMatchers("/auth/login", "/auth/register", "/css/**", "/js/**", "/error").permitAll()
                         .anyRequest().authenticated())
+                .addFilterBefore(new AccountCheck(users, logins), AuthorizationFilter.class)
                 .formLogin(login -> login
                         .loginPage("/auth/login")
                         .usernameParameter("email")
