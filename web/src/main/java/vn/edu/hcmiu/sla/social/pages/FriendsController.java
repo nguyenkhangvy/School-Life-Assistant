@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -118,15 +119,16 @@ public class FriendsController {
     }
 
     /**
-     * Runs a button and goes back to the page (to the search it was pressed in, if any) with what happened. When a
-     * double click's other request saved the same pair first, the unique key refuses this one; running the button
-     * again then finds that row, so the second click counts as already done.
+     * Runs a button and goes back to the page (to the search it was pressed in, if any) with what happened. Another
+     * click at the same moment (a double click, the other student, a second tab) may have saved the same pair first, so
+     * the unique key refuses this insert, or deleted the row this click had just read, so its update or delete finds
+     * nothing. Running the button again then sees the row as it is now and says what that means.
      */
     private String answer(RedirectAttributes redirect, String q, String page, Supplier<Optional<Result>> button) {
         Result result;
         try {
             result = button.get().orElseThrow(FriendsController::notFound);
-        } catch (DataIntegrityViolationException doubleClick) {
+        } catch (DataIntegrityViolationException | ConcurrencyFailureException otherClick) {
             result = button.get().orElseThrow(FriendsController::notFound);
         }
         if (result.ok()) {
