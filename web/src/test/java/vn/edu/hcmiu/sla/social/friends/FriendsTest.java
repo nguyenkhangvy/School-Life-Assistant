@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
+import vn.edu.hcmiu.sla.auth.Role;
 import vn.edu.hcmiu.sla.social.SocialTestData;
 import vn.edu.hcmiu.sla.social.friends.Friends.Friend;
 import vn.edu.hcmiu.sla.social.friends.Friends.PersonRow;
@@ -284,5 +285,60 @@ class FriendsTest {
 
         assertThat(friends.countRequestsFor(an.id())).isEqualTo(2);
         assertThat(friends.countRequestsFor(cuong.id())).isEqualTo(1);
+    }
+
+    // ---- Accounts that aren't active Students (site roles spec, 5.2) --------------------
+
+    @Test
+    void findPeopleLeavesOutDeactivatedAndStaffAccounts() {
+        data.person("Trang Le");
+        data.deactivate(data.person("Trang Off"));
+        data.giveRole(data.person("Trang Staff"), Role.AUDITOR);
+
+        Page<PersonRow> found = friends.search(an.id(), "trang", 1);
+
+        assertThat(names(found)).containsExactly("Trang Le");
+        assertThat(found.getTotalElements()).isEqualTo(1);
+    }
+
+    @Test
+    void theirRequestsAndFriendshipsAreHiddenUntilTheyAreBack() {
+        AppUser lan = data.person("Lan");
+        AppUser binh = data.person("Binh");
+        AppUser cuong = data.person("Cuong");
+        data.request(lan, an, NOW); // waiting for An
+        data.request(an, binh, NOW); // An sent it
+        data.friends(an, cuong);
+        data.deactivate(lan);
+        data.deactivate(binh);
+        data.giveRole(cuong, Role.ADMIN);
+
+        assertThat(friends.requestsFor(an.id())).isEmpty();
+        assertThat(friends.requestsSentBy(an.id())).isEmpty();
+        assertThat(friends.friendsOf(an.id())).isEmpty();
+        assertThat(friends.countRequestsFor(an.id())).isZero();
+
+        data.reactivate(lan);
+        data.reactivate(binh);
+        data.giveRole(cuong, Role.STUDENT);
+
+        assertThat(friends.requestsFor(an.id())).extracting(Request::name).containsExactly("Lan");
+        assertThat(friends.requestsSentBy(an.id())).extracting(Request::name).containsExactly("Binh");
+        assertThat(friends.friendsOf(an.id())).extracting(Friend::name).containsExactly("Cuong");
+        assertThat(friends.countRequestsFor(an.id())).isEqualTo(1);
+    }
+
+    @Test
+    void everyButtonOnThemIsNotFoundAndTheirRowsStay() {
+        AppUser lan = data.person("Lan");
+        data.request(lan, an, NOW);
+        data.deactivate(lan);
+
+        assertThat(friends.add(an.id(), lan.id(), NOW)).isEmpty();
+        assertThat(friends.accept(an.id(), lan.id(), NOW)).isEmpty();
+        assertThat(friends.decline(an.id(), lan.id(), NOW)).isEmpty();
+        assertThat(friends.cancel(an.id(), lan.id(), NOW)).isEmpty();
+        assertThat(friends.remove(an.id(), lan.id(), NOW)).isEmpty();
+        assertThat(friendships.findBetween(an.id(), lan.id())).isPresent(); // there again when Lan is back
     }
 }

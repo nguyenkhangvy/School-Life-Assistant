@@ -24,7 +24,9 @@ import vn.edu.hcmiu.sla.social.model.SocialFriendshipRepository;
 /**
  * Friends (docs/superpowers/specs/2026-10-06-friends-and-groups-design.md, 4.2 and 6.4): finding people by display
  * name, friend requests and friends. Every button is safe to press twice or from an out-of-date page: it does what
- * still makes sense and says what happened.
+ * still makes sense and says what happened. Someone who isn't an active Student (deactivated, or a staff role) is left
+ * out of every list and is "not found" for every button; their rows stay, for when they are back (site roles spec,
+ * 5.2).
  */
 @Service
 public class Friends {
@@ -101,7 +103,8 @@ public class Friends {
                         .thenComparing(SocialFriendship::getId, Comparator.reverseOrder()))
                 .toList();
         Map<Integer, String> names = names(rows.stream().map(row -> row.other(userId)).toList());
-        return rows.stream().map(row -> new Request(row.other(userId), names.get(row.other(userId)), row.getCreatedAt()))
+        return rows.stream().filter(row -> names.containsKey(row.other(userId)))
+                .map(row -> new Request(row.other(userId), names.get(row.other(userId)), row.getCreatedAt()))
                 .toList();
     }
 
@@ -111,7 +114,7 @@ public class Friends {
         List<Integer> ids = friendships.findAllOf(userId).stream().filter(SocialFriendship::isAccepted)
                 .map(row -> row.other(userId)).toList();
         Map<Integer, String> names = names(ids);
-        return ids.stream().map(id -> new Friend(id, names.get(id)))
+        return ids.stream().filter(names::containsKey).map(id -> new Friend(id, names.get(id)))
                 .sorted(Comparator.comparing((Friend friend) -> friend.name().toLowerCase(Locale.ROOT))
                         .thenComparing(Friend::userId))
                 .toList();
@@ -123,13 +126,16 @@ public class Friends {
         return (int) friendships.countRequestsFor(userId);
     }
 
+    /** The display names of those who are active Students; the others are left out. */
     private Map<Integer, String> names(Collection<Integer> ids) {
-        return users.findAllById(ids).stream().collect(Collectors.toMap(User::getId, User::getDisplayName));
+        return users.findAllById(ids).stream().filter(User::isActiveStudent)
+                .collect(Collectors.toMap(User::getId, User::getDisplayName));
     }
 
-    /** The other person's display name; empty for an unknown id or the student themselves. */
+    /** The other person's display name; empty for an unknown id, the student themselves, or not an active Student. */
     private Optional<String> nameOf(Integer userId, Integer otherId) {
-        return otherId.equals(userId) ? Optional.empty() : users.findById(otherId).map(User::getDisplayName);
+        return otherId.equals(userId) ? Optional.empty()
+                : users.findById(otherId).filter(User::isActiveStudent).map(User::getDisplayName);
     }
 
     private static Optional<Result> ok(String message) {
