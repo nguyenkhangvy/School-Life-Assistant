@@ -3,6 +3,7 @@
 One web app for IU students, built by a team of 3 for the Web Application Development course:
 
 - **School** (Vy): EduSoft timetable and exams, IUPay tuition bills, Blackboard courses, and your own events (once or repeating, with conflict checks), synced automatically from a laptop, on one calendar.
+- **Friends** (Vy): find other students by display name and add them as friends, to invite them into groups. Groups and group events come next ([design](docs/superpowers/specs/2026-10-06-friends-and-groups-design.md)).
 
 Design: [the website](docs/superpowers/specs/2026-09-26-java-website-design.md) and [the School sync](docs/superpowers/specs/2026-09-25-edusoft-first-phase1-design.md).
 
@@ -196,7 +197,7 @@ The laptop agent uploads its data in the format set by `contract/sla_contract/sc
 
 ## Rules for the Java code
 
-1. URLs start with the module name (`/school/...`), tables with the module name (`school_...`).
+1. URLs start with the module name (`/school/...`, `/social/...`), tables with the module name (`school_...`, `social_...`).
 2. Every table with user data has `user_id` → `users (id)`.
 3. Every query is filtered by the logged-in user (`@AuthenticationPrincipal AppUser user`, then `user.id()`). To load one row, use both id and owner, so another user's row gives 404:
 
@@ -205,8 +206,10 @@ The laptop agent uploads its data in the format set by `contract/sla_contract/sc
            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
    ```
 
+   Social rows are shared between students (a friendship has two), so there each button checks the student's place instead: Friends only acts on a pair the student is part of, and an unknown person (or yourself) gives 404.
+
 4. Forms use `th:action="@{/school/...}"`, which adds the security code (CSRF) by itself. After a change, redirect and show a message with `Flash.success(redirect, "Saved.")`.
-5. Changing a table means a new migration file in `web/src/main/resources/db/migration/`; never edit a migration that is already on `main`. Name it `V<date>_1_<number>__<what>.sql` (1 is the School module): `V20261001_1_1__new_table.sql`, then `…_1_2__…`, `…_1_3__…` for more that day. `MigrationNamingTest` checks every name.
+5. Changing a table means a new migration file in `web/src/main/resources/db/migration/`; never edit a migration that is already on `main`. Name it `V<date>_<module>_<number>__<what>.sql`, with module 1 for School and 2 for Social: `V20261001_1_1__new_table.sql`, then `…_1_2__…`, `…_1_3__…` for more that day. `MigrationNamingTest` checks every name.
 
 ---
 
