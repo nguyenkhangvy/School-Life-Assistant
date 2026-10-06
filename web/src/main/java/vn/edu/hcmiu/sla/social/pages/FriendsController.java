@@ -55,8 +55,8 @@ public class FriendsController {
     }
 
     /**
-     * The page with a search: "/social/friends?q=Lan%20Anh&page=2". Spaces are written %20, not +: after a redirect,
-     * Spring finds the one-time message's page by comparing the decoded query, and its decoding leaves + as +.
+     * The page with a search: "/social/friends?q=Lan%20Anh&page=2". URLEncoder writes a space as +, which means a space
+     * only in a query; %20 means a space anywhere in a URL, so the link is written with %20.
      */
     static String searchLink(String query, int page) {
         return "/social/friends?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20")

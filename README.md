@@ -198,7 +198,7 @@ The laptop agent uploads its data in the format set by `contract/sla_contract/sc
 ## Rules for the Java code
 
 1. URLs start with the module name (`/school/...`, `/social/...`), tables with the module name (`school_...`, `social_...`).
-2. Every table with user data has `user_id` → `users (id)`.
+2. Every table with user data has `user_id` → `users (id)`. A Social table may point at `users (id)` from more than one column instead, such as a friendship's two students.
 3. Every query is filtered by the logged-in user (`@AuthenticationPrincipal AppUser user`, then `user.id()`). To load one row, use both id and owner, so another user's row gives 404:
 
    ```java
