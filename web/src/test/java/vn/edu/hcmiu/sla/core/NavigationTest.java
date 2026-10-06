@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.transaction.CannotCreateTransactionException;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
 import vn.edu.hcmiu.sla.core.Navigation.NavItem;
@@ -46,6 +48,20 @@ class NavigationTest {
                 .extracting(NavItem::count).containsExactly(0, 0, 0);
         assertThat(new Navigation(List.of(), List.of(two)).navItems(AN))
                 .extracting(NavItem::count).containsExactly(0, 0, 0);
+    }
+
+    @Test
+    void aCountThatCantBeReadShowsNothingSoThePageStillOpens() {
+        Navigation navigation = new Navigation(List.of(FRIENDS), List.of(new NavCount("Friends", userId -> {
+            throw new DataAccessResourceFailureException("The database is down");
+        })));
+
+        assertThat(navigation.navItems(AN).get(2).count()).isZero(); // e.g. the error page, while the database is down
+
+        Navigation noConnection = new Navigation(List.of(FRIENDS), List.of(new NavCount("Friends", userId -> {
+            throw new CannotCreateTransactionException("No connection"); // what @Transactional gives when it is down
+        })));
+        assertThat(noConnection.navItems(AN).get(2).count()).isZero();
     }
 
     @Test

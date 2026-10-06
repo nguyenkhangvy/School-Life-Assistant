@@ -5,7 +5,11 @@ import java.util.Map;
 import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.TransactionException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -16,6 +20,7 @@ import vn.edu.hcmiu.sla.auth.AppUser;
 public class Navigation {
 
     static final List<String> MODULES = List.of("School", "Groups", "Friends");
+    private static final Logger LOG = LoggerFactory.getLogger(Navigation.class);
 
     /**
      * One menu entry; path is null while the module doesn't exist yet. The count is worked out only when a page shows
@@ -23,9 +28,20 @@ public class Navigation {
      */
     public record NavItem(String label, String path, IntSupplier counter) {
 
-        /** The number after the label for the logged-in student; 0 shows nothing. */
+        /**
+         * The number after the label for the logged-in student; 0 shows nothing. A count the database can't give (it is
+         * down, say, while the error page is shown) is 0 too, so the page still opens.
+         */
         public int count() {
-            return counter == null ? 0 : counter.getAsInt();
+            if (counter == null) {
+                return 0;
+            }
+            try {
+                return counter.getAsInt();
+            } catch (DataAccessException | TransactionException error) {
+                LOG.warn("The menu count for {} couldn't be read: {}", label, error.getMessage());
+                return 0;
+            }
         }
     }
 
