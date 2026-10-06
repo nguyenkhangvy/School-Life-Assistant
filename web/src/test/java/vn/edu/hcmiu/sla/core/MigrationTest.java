@@ -1,10 +1,12 @@
 package vn.edu.hcmiu.sla.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Locale;
@@ -15,10 +17,13 @@ import javax.sql.DataSource;
 
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 
 /** On an empty database (a teammate's laptop), Flyway's V1 creates every table the Python site had. */
@@ -47,6 +52,7 @@ class MigrationTest {
                 "school_bb_courses", "school_bb_announcements", "school_bb_assignments", "school_bb_materials",
                 "school_mail", "school_mail_changes", "school_mail_choices", "school_mail_status", "school_mail_sessions",
                 "school_mail_settings", "school_mail_joined", "school_tuition_bills", "school_tuition_status", "school_my_events", "school_my_event_skips",
+                "social_friendships",
                 "flyway_schema_history");
         assertThat(tables(dataSource)).doesNotContain("school_tuition");
     }
@@ -114,5 +120,50 @@ class MigrationTest {
         String baseline = new ClassPathResource("db/migration/V1__baseline.sql").getContentAsString(StandardCharsets.UTF_8);
 
         assertThat(baseline).doesNotContain("CONSTRAINT");
+    }
+
+    /**
+     * A database made by every migration, with two accounts: ids 1 (An) and 2 (Binh). Flyway and the test share one
+     * connection that is never closed: H2 2.4 loses a CHECK's list of values (status IN (...)) once the connection
+     * that created the table closes, and then refuses every row ("Check constraint invalid"). MySQL doesn't, and
+     * the site's own tests keep Flyway's connection open in the pool.
+     */
+    static DataSource freshWithTwoAccounts() throws Exception {
+        DataSource fresh = new SingleConnectionDataSource(
+                "jdbc:h2:mem:fresh-" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1", "sa", "",
+                true);
+        migrate(fresh, "classpath:db/migration");
+        try (Connection connection = fresh.getConnection(); Statement sql = connection.createStatement()) {
+            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
+                    + " VALUES (1, 'an@example.com', 'An', 'x', '2026-10-06 08:00:00')");
+            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
+                    + " VALUES (2, 'binh@example.com', 'Binh', 'x', '2026-10-06 08:00:00')");
+        }
+        return fresh;
+    }
+
+    static final String FRIENDSHIP = "INSERT INTO social_friendships"
+            + " (user_low_id, user_high_id, requested_by_id, status, created_at, accepted_at) VALUES ";
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "(1, 2, 1, 'blocked', '2026-10-06 08:00:00', NULL)",                   // not a status
+        "(1, 2, 1, 'accepted', '2026-10-06 08:00:00', NULL)",                  // accepted, but no time
+        "(1, 2, 1, 'pending', '2026-10-06 08:00:00', '2026-10-06 09:00:00')"}) // a time, but still pending
+    void theFriendshipsTableRefusesBadRows(String values) throws Exception {
+        try (Connection connection = freshWithTwoAccounts().getConnection(); Statement sql = connection.createStatement()) {
+            assertThatThrownBy(() -> sql.execute(FRIENDSHIP + values)).isInstanceOf(SQLException.class)
+                    .hasMessageContaining("Check constraint violation");
+        }
+    }
+
+    @Test
+    void twoStudentsHaveOneFriendshipRow() throws Exception {
+        try (Connection connection = freshWithTwoAccounts().getConnection(); Statement sql = connection.createStatement()) {
+            sql.execute(FRIENDSHIP + "(1, 2, 1, 'pending', '2026-10-06 08:00:00', NULL)");
+
+            assertThatThrownBy(() -> sql.execute(FRIENDSHIP + "(1, 2, 2, 'pending', '2026-10-06 08:05:00', NULL)"))
+                    .isInstanceOf(SQLException.class);
+        }
     }
 }
