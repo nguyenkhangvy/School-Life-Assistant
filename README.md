@@ -109,7 +109,7 @@ A Lightsail server never sleeps, so the site opens at once. Caddy gives it HTTPS
    nano .env
    ```
 
-   (`--branch main`: GitHub's default branch for this repository isn't `main`.) Write the DuckDNS address after `SITE_ADDRESS=` and the Service URI after `DATABASE_URL=`, keeping both names and their `=`, then save with Ctrl+O, Enter, Ctrl+X. `cat .env` should show the two lines.
+   Write the DuckDNS address after `SITE_ADDRESS=` and the Service URI after `DATABASE_URL=`, keeping both names and their `=`, then save with Ctrl+O, Enter, Ctrl+X. `cat .env` should show the two lines.
 6. **Start it.** `docker compose up -d --build`. The build takes a few minutes; then the address opens the site. For the first minute Caddy answers *502* while the site starts. If it stays like that, `docker compose logs caddy` (the HTTPS certificate: usually port 443 not open, or DuckDNS pointing elsewhere) and `docker compose logs web` (the site: usually a wrong `DATABASE_URL`) say why.
 7. **Your laptop.** In School-Life-Assistant's Accounts, press **Change** next to Website, enter the new address, and press **Connect**.
 8. **Backups.** Run `crontab -e` (choose nano if asked) and add this line. Every night at 02:00 in Vietnam (19:00 on the server's UTC clock) it saves the database in `~/sla-backups`, keeping the last 14:
@@ -214,6 +214,22 @@ Every role has **Profile** (name and email) and **Change password**. Which role 
 2. Write its email in the settings: `SITE_ADMIN_EMAIL=admin@example.com` in `.env` on your laptop, or in `deploy/server/.env` on the server.
 3. Restart the site (on the server: `bash ~/School-Life-Assistant/deploy/server/update.sh`). While the site has no active Admin, that account becomes one; once it has one, the setting does nothing.
 
+## Security
+
+What the site does by itself ([design](docs/superpowers/specs/2026-10-07-security-hardening-design.md)):
+
+- **Login limits:** after 5 wrong passwords for one email from one network within 15 minutes, or 100 from one network for any emails, the password isn't checked until the wait ends ("Too many wrong passwords. Try again in N minutes."). An unknown email counts like a wrong password.
+- **Bots:** a hidden "Leave this empty" field on register; at most 30 new accounts per network per hour and 20 failed laptop Connect trade-ins per network in 15 minutes. The counts live in memory, so a restart clears them.
+- **Passwords:** Argon2id. Older (scrypt) passwords keep working and are re-hashed at their next login.
+- **Headers:** Content-Security-Policy (scripts only from the site and FullCalendar's folder on jsDelivr, never inline), Referrer-Policy and Permissions-Policy, plus HSTS, nosniff and X-Frame-Options.
+- **Dependencies:** Dependabot opens weekly update pull requests (`.github/dependabot.yml`).
+
+**Settings only the owner can change:**
+
+1. GitHub → Settings → Code security: turn on **Dependabot alerts** and **Dependabot security updates**.
+2. Aiven console → the service → allowed IP addresses: only the server's static IP, `13.228.157.213`. Add your own IP while you need direct access.
+3. Aiven console → users: a user for the site with rights on `defaultdb` only (it still creates and changes tables, through Flyway). Put it in `deploy/server/.env` as `DATABASE_URL`, run `update.sh`, and keep `avnadmin` for yourself.
+
 ---
 
 ## Rules for the Java code
@@ -231,6 +247,7 @@ Every role has **Profile** (name and email) and **Change password**. Which role 
 
 4. Forms use `th:action="@{/school/...}"`, which adds the security code (CSRF) by itself. After a change, redirect and show a message with `Flash.success(redirect, "Saved.")`.
 5. Changing a table means a new migration file in `web/src/main/resources/db/migration/`; never edit a migration that is already on `main`. Name it `V<date>_<module>_<number>__<what>.sql`, with module 0 for site-wide tables (Site), 1 for School and 2 for Social: `V20261001_1_1__new_table.sql`, then `…_1_2__…`, `…_1_3__…` for more that day. `MigrationNamingTest` checks every name.
+6. JavaScript lives in files in `web/src/main/resources/static/js/`, never in a template (`<script>` without `src`, `onclick=`, `style=`): the Content-Security-Policy refuses inline code, and `TemplatesFollowTheCspTest` fails on it.
 
 ---
 
