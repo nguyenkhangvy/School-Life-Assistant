@@ -1,0 +1,3365 @@
+{
+ "cases": [
+  {
+   "id": "Mail 01",
+   "arrived": "2026-10-07",
+   "subject": "Hội thảo Kỹ năng học tập hiệu quả",
+   "text": "Kính gửi sinh viên,\nPhòng Công tác Sinh viên tổ chức hội thảo “Kỹ năng học tập hiệu quả” vào 14:00 ngày 15/10/2026 tại phòng A2.301.\nSinh viên vui lòng có mặt trước 13:45 để ổn định chỗ ngồi.\nViệc đăng ký tham dự mở từ 08/10 đến 12/10.",
+   "sessions": [
+    {
+     "day": "2026-10-15",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "13:45",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-08",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-12",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 02",
+   "arrived": "2026-10-07",
+   "subject": "Workshop AI dành cho sinh viên",
+   "text": "Workshop sẽ được tổ chức vào 09:30 ngày 18/10/2026 trên Microsoft Teams.\nLink tham gia sẽ được gửi trước 09:00 cùng ngày.\nHạn đăng ký: 17/10/2026 lúc 23:59.",
+   "sessions": [
+    {
+     "day": "2026-10-18",
+     "start": "09:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": "09:00",
+     "mode": "online",
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-17",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 03",
+   "arrived": "2026-10-07",
+   "subject": "Mời tham dự buổi chia sẻ nghề nghiệp",
+   "text": "Buổi chia sẻ diễn ra từ 08:30 đến 11:30 ngày 20/10/2026 tại A1.206.\nVui lòng đến trước 08:15.\nĐăng ký trước 19/10.",
+   "sessions": [
+    {
+     "day": "2026-10-20",
+     "start": "08:30",
+     "end": "11:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "08:15",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-19",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 04",
+   "arrived": "2026-10-07",
+   "subject": "Sinh hoạt câu lạc bộ tháng 10",
+   "text": "CLB sẽ gặp mặt vào 18h30 thứ Sáu, ngày 23/10 tại phòng B1.102.\nThành viên cần đăng ký trước 20/10.",
+   "sessions": [
+    {
+     "day": "2026-10-23",
+     "start": "18:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-20",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 05",
+   "arrived": "2026-10-07",
+   "subject": "Orientation cho sinh viên mới",
+   "text": "Chương trình bắt đầu lúc 8 giờ sáng ngày 24/10/2026.\nSinh viên được yêu cầu có mặt lúc 7 giờ 30 để điểm danh.\nForm đăng ký đóng vào 22/10.",
+   "sessions": [
+    {
+     "day": "2026-10-24",
+     "start": "08:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "07:30",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-22",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 06",
+   "arrived": "2026-10-07",
+   "subject": "Đăng ký tham gia cuộc thi học thuật",
+   "text": "Thời gian đăng ký: 01/10 đến 10/10.\nVòng sơ loại diễn ra vào 15/10 lúc 13h30.\nThí sinh cần có mặt lúc 13h00.",
+   "sessions": [
+    {
+     "day": "2026-10-15",
+     "start": "13:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "13:00",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": "preliminary"
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-01",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-10",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 07",
+   "arrived": "2026-10-07",
+   "subject": "Hội thảo Career Talk",
+   "text": "Mở đăng ký từ 05/10.\nHạn đăng ký là 12/10 lúc 17:00.\nHội thảo được tổ chức 19/10 từ 14:00 đến 16:00.\nVui lòng check-in từ 13:30.",
+   "sessions": [
+    {
+     "day": "2026-10-19",
+     "start": "14:00",
+     "end": "16:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "13:30",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-05",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-12",
+     "time": "17:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 08",
+   "arrived": "2026-10-07",
+   "subject": "Tham dự buổi hướng dẫn đăng ký môn học",
+   "text": "Sinh viên có thể đăng ký tham dự từ 09:00 ngày 07/10 đến 23:59 ngày 09/10.\nBuổi hướng dẫn chính thức diễn ra vào 10/10 lúc 09:00.",
+   "sessions": [
+    {
+     "day": "2026-10-10",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-07",
+     "time": "09:00",
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-09",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 09",
+   "arrived": "2026-10-07",
+   "subject": "Cuộc họp nhóm dự án",
+   "text": "Vui lòng đăng ký trước 18:00 ngày 11/10.\nCuộc họp bắt đầu lúc 19:00 ngày 12/10 và dự kiến kết thúc lúc 20:30.",
+   "sessions": [
+    {
+     "day": "2026-10-12",
+     "start": "19:00",
+     "end": "20:30",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-11",
+     "time": "18:00",
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 10",
+   "arrived": "2026-10-07",
+   "subject": "Tham dự lễ trao giải",
+   "text": "Ban tổ chức yêu cầu sinh viên xác nhận tham dự trước 15/10.\nLễ trao giải diễn ra lúc 09:45 ngày 17/10/2026.\nCheck-in từ 09:00.",
+   "sessions": [
+    {
+     "day": "2026-10-17",
+     "start": "09:45",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "09:00",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "confirm",
+     "day": "2026-10-15",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 11",
+   "arrived": "2026-10-07",
+   "subject": "Workshop cuối tuần",
+   "text": "Workshop diễn ra lúc 2h chiều Chủ nhật 18/10.\nĐịa điểm: A2.307.",
+   "sessions": [
+    {
+     "day": "2026-10-18",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 12",
+   "arrived": "2026-10-07",
+   "subject": "Buổi tư vấn học tập",
+   "text": "Hẹn gặp sinh viên vào 10h30 sáng ngày 21 tháng 10.",
+   "sessions": [
+    {
+     "day": "2026-10-21",
+     "start": "10:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 13",
+   "arrived": "2026-10-07",
+   "subject": "Training kỹ năng mềm",
+   "text": "Chương trình bắt đầu vào 8h15 ngày 22/10 và kết thúc lúc 11h45.",
+   "sessions": [
+    {
+     "day": "2026-10-22",
+     "start": "08:15",
+     "end": "11:45",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 14",
+   "arrived": "2026-10-07",
+   "subject": "Talkshow",
+   "text": "Talkshow bắt đầu lúc 14 giờ 30 phút, thứ Tư ngày 28/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-28",
+     "start": "14:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 15",
+   "arrived": "2026-10-07",
+   "subject": "Họp trực tuyến",
+   "text": "Chúng ta sẽ họp vào 20:00 tối nay trên Teams.",
+   "sessions": [
+    {
+     "day": "2026-10-07",
+     "start": "20:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": "online",
+     "relative": "today",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 16",
+   "arrived": "2026-10-07",
+   "subject": "Nhắc hạn đăng ký học bổng",
+   "text": "Sinh viên vui lòng hoàn thành hồ sơ trước 17:00 ngày 13/10/2026.\nSau thời gian trên, hệ thống sẽ ngừng tiếp nhận hồ sơ.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-13",
+     "time": "17:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 17",
+   "arrived": "2026-10-07",
+   "subject": "Hạn đăng ký workshop",
+   "text": "Form đăng ký sẽ đóng vào 23:59 ngày 16/10.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-16",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 18",
+   "arrived": "2026-10-07",
+   "subject": "Nhắc nộp bài",
+   "text": "Sinh viên phải nộp bài trước 23:59 ngày 25/10/2026.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "due",
+     "day": "2026-10-25",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 19",
+   "arrived": "2026-10-07",
+   "subject": "Đăng ký tham gia chương trình",
+   "text": "Vui lòng đăng ký trước ngày 30/10 để được xác nhận suất tham dự.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-30",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 20",
+   "arrived": "2026-10-07",
+   "subject": "Thông báo thời hạn xác nhận",
+   "text": "Hạn cuối để xác nhận tham dự là 12:00 ngày 14/10.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "confirm",
+     "day": "2026-10-14",
+     "time": "12:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 21",
+   "arrived": "2026-10-07",
+   "subject": "Tuần lễ định hướng sinh viên",
+   "text": "Tuần lễ diễn ra từ 26/10 đến 30/10/2026.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-10-26",
+     "last_day": "2026-10-30",
+     "mode": "all_day",
+     "from_time": null,
+     "to_time": null,
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 22",
+   "arrived": "2026-10-07",
+   "subject": "Khóa học kỹ năng",
+   "text": "Khóa học kéo dài từ 01/11 đến 15/11.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-11-01",
+     "last_day": "2026-11-15",
+     "mode": "all_day",
+     "from_time": null,
+     "to_time": null,
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 23",
+   "arrived": "2026-10-07",
+   "subject": "Triển lãm sinh viên",
+   "text": "Triển lãm mở cửa từ 09:00 đến 17:00 trong các ngày 02/11 đến 05/11.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-11-02",
+     "last_day": "2026-11-05",
+     "mode": "daily_window",
+     "from_time": "09:00",
+     "to_time": "17:00",
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 24",
+   "arrived": "2026-10-07",
+   "subject": "Chương trình tình nguyện",
+   "text": "Chương trình bắt đầu 07:30 ngày 08/11 và kết thúc 16:30 cùng ngày.",
+   "sessions": [
+    {
+     "day": "2026-11-08",
+     "start": "07:30",
+     "end": "16:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 25",
+   "arrived": "2026-10-07",
+   "subject": "Thông báo hội thảo",
+   "text": "Email này được gửi lúc 09:15 ngày 07/10/2026.\nHội thảo sẽ diễn ra vào 14:00 ngày 20/10/2026.\nHạn đăng ký là 18/10.",
+   "sessions": [
+    {
+     "day": "2026-10-20",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-18",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 26",
+   "arrived": "2026-10-07",
+   "subject": "Nhắc lại lịch phỏng vấn",
+   "text": "Bạn đã đăng ký phỏng vấn vào 10/10.\nBuổi phỏng vấn chính thức diễn ra lúc 09:00 ngày 12/10.",
+   "sessions": [
+    {
+     "day": "2026-10-12",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": true
+  },
+  {
+   "id": "Mail 27",
+   "arrived": "2026-10-07",
+   "subject": "Xác nhận đăng ký",
+   "text": "Bạn đã đăng ký vào lúc 15:32 ngày 06/10.\nThời gian tham gia chương trình: 08:00 ngày 15/10.",
+   "sessions": [
+    {
+     "day": "2026-10-15",
+     "start": "08:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": true
+  },
+  {
+   "id": "Mail 28",
+   "arrived": "2026-10-07",
+   "subject": "Deadline không ảnh hưởng đến lịch tham dự",
+   "text": "Deadline đăng ký là 20/10.\nTuy nhiên, sự kiện sẽ diễn ra vào 25/10 lúc 15:00.",
+   "sessions": [
+    {
+     "day": "2026-10-25",
+     "start": "15:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-20",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 29",
+   "arrived": "2026-10-07",
+   "subject": "Thời gian đăng ký và thời gian tham gia",
+   "text": "Bạn có thể đăng ký từ 01/10 đến 05/10.\nSau khi đăng ký, vui lòng tham gia buổi workshop vào 10/10 lúc 09:30.",
+   "sessions": [
+    {
+     "day": "2026-10-10",
+     "start": "09:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-01",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-05",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 30",
+   "arrived": "2026-10-07",
+   "subject": "Hướng dẫn trước sự kiện",
+   "text": "Vui lòng hoàn thành đăng ký trước 12/10.\nLink Teams sẽ mở lúc 13:45 ngày 15/10.\nChương trình chính thức bắt đầu lúc 14:00 ngày 15/10.",
+   "sessions": [
+    {
+     "day": "2026-10-15",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": "13:45",
+     "mode": "online",
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-12",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 31",
+   "arrived": "2026-10-07",
+   "subject": "Workshop nghiên cứu khoa học",
+   "text": "Workshop diễn ra trong 2 giờ, bắt đầu lúc 08:30 ngày 16/10.",
+   "sessions": [
+    {
+     "day": "2026-10-16",
+     "start": "08:30",
+     "end": "10:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 32",
+   "arrived": "2026-10-07",
+   "subject": "Hướng dẫn check-in",
+   "text": "Vui lòng đến trước 08:00 ngày 18/10.\nChương trình bắt đầu lúc 08:30.",
+   "sessions": [
+    {
+     "day": "2026-10-18",
+     "start": "08:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "08:00",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 33",
+   "arrived": "2026-10-07",
+   "subject": "Sau khi kết thúc chương trình",
+   "text": "Chứng nhận sẽ được gửi sau ngày 25/10.\nBuổi lễ diễn ra vào 25/10 lúc 09:00.",
+   "sessions": [
+    {
+     "day": "2026-10-25",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 34",
+   "arrived": "2026-10-07",
+   "subject": "Lịch chương trình tháng 10",
+   "text": "Ngày 10/10 mở đăng ký.\nNgày 15/10 đóng đăng ký.\nNgày 20/10 diễn ra vòng 1.\nNgày 25/10 diễn ra vòng 2.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-10-20",
+     "last_day": "2026-10-20",
+     "mode": "all_day",
+     "from_time": null,
+     "to_time": null,
+     "details_later": false,
+     "label": "round_1"
+    },
+    {
+     "first_day": "2026-10-25",
+     "last_day": "2026-10-25",
+     "mode": "all_day",
+     "from_time": null,
+     "to_time": null,
+     "details_later": false,
+     "label": "round_2"
+    }
+   ],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-10",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-15",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 35",
+   "arrived": "2026-10-07",
+   "subject": "Lịch phỏng vấn tuyển thành viên",
+   "text": "Đăng ký từ 01/10.\nHạn đăng ký 08/10.\nDanh sách được công bố 10/10.\nPhỏng vấn diễn ra 12/10 từ 14:00 đến 17:00.",
+   "sessions": [
+    {
+     "day": "2026-10-12",
+     "start": "14:00",
+     "end": "17:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-01",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-08",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 36",
+   "arrived": "2026-10-07",
+   "subject": "Hồ sơ đã được tiếp nhận",
+   "text": "Hồ sơ của bạn đã được tiếp nhận thành công.\nThời gian tiếp nhận: 06/10/2026 lúc 10:35.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 37",
+   "arrived": "2026-10-07",
+   "subject": "Thông báo hệ thống",
+   "text": "Hệ thống sẽ bảo trì trong 2 giờ vào ban đêm.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 38",
+   "arrived": "2026-10-07",
+   "subject": "Cảm ơn bạn đã đăng ký",
+   "text": "Cảm ơn bạn đã đăng ký tham gia chương trình.\nThông tin chi tiết về thời gian tham dự sẽ được gửi sau.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": true
+  },
+  {
+   "id": "Mail 39",
+   "arrived": "2026-10-07",
+   "subject": "Kết quả đăng ký",
+   "text": "Bạn đã đăng ký thành công vào ngày 05/10/2026.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": true
+  },
+  {
+   "id": "Mail 40",
+   "arrived": "2026-10-07",
+   "subject": "Thông tin chung",
+   "text": "Sinh viên nên hoàn thành thủ tục càng sớm càng tốt.\nChương trình dự kiến diễn ra vào cuối tháng.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 41",
+   "arrived": "2026-10-07",
+   "subject": "Hội thảo ngày 20/10",
+   "text": "Hạn đăng ký: 18/10.\nVui lòng có mặt lúc 13:30.\nHội thảo chính thức bắt đầu lúc 14:00 ngày 20/10 và kết thúc lúc 16:00.",
+   "sessions": [
+    {
+     "day": "2026-10-20",
+     "start": "14:00",
+     "end": "16:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "13:30",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-18",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 42",
+   "arrived": "2026-10-07",
+   "subject": "Đăng ký trước, tham gia sau",
+   "text": "Form mở ngày 01/10.\nForm đóng ngày 10/10.\nNhững sinh viên đăng ký thành công sẽ tham gia chương trình vào 15/10 lúc 08:00.",
+   "sessions": [
+    {
+     "day": "2026-10-15",
+     "start": "08:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-01",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-10",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 43",
+   "arrived": "2026-10-07",
+   "subject": "Chương trình bắt đầu lúc 9h",
+   "text": "Check-in từ 08:30.\nĐăng ký trước 05/10.\nChương trình bắt đầu lúc 09:00 ngày 07/10.",
+   "sessions": [
+    {
+     "day": "2026-10-07",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "08:30",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-05",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 44",
+   "arrived": "2026-10-07",
+   "subject": "Hạn nộp và buổi thuyết trình",
+   "text": "Hạn nộp slide: 20/10 lúc 23:59.\nBuổi thuyết trình: 22/10 lúc 13:30.\nSinh viên cần có mặt trước 13:15.",
+   "sessions": [
+    {
+     "day": "2026-10-22",
+     "start": "13:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "13:15",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "due",
+     "day": "2026-10-20",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 45",
+   "arrived": "2026-10-07",
+   "subject": "Đăng ký tham dự lễ tốt nghiệp",
+   "text": "Sinh viên đăng ký từ 01/11 đến 05/11.\nLễ tốt nghiệp được tổ chức vào 15/11/2026 lúc 08:00.\nSinh viên phải có mặt lúc 07:15.",
+   "sessions": [
+    {
+     "day": "2026-11-15",
+     "start": "08:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "07:15",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-11-01",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-11-05",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 46",
+   "arrived": "2026-10-07",
+   "subject": "Mai gặp nhau nhé",
+   "text": "Nhớ nhé, 2 giờ chiều mai mình gặp ở A1.205 để trao đổi về project. Đừng đến trễ.",
+   "sessions": [
+    {
+     "day": "2026-10-08",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "tomorrow",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 47",
+   "arrived": "2026-10-07",
+   "subject": "Họp nhóm tuần này",
+   "text": "Mình chốt lịch 10h sáng thứ Năm tuần này nhé. Họp khoảng 1 tiếng.",
+   "sessions": [
+    {
+     "day": "2026-10-08",
+     "start": "10:00",
+     "end": "11:00",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "this_week",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 48",
+   "arrived": "2026-10-07",
+   "subject": "Nhắc lịch",
+   "text": "Nhắc bạn là 8h sáng ngày kia có buổi họp với nhóm.",
+   "sessions": [
+    {
+     "day": "2026-10-09",
+     "start": "08:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "day_after_tomorrow",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 49",
+   "arrived": "2026-10-07",
+   "subject": "Lịch tuần sau",
+   "text": "Workshop tuần sau tổ chức vào thứ Ba lúc 14h, kéo dài khoảng 90 phút.",
+   "sessions": [
+    {
+     "day": "2026-10-13",
+     "start": "14:00",
+     "end": "15:30",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "next_week",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 50",
+   "arrived": "2026-10-07",
+   "subject": "Đừng quên buổi meeting",
+   "text": "Meeting vào chiều thứ Sáu, bắt đầu lúc 3 giờ.\nLink sẽ được gửi trước đó 30 phút.",
+   "sessions": [
+    {
+     "day": "2026-10-09",
+     "start": "15:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": "14:30",
+     "mode": null,
+     "relative": "weekday",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 51",
+   "arrived": "2026-11-02",
+   "subject": "Workshop Git và GitHub",
+   "text": "Workshop Git và GitHub sẽ được tổ chức vào 09:00 ngày 08/11/2026 tại phòng A2.302.\nSinh viên vui lòng đăng ký trước 23:59 ngày 05/11.\nCó mặt tại phòng trước 08:45.",
+   "sessions": [
+    {
+     "day": "2026-11-08",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "08:45",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-05",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 52",
+   "arrived": "2026-11-02",
+   "subject": "Đăng ký chương trình trao đổi sinh viên",
+   "text": "Cổng đăng ký mở từ 01/11/2026 và đóng vào 15/11/2026 lúc 17:00.\nDanh sách sinh viên được chọn sẽ được công bố vào 20/11.\nBuổi hướng dẫn dành cho sinh viên được chọn diễn ra vào 22/11 lúc 14:00.",
+   "sessions": [
+    {
+     "day": "2026-11-22",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-11-01",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-11-15",
+     "time": "17:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 53",
+   "arrived": "2026-11-02",
+   "subject": "Seminar về trí tuệ nhân tạo",
+   "text": "Seminar diễn ra vào thứ Hai, ngày 09/11, từ 13:30 đến 15:30.\nNgười tham dự có thể check-in từ 13:00.",
+   "sessions": [
+    {
+     "day": "2026-11-09",
+     "start": "13:30",
+     "end": "15:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "13:00",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 54",
+   "arrived": "2026-11-02",
+   "subject": "Nhắc lịch kiểm tra giữa kỳ",
+   "text": "Bài kiểm tra giữa kỳ sẽ bắt đầu lúc 08:00 ngày 12/11/2026.\nSinh viên phải có mặt tại phòng thi trước 07:45.\nThời gian làm bài là 90 phút.",
+   "sessions": [
+    {
+     "day": "2026-11-12",
+     "start": "08:00",
+     "end": "09:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "07:45",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 55",
+   "arrived": "2026-11-02",
+   "subject": "Hạn xác nhận tham gia",
+   "text": "Vui lòng xác nhận tham dự trước 18:00 ngày 07/11.\nChương trình sẽ được tổ chức vào 10/11 lúc 15:00.",
+   "sessions": [
+    {
+     "day": "2026-11-10",
+     "start": "15:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "confirm",
+     "day": "2026-11-07",
+     "time": "18:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 56",
+   "arrived": "2026-11-02",
+   "subject": "Ngày hội việc làm",
+   "text": "Ngày hội việc làm mở cửa từ 08:00 đến 16:00 ngày 14/11/2026.\nSinh viên có thể đến bất kỳ thời điểm nào trong thời gian trên.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-11-14",
+     "last_day": "2026-11-14",
+     "mode": "one_window",
+     "from_time": "08:00",
+     "to_time": "16:00",
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 57",
+   "arrived": "2026-11-02",
+   "subject": "Đăng ký phỏng vấn học bổng",
+   "text": "Sinh viên đăng ký lịch phỏng vấn từ 05/11 đến 09/11.\nHệ thống sẽ đóng đăng ký lúc 23:59 ngày 09/11.\nLịch phỏng vấn của bạn là 14:30 ngày 11/11.",
+   "sessions": [
+    {
+     "day": "2026-11-11",
+     "start": "14:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-11-05",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-11-09",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 58",
+   "arrived": "2026-11-02",
+   "subject": "Buổi họp lớp",
+   "text": "Lớp sẽ họp vào 18h thứ Tư tuần này.\nCuộc họp dự kiến kéo dài khoảng 90 phút.",
+   "sessions": [
+    {
+     "day": "2026-11-04",
+     "start": "18:00",
+     "end": "19:30",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "this_week",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 59",
+   "arrived": "2026-11-02",
+   "subject": "Chương trình hiến máu",
+   "text": "Chương trình diễn ra vào 07:30 ngày 16/11.\nSinh viên đã đăng ký cần đến trước 07:15 để làm thủ tục.\nForm đăng ký đóng vào 12/11.",
+   "sessions": [
+    {
+     "day": "2026-11-16",
+     "start": "07:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "07:15",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-12",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 60",
+   "arrived": "2026-11-02",
+   "subject": "Triển lãm đồ án sinh viên",
+   "text": "Triển lãm mở cửa trong ba ngày, từ 10/11 đến 12/11, mỗi ngày từ 09:00 đến 17:00.\nBạn có thể tham quan vào bất kỳ thời điểm nào trong khung giờ mở cửa.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-11-10",
+     "last_day": "2026-11-12",
+     "mode": "daily_window",
+     "from_time": "09:00",
+     "to_time": "17:00",
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 61",
+   "arrived": "2026-11-02",
+   "subject": "Hướng dẫn sử dụng phòng lab",
+   "text": "Buổi hướng dẫn bắt đầu lúc 14h ngày 17/11.\nVui lòng hoàn thành đăng ký trước 16/11.",
+   "sessions": [
+    {
+     "day": "2026-11-17",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-16",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 62",
+   "arrived": "2026-11-02",
+   "subject": "Hạn nộp báo cáo nhóm",
+   "text": "Báo cáo nhóm phải được nộp trước 23:59 ngày 19/11.\nBuổi thuyết trình sẽ diễn ra vào 21/11 từ 08:30 đến 11:00.",
+   "sessions": [
+    {
+     "day": "2026-11-21",
+     "start": "08:30",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "due",
+     "day": "2026-11-19",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 63",
+   "arrived": "2026-11-02",
+   "subject": "Buổi tư vấn CV",
+   "text": "Các buổi tư vấn diễn ra trong khoảng 09:00 đến 16:00 ngày 18/11.\nSinh viên cần đặt lịch trước 15/11.\nMỗi lượt tư vấn kéo dài khoảng 30 phút.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-11-18",
+     "last_day": "2026-11-18",
+     "mode": "one_window",
+     "from_time": "09:00",
+     "to_time": "16:00",
+     "details_later": true,
+     "label": null
+    }
+   ],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-15",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 64",
+   "arrived": "2026-11-02",
+   "subject": "Thông báo tuyển cộng tác viên",
+   "text": "Hạn đăng ký ứng tuyển là 10/11/2026.\nỨng viên được chọn sẽ tham gia buổi phỏng vấn vào 13/11 lúc 09:00.",
+   "sessions": [
+    {
+     "day": "2026-11-13",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-10",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 65",
+   "arrived": "2026-11-02",
+   "subject": "Họp dự án",
+   "text": "Nhóm chúng ta họp vào 15:00 chiều mai.\nNhớ đọc tài liệu trước cuộc họp.",
+   "sessions": [
+    {
+     "day": "2026-11-03",
+     "start": "15:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "tomorrow",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 66",
+   "arrived": "2026-11-02",
+   "subject": "Chương trình định hướng nghề nghiệp",
+   "text": "Chương trình bắt đầu lúc 08:30 ngày 23/11 và kết thúc lúc 12:00.\nSinh viên đăng ký trước 20/11.",
+   "sessions": [
+    {
+     "day": "2026-11-23",
+     "start": "08:30",
+     "end": "12:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-20",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 67",
+   "arrived": "2026-11-02",
+   "subject": "Đăng ký tham quan doanh nghiệp",
+   "text": "Form đăng ký mở đến 16:00 ngày 21/11.\nChuyến tham quan diễn ra vào 25/11, tập trung tại trường lúc 07:00.\nXe khởi hành lúc 07:30.",
+   "sessions": [
+    {
+     "day": "2026-11-25",
+     "start": "07:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "07:00",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-21",
+     "time": "16:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 68",
+   "arrived": "2026-11-02",
+   "subject": "Lịch thi cuối kỳ",
+   "text": "Kỳ thi bắt đầu từ 01/12/2026.\nLịch thi cụ thể của từng môn sẽ được công bố vào 20/11.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 69",
+   "arrived": "2026-11-02",
+   "subject": "Workshop kỹ năng thuyết trình",
+   "text": "Workshop diễn ra vào 24/11 lúc 13:00.\nThời lượng dự kiến là 3 tiếng.",
+   "sessions": [
+    {
+     "day": "2026-11-24",
+     "start": "13:00",
+     "end": "16:00",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 70",
+   "arrived": "2026-11-02",
+   "subject": "Thông báo đăng ký hoạt động ngoại khóa",
+   "text": "Sinh viên có thể đăng ký từ 08:00 ngày 20/11 đến 23:59 ngày 22/11.\nHoạt động diễn ra vào 27/11 lúc 08:00.",
+   "sessions": [
+    {
+     "day": "2026-11-27",
+     "start": "08:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-11-20",
+     "time": "08:00",
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-11-22",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 71",
+   "arrived": "2026-11-02",
+   "subject": "Lịch gặp cố vấn học tập",
+   "text": "Bạn có lịch gặp cố vấn vào 10h sáng ngày 26/11.\nVui lòng đến đúng giờ vì mỗi sinh viên chỉ có 15 phút.",
+   "sessions": [
+    {
+     "day": "2026-11-26",
+     "start": "10:00",
+     "end": "10:15",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 72",
+   "arrived": "2026-11-02",
+   "subject": "Chương trình giao lưu quốc tế",
+   "text": "Chương trình diễn ra từ 09:00 ngày 28/11 đến 16:00 ngày 29/11.\nSinh viên có thể tham gia một hoặc nhiều phiên tùy nhu cầu.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-11-28",
+     "last_day": "2026-11-29",
+     "mode": "one_window",
+     "from_time": "09:00",
+     "to_time": "16:00",
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 73",
+   "arrived": "2026-11-02",
+   "subject": "Đăng ký cuộc thi lập trình",
+   "text": "Hạn đăng ký là 30/11 lúc 23:59.\nVòng loại online bắt đầu lúc 09:00 ngày 03/12 và kết thúc lúc 12:00.",
+   "sessions": [
+    {
+     "day": "2026-12-03",
+     "start": "09:00",
+     "end": "12:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": "online",
+     "relative": null,
+     "label": "qualifying"
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-11-30",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 74",
+   "arrived": "2026-11-02",
+   "subject": "Buổi hướng dẫn đồ án",
+   "text": "Buổi hướng dẫn sẽ diễn ra sáng thứ Sáu tuần sau lúc 09:30.\nThời lượng khoảng 2 giờ.",
+   "sessions": [
+    {
+     "day": "2026-11-13",
+     "start": "09:30",
+     "end": "11:30",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "next_week",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 75",
+   "arrived": "2026-11-02",
+   "subject": "Nhắc hạn đóng phí",
+   "text": "Sinh viên hoàn thành học phí trước 17:00 ngày 05/12.\nĐây là email nhắc hạn thanh toán, không có buổi gặp trực tiếp.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "due",
+     "day": "2026-12-05",
+     "time": "17:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 76",
+   "arrived": "2026-11-02",
+   "subject": "Xác nhận tham gia hội thảo",
+   "text": "Bạn đã xác nhận tham gia hội thảo vào ngày 30/11.\nHội thảo sẽ bắt đầu lúc 14:00 ngày 02/12.",
+   "sessions": [
+    {
+     "day": "2026-12-02",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": true
+  },
+  {
+   "id": "Mail 77",
+   "arrived": "2026-11-02",
+   "subject": "Lịch hoạt động câu lạc bộ",
+   "text": "Tháng này CLB có các buổi:\n05/12 lúc 18:00\n12/12 lúc 18:00\n19/12 lúc 18:00\nThành viên có thể tham gia bất kỳ buổi nào.",
+   "sessions": [
+    {
+     "day": "2026-12-05",
+     "start": "18:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-12-12",
+     "start": "18:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-12-19",
+     "start": "18:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 78",
+   "arrived": "2026-11-02",
+   "subject": "Ngày hội thể thao",
+   "text": "Ngày hội thể thao diễn ra từ 07:00 đến 17:00 ngày 06/12.\nCác trận đấu của bạn được sắp xếp riêng và sẽ được thông báo sau.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-12-06",
+     "last_day": "2026-12-06",
+     "mode": "one_window",
+     "from_time": "07:00",
+     "to_time": "17:00",
+     "details_later": true,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 79",
+   "arrived": "2026-11-02",
+   "subject": "Đăng ký workshop",
+   "text": "Đăng ký trước 01/12.\nWorkshop bắt đầu 02/12 lúc 09:00 và kéo dài khoảng 2 giờ 30 phút.",
+   "sessions": [
+    {
+     "day": "2026-12-02",
+     "start": "09:00",
+     "end": "11:30",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-12-01",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 80",
+   "arrived": "2026-11-02",
+   "subject": "Thông báo phòng học thay đổi",
+   "text": "Buổi học ngày 04/12 lúc 13:00 sẽ chuyển từ phòng A1.201 sang A2.205.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 81",
+   "arrived": "2026-11-02",
+   "subject": "Lịch phỏng vấn tuyển thành viên",
+   "text": "Bạn được mời phỏng vấn vào 09:15 ngày 08/12.\nVui lòng đăng nhập hệ thống trước 09:00.",
+   "sessions": [
+    {
+     "day": "2026-12-08",
+     "start": "09:15",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "09:00",
+     "link_opens": null,
+     "mode": "online",
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 82",
+   "arrived": "2026-11-02",
+   "subject": "Hạn đăng ký học phần",
+   "text": "Sinh viên có thể đăng ký học phần đến 16:00 ngày 10/12.\nSau thời điểm này, hệ thống sẽ đóng chức năng đăng ký.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-12-10",
+     "time": "16:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 83",
+   "arrived": "2026-11-02",
+   "subject": "Buổi chia sẻ kinh nghiệm thực tập",
+   "text": "Buổi chia sẻ bắt đầu lúc 14h30 thứ Ba ngày 15/12.\nPhòng sẽ mở cửa từ 14h.",
+   "sessions": [
+    {
+     "day": "2026-12-15",
+     "start": "14:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "14:00",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 84",
+   "arrived": "2026-11-02",
+   "subject": "Chương trình cuối năm",
+   "text": "Chương trình bắt đầu lúc 19:00 ngày 18/12.\nVui lòng check-in từ 18:15.\nĐăng ký trước 15/12.",
+   "sessions": [
+    {
+     "day": "2026-12-18",
+     "start": "19:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "18:15",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-12-15",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 85",
+   "arrived": "2026-11-02",
+   "subject": "Khóa đào tạo trực tuyến",
+   "text": "Khóa học mở từ 10/12 đến 20/12.\nSinh viên có thể xem bài giảng bất cứ lúc nào trong khoảng thời gian này.\nBài kiểm tra cuối khóa phải hoàn thành trước 23:59 ngày 20/12.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-12-10",
+     "last_day": "2026-12-20",
+     "mode": "all_day",
+     "from_time": null,
+     "to_time": null,
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [
+    {
+     "kind": "due",
+     "day": "2026-12-20",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 86",
+   "arrived": "2026-11-02",
+   "subject": "Họp nhóm ngày mai",
+   "text": "Nhóm mình gặp nhau lúc 9h sáng mai tại thư viện.\nCuộc họp dự kiến khoảng 45 phút.",
+   "sessions": [
+    {
+     "day": "2026-11-03",
+     "start": "09:00",
+     "end": "09:45",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "tomorrow",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 87",
+   "arrived": "2026-11-02",
+   "subject": "Chương trình trao đổi học thuật",
+   "text": "Hạn đăng ký chương trình là 15/12.\nPhỏng vấn diễn ra từ 08:00 đến 12:00 ngày 17/12.\nMỗi ứng viên sẽ có một khung giờ riêng.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-12-17",
+     "last_day": "2026-12-17",
+     "mode": "one_window",
+     "from_time": "08:00",
+     "to_time": "12:00",
+     "details_later": true,
+     "label": null
+    }
+   ],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-12-15",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 88",
+   "arrived": "2026-11-02",
+   "subject": "Hoạt động tình nguyện cuối tuần",
+   "text": "Hoạt động bắt đầu lúc 06:30 sáng thứ Bảy.\nSinh viên tập trung tại cổng trường lúc 06:00.\nHoạt động dự kiến kết thúc vào 11:30.",
+   "sessions": [
+    {
+     "day": "2026-11-07",
+     "start": "06:30",
+     "end": "11:30",
+     "end_is_approximate": true,
+     "ends_next_day": false,
+     "check_in": "06:00",
+     "link_opens": null,
+     "mode": null,
+     "relative": "weekday",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 89",
+   "arrived": "2026-11-02",
+   "subject": "Thông báo kết quả học bổng",
+   "text": "Kết quả sẽ được công bố vào 20/12.\nDanh sách phỏng vấn đã được công bố vào 15/12.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 90",
+   "arrived": "2026-11-02",
+   "subject": "Buổi gặp mặt sinh viên",
+   "text": "Buổi gặp mặt diễn ra chiều ngày 21/12, từ 14:00 đến 17:00.\nBạn có thể tham dự bất kỳ lúc nào trong khung giờ trên.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-12-21",
+     "last_day": "2026-12-21",
+     "mode": "one_window",
+     "from_time": "14:00",
+     "to_time": "17:00",
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 91",
+   "arrived": "2026-11-02",
+   "subject": "Nhắc hạn xác nhận chỗ",
+   "text": "Vui lòng xác nhận chỗ trước 12:00 ngày 19/12.\nSự kiện diễn ra vào 22/12 lúc 09:00.",
+   "sessions": [
+    {
+     "day": "2026-12-22",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "confirm",
+     "day": "2026-12-19",
+     "time": "12:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 92",
+   "arrived": "2026-11-02",
+   "subject": "Lịch nghỉ lễ",
+   "text": "Trường nghỉ từ 24/12 đến 26/12.\nCác lớp học sẽ trở lại bình thường vào 27/12.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 93",
+   "arrived": "2026-11-02",
+   "subject": "Buổi thuyết trình đồ án",
+   "text": "Nhóm của bạn thuyết trình vào 10:30 ngày 23/12.\nThời gian trình bày là 15 phút, sau đó có 10 phút hỏi đáp.",
+   "sessions": [
+    {
+     "day": "2026-12-23",
+     "start": "10:30",
+     "end": "10:55",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 94",
+   "arrived": "2026-11-02",
+   "subject": "Đăng ký chương trình mùa đông",
+   "text": "Đăng ký bắt đầu 18/12 và kết thúc 22/12 lúc 23:59.\nChương trình bắt đầu 26/12 lúc 08:00.",
+   "sessions": [
+    {
+     "day": "2026-12-26",
+     "start": "08:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-12-18",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-12-22",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 95",
+   "arrived": "2026-11-02",
+   "subject": "Hướng dẫn nhận chứng chỉ",
+   "text": "Chứng chỉ sẽ được phát từ 09:00 đến 11:30 ngày 28/12 tại phòng A1.101.\nSinh viên có thể đến nhận trong thời gian trên.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-12-28",
+     "last_day": "2026-12-28",
+     "mode": "one_window",
+     "from_time": "09:00",
+     "to_time": "11:30",
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 96",
+   "arrived": "2026-11-02",
+   "subject": "Nhắc lịch họp online",
+   "text": "Cuộc họp online diễn ra lúc 20h tối thứ Hai.\nLink họp sẽ được gửi trước 30 phút.",
+   "sessions": [
+    {
+     "day": "2026-11-09",
+     "start": "20:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": "19:30",
+     "mode": "online",
+     "relative": "weekday",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "Mail 97",
+   "arrived": "2026-11-02",
+   "subject": "Thông báo deadline project",
+   "text": "Deadline project là 23:59 ngày 29/12.\nKhông có buổi thuyết trình trong thông báo này.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "due",
+     "day": "2026-12-29",
+     "time": "23:59",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 98",
+   "arrived": "2026-11-02",
+   "subject": "Sự kiện chào năm mới",
+   "text": "Sự kiện diễn ra từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027.\nKhách có thể vào khu vực sự kiện từ 21:30.",
+   "sessions": [
+    {
+     "day": "2026-12-31",
+     "start": "22:00",
+     "end": "00:30",
+     "end_is_approximate": false,
+     "ends_next_day": true,
+     "check_in": "21:30",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 99",
+   "arrived": "2026-11-02",
+   "subject": "Đăng ký tham dự hội nghị",
+   "text": "Đăng ký mở đến 25/12.\nHội nghị diễn ra vào 05/01/2027 từ 08:00 đến 17:00.\nNgười tham dự không bắt buộc phải ở lại cả ngày.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2027-01-05",
+     "last_day": "2027-01-05",
+     "mode": "one_window",
+     "from_time": "08:00",
+     "to_time": "17:00",
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-12-25",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "Mail 100",
+   "arrived": "2026-11-02",
+   "subject": "Thông báo cuối kỳ",
+   "text": "Các hoạt động cuối kỳ sẽ diễn ra trong khoảng 02/01 đến 10/01/2027.\nLịch cụ thể của từng hoạt động sẽ được gửi trong email tiếp theo.\nKhông có thời gian cụ thể cho từng hoạt động trong email này.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2027-01-02",
+     "last_day": "2027-01-10",
+     "mode": "all_day",
+     "from_time": null,
+     "to_time": null,
+     "details_later": true,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C01",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Hạn đăng ký: 05/10/2026. Sự kiện diễn ra lúc 14h00 ngày 12/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-12",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-05",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C02",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Cổng đăng ký mở từ 8h00 ngày 01/10/2026 đến 17h00 ngày 10/10/2026.\nChương trình diễn ra 14h00 - 16h30 ngày 15/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-15",
+     "start": "14:00",
+     "end": "16:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-01",
+     "time": "08:00",
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-10",
+     "time": "17:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C03",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Sinh viên đăng ký tại link bên dưới trước 17h00 ngày 30/09/2026.\nWorkshop diễn ra lúc 14h00 ngày 05/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-09-30",
+     "time": "17:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C04",
+   "arrived": "2026-09-28",
+   "subject": "Webinar",
+   "text": "Please register by 5 PM, October 3.\nThe talk starts at 2 PM on October 10.",
+   "sessions": [
+    {
+     "day": "2026-10-10",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-03",
+     "time": "17:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C05",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Ngày tổ chức: 15/10/2026\nThời gian đăng ký: từ 01/10 đến 10/10/2026\nThời gian: 14h00 – 16h00",
+   "sessions": [
+    {
+     "day": "2026-10-15",
+     "start": "14:00",
+     "end": "16:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-01",
+     "time": null,
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-10",
+     "time": null,
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C06",
+   "arrived": "2026-09-28",
+   "subject": "Cuộc thi",
+   "text": "Vòng 1 diễn ra từ 8h00 ngày 01/10/2026 đến 17h00 ngày 05/10/2026.",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-10-01",
+     "last_day": "2026-10-05",
+     "mode": "one_window",
+     "from_time": "08:00",
+     "to_time": "17:00",
+     "details_later": false,
+     "label": "round_1"
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C07",
+   "arrived": "2026-09-28",
+   "subject": "Hội thao",
+   "text": "Hội thao diễn ra từ ngày 01/10 đến ngày 05/10/2026, từ 7h00 - 11h00 mỗi ngày.",
+   "sessions": [
+    {
+     "day": "2026-10-01",
+     "start": "07:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-10-02",
+     "start": "07:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-10-03",
+     "start": "07:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-10-04",
+     "start": "07:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-10-05",
+     "start": "07:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C08",
+   "arrived": "2026-09-28",
+   "subject": "Họp nhóm",
+   "text": "Thầy hẹn cả nhóm họp lúc 9h sáng thứ Ba tuần sau tại phòng A2.401.",
+   "sessions": [
+    {
+     "day": "2026-10-06",
+     "start": "09:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": "next_week",
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "C09",
+   "arrived": "2026-09-28",
+   "subject": "RE: Họp nhóm",
+   "text": "Ok em, mình dời sang 15h00 nhé.\n\nFrom: Đặng Văn Long\nSent: 28/09/2026\nCả nhóm gặp thầy lúc 10h00 ngày 02/10/2026.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "C10",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Ngày 05/10/2026: hạn đăng ký 12h00, workshop 14h00 - 16h30.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": "16:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-05",
+     "time": "12:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C11",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Sinh viên đăng ký trước 12h00 để tham gia workshop lúc 14h00 ngày 05/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-05",
+     "time": "12:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C12",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Thời gian đăng ký: 8h00 - 12h00 ngày 05/10/2026; Thời gian tổ chức: 14h00 - 16h00 ngày 05/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": "16:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "opens",
+     "day": "2026-10-05",
+     "time": "08:00",
+     "mode": null
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-05",
+     "time": "12:00",
+     "mode": null
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C13",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Đăng ký tại chỗ lúc 13h30, chương trình bắt đầu 14h00 ngày 05/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": "13:30",
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C14",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Chương trình diễn ra vào lúc 14 giờ 00 ngày 05/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C15",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Thời gian: 8 giờ 30 phút, ngày 05/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "08:30",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C16",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Thời gian: 14h00 – 16h30\nNgày: 05/10/2026",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": "16:30",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C17",
+   "arrived": "2026-09-28",
+   "subject": "Học bổng",
+   "text": "Ngày 28/9/2026, Phòng CTSV thông báo học bổng.\nĐiều kiện: điểm trung bình từ 7.50 trở lên.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C18",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Workshop dời từ 14h00 ngày 05/10/2026 sang 15h00 ngày 06/10/2026.",
+   "sessions": [
+    {
+     "day": "2026-10-06",
+     "start": "15:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C19",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Hủy buổi workshop 14h00 ngày 05/10/2026 do thời tiết xấu.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C20",
+   "arrived": "2026-09-28",
+   "subject": "Webinar",
+   "text": "The webinar starts at 9:00 AM EST on October 5, 2026.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "21:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C21",
+   "arrived": "2026-09-28",
+   "subject": "Lịch họp",
+   "text": "Thời gian: 05/10/2026 2:00 CH - 3:00 CH",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": "15:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": true,
+   "registered": false
+  },
+  {
+   "id": "C22",
+   "arrived": "2026-09-28",
+   "subject": "Lớp kỹ năng",
+   "text": "Lớp kỹ năng vào các ngày thứ Bảy từ 03/10 đến 24/10/2026, 8h00 - 11h00.",
+   "sessions": [
+    {
+     "day": "2026-10-03",
+     "start": "08:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-10-10",
+     "start": "08:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-10-17",
+     "start": "08:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    },
+    {
+     "day": "2026-10-24",
+     "start": "08:00",
+     "end": "11:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C23",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Workshop bắt đầu 14h00 ngày 05/10/2026, kéo dài 2 tiếng.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": "16:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C24",
+   "arrived": "2026-09-28",
+   "subject": "Thông báo",
+   "text": "Thời gian: 14h00 ngày 05/10/26.",
+   "sessions": [
+    {
+     "day": "2026-10-05",
+     "start": "14:00",
+     "end": null,
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": null
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C25",
+   "arrived": "2026-09-28",
+   "subject": "Workshop",
+   "text": "Workshop diễn ra ngày 05/10/2026 tại hội trường A2.\n\n--\nPhòng Công tác Sinh viên\nGiờ làm việc: 7h30 - 16h30, Thứ Hai đến Thứ Sáu",
+   "sessions": [],
+   "periods": [
+    {
+     "first_day": "2026-10-05",
+     "last_day": "2026-10-05",
+     "mode": "all_day",
+     "from_time": null,
+     "to_time": null,
+     "details_later": false,
+     "label": null
+    }
+   ],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C26",
+   "arrived": "2026-09-28",
+   "subject": "Ngày hội việc làm",
+   "text": "Sinh viên tham gia trực tiếp đăng ký trước 12h00 ngày 03/10. Tham gia online qua Zoom đăng ký trước 17h00 ngày 05/10.",
+   "sessions": [],
+   "periods": [],
+   "deadlines": [
+    {
+     "kind": "register",
+     "day": "2026-10-03",
+     "time": "12:00",
+     "mode": "in_person"
+    },
+    {
+     "kind": "register",
+     "day": "2026-10-05",
+     "time": "17:00",
+     "mode": "online"
+    }
+   ],
+   "meeting": false,
+   "registered": false
+  },
+  {
+   "id": "C27",
+   "arrived": "2026-09-28",
+   "subject": "Lịch ca",
+   "text": "Ca 1: 8:00–10:00; Ca 2: 13:00–15:00 ngày 30/9",
+   "sessions": [
+    {
+     "day": "2026-09-30",
+     "start": "08:00",
+     "end": "10:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": "shift_1"
+    },
+    {
+     "day": "2026-09-30",
+     "start": "13:00",
+     "end": "15:00",
+     "end_is_approximate": false,
+     "ends_next_day": false,
+     "check_in": null,
+     "link_opens": null,
+     "mode": null,
+     "relative": null,
+     "label": "shift_2"
+    }
+   ],
+   "periods": [],
+   "deadlines": [],
+   "meeting": false,
+   "registered": false
+  }
+ ]
+}
