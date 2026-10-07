@@ -5,7 +5,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from sla_agent.mail_phrases import clocks_in, days_in, lengths_in, parts_of
+from sla_agent.mail_phrases import clocks_in, days_in, lengths_in, parts_of, ranges_in, relative_day, weekday_filter
 
 ARRIVED = date(2026, 9, 28)  # Mon, in Vietnam
 
@@ -137,3 +137,62 @@ def test_a_sentence_is_cut_into_parts_at_commas_and_semicolons():
 
     assert [sentence[a:b] for a, b in parts_of(sentence)] == ["Ngày 05/10: hạn 12h00", " workshop 14h00",
                                                               " check-in 13h00"]
+
+
+# ---- ranges and windows ------------------------------------------------------------------------------------------------
+
+
+def ranges(sentence, arrived=ARRIVED):
+    found = days_in(sentence, arrived)
+    taken = [(d.start, d.end) for d in found]
+    day_ranges, windows = ranges_in(sentence, found, clocks_in(sentence, taken), arrived)
+    return ([(r.first, r.last) for r in day_ranges],
+            [(w.first, w.begin.strftime("%H:%M"), w.last, w.finish.strftime("%H:%M")) for w in windows])
+
+
+@pytest.mark.parametrize("sentence", ["Tuần lễ diễn ra từ 26/10 đến 30/10/2026", "Thời gian: 26/10 – 30/10",
+                                      "Từ ngày 26/10 đến ngày 30/10", "Trong khoảng 26/10 đến 30/10"])
+def test_a_date_range(sentence):
+    assert ranges(sentence) == ([(date(2026, 10, 26), date(2026, 10, 30))], [])
+
+
+def test_from_now_until_a_date():
+    assert ranges("Thời gian: 8h00 - 11h30 (Từ nay đến 30/09)") == ([(ARRIVED, date(2026, 9, 30))], [])
+
+
+@pytest.mark.parametrize("sentence", ["Vòng 1 từ 8h00 ngày 01/10/2026 đến 17h00 ngày 05/10/2026",
+                                      "Từ 01/10 lúc 8h00 đến 05/10 lúc 17h00"])
+def test_a_window_from_a_time_on_one_day_to_a_time_on_another(sentence):
+    assert ranges(sentence) == ([], [(date(2026, 10, 1), "08:00", date(2026, 10, 5), "17:00")])
+
+
+@pytest.mark.parametrize("sentence", ["Ngày 29/09 và 01/10, 13:00–14:00", "Từ 30/10 đến 26/10"])
+def test_not_ranges(sentence):
+    assert ranges(sentence) == ([], [])
+
+
+# ---- weekdays and relative days --------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("sentence, weekday", [
+    ("Lớp vào các ngày thứ Bảy từ 03/10 đến 24/10", 5), ("Sinh hoạt mỗi thứ Hai", 0), ("Thời gian: Thứ Ba, 29/9", None),
+])
+def test_a_weekday_filter(sentence, weekday):
+    assert weekday_filter(sentence) == weekday
+
+
+WEDNESDAY = date(2026, 10, 7)
+
+
+@pytest.mark.parametrize("sentence, expected", [
+    ("Họp vào 20:00 tối nay", ("today", date(2026, 10, 7))),
+    ("2 giờ chiều mai mình gặp", ("tomorrow", date(2026, 10, 8))),
+    ("8h sáng ngày kia có buổi họp", ("day_after_tomorrow", date(2026, 10, 9))),
+    ("10h sáng thứ Năm tuần này", ("this_week", date(2026, 10, 8))),
+    ("Workshop tuần sau tổ chức vào thứ Ba lúc 14h", ("next_week", date(2026, 10, 13))),
+    ("Meeting vào chiều thứ Sáu", ("weekday", date(2026, 10, 9))),
+    ("Họp vào thứ Tư", ("weekday", date(2026, 10, 14))),  # the next one after the day it arrived
+    ("[Ticket] Trần Thị Mai – Yêu cầu mới", None),  # "Mai" alone is a name, not tomorrow
+])
+def test_relative_days(sentence, expected):
+    assert relative_day(sentence, WEDNESDAY) == expected

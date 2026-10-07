@@ -27,8 +27,10 @@ ZONE = re.compile(r"\s*\(?\s*(?:(?P<named>ICT|EST|EDT|PST|PDT|CET|CEST|JST|KST|S
                   r"\s*(?P<hours>\d{1,2})?(?::?(?P<minutes>\d{2}))?)\s*\)?")
 ZONE_HOURS = {"ICT": 7, "EST": -5, "EDT": -4, "PST": -8, "PDT": -7, "CET": 1, "CEST": 2, "JST": 9, "KST": 9, "SGT": 8}
 VIETNAM = timedelta(hours=7)
-# On folded text: what joins the two ends of a range.
+# On folded text: what joins the two ends of a range, and what may sit between a time and its date.
 JOIN = re.compile(r"\s*,?\s*(?:den|toi|-|–|—|to|until|till)\s+(?:het\s+)?(?:ngay\s+)?$|\s*[-–—]\s*$")
+FILLER = re.compile(r"\s*[,(]?\s*(?:(?:ngay|vao|luc|vao luc|on|at|cung ngay)\s*)*[,)]?\s*$")
+FROM_NOW = re.compile(r"\btu\s+nay\s+(?:den|toi)\s+(?:het\s+)?(?:ngay\s+)?$")
 # On folded text, right after a time: the time of day ("2h chiều" is 14:00).
 TIME_OF_DAY_AFTER = re.compile(r"\s*(sang|chieu|toi|trua)\b")
 TIME_OF_DAY = re.compile(r"\b(sang|chieu|toi|trua)\b")
@@ -62,6 +64,25 @@ class Clock:
     begin: time
     finish: time | None = None
     offset: timedelta | None = None
+
+
+@dataclass(frozen=True)
+class DayRange:
+    start: int
+    end: int
+    first: date
+    last: date
+
+
+@dataclass(frozen=True)
+class Window:
+    """From a time on one day to a time on another."""
+    start: int
+    end: int
+    first: date
+    begin: time
+    last: date
+    finish: time
 
 
 @dataclass(frozen=True)
@@ -215,8 +236,72 @@ def clocks_in(sentence, taken):
     return found
 
 
+def _between(sentence, a, b):
+    return fold(sentence[a:b])
+
+
+def ranges_in(sentence, days, clocks, arrived):
+    """(DayRange list, Window list): two dates joined by "đến", "–" …, "từ nay đến <date>", and a time and date joined
+    to a time and date ("từ 8h00 ngày 01/10 đến 17h00 ngày 05/10")."""
+    def next_to(clock, day):
+        a, b = (clock.end, day.start) if clock.start < day.start else (day.end, clock.start)
+        return FILLER.fullmatch(_between(sentence, a, b)) is not None
+
+    windows, day_ranges, used = [], [], set()
+    for i in range(len(days) - 1):
+        d1, d2 = days[i], days[i + 1]
+        c1 = next((c for c in clocks if c.finish is None and next_to(c, d1)), None)
+        c2 = next((c for c in clocks if c.finish is None and next_to(c, d2) and c is not c1), None)
+        if c1 and c2:
+            left_end, right_start = max(c1.end, d1.end), min(c2.start, d2.start)
+            if left_end <= right_start and JOIN.match(_between(sentence, left_end, right_start) + " "):
+                windows.append(Window(min(c1.start, d1.start), max(c2.end, d2.end), d1.day, c1.begin, d2.day, c2.begin))
+                used.update((i, i + 1))
+                continue
+    for i in range(len(days) - 1):
+        if i in used or i + 1 in used:
+            continue
+        d1, d2 = days[i], days[i + 1]
+        if JOIN.match(_between(sentence, d1.end, d2.start) + " ") and d1.day <= d2.day:
+            day_ranges.append(DayRange(d1.start, d2.end, d1.day, d2.day))
+            used.update((i, i + 1))
+    for i, d in enumerate(days):
+        if i not in used and FROM_NOW.search(fold(sentence[:d.start])):
+            day_ranges.append(DayRange(fold(sentence[:d.start]).rfind("tu nay"), d.end, arrived, d.day))
+    return sorted(day_ranges, key=lambda r: r.start), windows
+
+
 def parts_of(sentence):
     """(start, end) of the sentence's parts: it is cut at commas and semicolons."""
     cuts = [i for i, c in enumerate(sentence) if c in ",;"]
     starts, ends = [0] + [c + 1 for c in cuts], cuts + [len(sentence)]
     return list(zip(starts, ends))
+
+
+def weekday_filter(sentence):
+    """The weekday (0 = Monday) named after "các ngày", "các", "mỗi" or "every", else None: "các ngày thứ Bảy"."""
+    filters = words.WEEKDAY_FILTER.spans(sentence)
+    for start, _, day in words.WEEKDAYS.spans(sentence):
+        if any(end <= start and FILLER.fullmatch(fold(sentence[end:start])) for _, end in filters):
+            return day
+    return None
+
+
+def relative_day(sentence, arrived):
+    """(code, day) of the day a relative word names in `sentence` (spec §3.2), else None."""
+    if words.TODAY.spans(sentence):
+        return "today", arrived
+    if words.TOMORROW.spans(sentence):
+        return "tomorrow", arrived + timedelta(days=1)
+    if words.DAY_AFTER_TOMORROW.spans(sentence):
+        return "day_after_tomorrow", arrived + timedelta(days=2)
+    named = words.WEEKDAYS.spans(sentence)
+    if not named:
+        return None
+    weekday = named[0][2]
+    monday = arrived - timedelta(days=arrived.weekday())
+    if words.NEXT_WEEK.spans(sentence):
+        return "next_week", monday + timedelta(days=7 + weekday)
+    if words.THIS_WEEK.spans(sentence):
+        return "this_week", monday + timedelta(days=weekday)
+    return "weekday", arrived + timedelta(days=(weekday - arrived.weekday() - 1) % 7 + 1)
