@@ -2,7 +2,7 @@
 §4). The whole test set is in test_mail_times_cases.py; these tests pin each rule on its own."""
 
 import unicodedata
-from datetime import date
+from datetime import date, time
 
 import pytest
 
@@ -223,3 +223,129 @@ def test_periods(text, expected):
 ])
 def test_not_periods(text):
     assert periods(text) == []
+
+
+# ---- sessions (§4.3, S) ----------------------------------------------------------------------------------------------
+
+
+def sessions(text, arrived=ARRIVED):
+    return [(s.day.strftime("%d/%m"), s.start.strftime("%H:%M"),
+             s.end and ("~" if s.end_is_approximate else "") + s.end.strftime("%H:%M"),
+             s.check_in and s.check_in.strftime("%H:%M"), s.link_opens and s.link_opens.strftime("%H:%M"))
+            for s in read_times("", text, arrived).sessions]
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Ngày: 01/10/2026\nThời gian: 13h00 – 16h00", [("01/10", "13:00", "16:00", None, None)]),  # the line above
+    ("Thời gian: 14h00 – 16h30\nNgày: 05/10/2026", [("05/10", "14:00", "16:30", None, None)]),  # the line below
+    ("Hạn đăng ký: 05/10.\nVui lòng có mặt lúc 13:30.\nHội thảo bắt đầu lúc 14:00 ngày 20/10 và kết thúc lúc 16:00.",
+     [("20/10", "14:00", "16:00", "13:30", None)]),  # a deadline line gives no day
+    ("Ngày 29/09 và 01/10, 13:00–14:00", [("29/09", "13:00", "14:00", None, None), ("01/10", "13:00", "14:00", None, None)]),
+    ("29/9 lúc 8h, 30/9 lúc 14h", [("29/09", "08:00", None, None, None), ("30/09", "14:00", None, None, None)]),
+    ("Thời gian: 14h", []),  # no day anywhere
+], ids=["above", "below", "deadline-line", "two-days-one-time", "pairs", "no-day"])
+def test_the_day_of_a_time(text, expected):
+    assert sessions(text) == expected
+
+
+WEDNESDAY = date(2026, 10, 7)
+
+
+def test_a_relative_day_only_without_a_written_date():
+    [tonight] = read_times("", "Chúng ta sẽ họp vào 20:00 tối nay.", WEDNESDAY).sessions
+    [dated] = read_times("", "Workshop ngày 12/10/2026.\nHọp lúc 9h sáng thứ Ba.", WEDNESDAY).sessions
+
+    assert (tonight.day, tonight.relative) == (date(2026, 10, 7), "today")
+    assert (dated.day, dated.relative) == (date(2026, 10, 12), None)
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Cuộc họp bắt đầu lúc 19:00 ngày 12/10 và dự kiến kết thúc lúc 20:30.", [("12/10", "19:00", "~20:30", None, None)]),
+    ("Hoạt động bắt đầu lúc 06:30 ngày 07/10.\nHoạt động dự kiến kết thúc vào 11:30.",
+     [("07/10", "06:30", "~11:30", None, None)]),
+    ("Workshop diễn ra trong 2 giờ, bắt đầu lúc 08:30 ngày 16/10.", [("16/10", "08:30", "10:30", None, None)]),
+    ("Họp lúc 10h ngày 08/10. Họp khoảng 1 tiếng.", [("08/10", "10:00", "~11:00", None, None)]),
+    ("Thuyết trình vào 10:30 ngày 23/12. Thời gian trình bày là 15 phút, sau đó có 10 phút hỏi đáp.",
+     [("23/12", "10:30", "10:55", None, None)]),
+    ("Tư vấn lúc 09:00 ngày 18/10. Mỗi lượt tư vấn kéo dài khoảng 30 phút.", [("18/10", "09:00", None, None, None)]),
+], ids=["start-and-end", "end-alone", "length-before", "length-after", "lengths-add-up", "slot-length"])
+def test_the_end_of_a_session(text, expected):
+    assert sessions(text) == expected
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Hội thảo lúc 14:00 ngày 15/10. Có mặt trước 13:45.", [("15/10", "14:00", None, "13:45", None)]),
+    ("Check in: 13:00 - 13:45, ngày 29/09/2026", [("29/09", "13:00", "13:45", None, None)]),  # no later session
+    ("Workshop lúc 09:30 ngày 18/10 trên Teams. Link tham gia sẽ được gửi trước 09:00 cùng ngày.",
+     [("18/10", "09:30", None, None, "09:00")]),
+    ("Meeting lúc 15:00 ngày 09/10. Link sẽ được gửi trước đó 30 phút.", [("09/10", "15:00", None, None, "14:30")]),
+], ids=["check-in", "check-in-alone", "link-time", "link-before"])
+def test_check_in_and_link_times(text, expected):
+    assert sessions(text) == expected
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("The webinar starts at 9:00 AM EST on October 5, 2026.", [("05/10", "21:00", None, None, None)]),
+    ("The talk starts at 8:00 PM PST on October 5, 2026.", [("06/10", "11:00", None, None, None)]),
+])
+def test_a_written_time_zone_becomes_vietnam_time(text, expected):
+    assert sessions(text) == expected
+
+
+def test_past_days_repeats_and_at_most_ten_soonest_first():
+    days = ", ".join(f"{d}/10" for d in range(12, 0, -1))
+
+    assert sessions("ngày 20/9 lúc 14h và ngày 30/9 lúc 14h") == [("30/09", "14:00", None, None, None)]
+    assert sessions("Workshop 30/9 lúc 14h\nThời gian: 14h00 – 16h00 ngày 30/9") == [("30/09", "14:00", "16:00", None, None)]
+    assert [s[0] for s in sessions(f"Các buổi: {days}, lúc 18h")] == [f"{d:02d}/10" for d in range(1, 11)]
+
+
+def test_a_night_session_ends_the_next_day():
+    [night] = read_times("", "Sự kiện diễn ra từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027.", ARRIVED).sessions
+
+    assert (night.day, night.start, night.end, night.ends_next_day) == (date(2026, 12, 31), time(22), time(0, 30), True)
+
+
+@pytest.mark.parametrize("text, days", [
+    ("Hội thao diễn ra từ 01/10 đến 03/10, từ 7h00 - 11h00 mỗi ngày.", ["01/10", "02/10", "03/10"]),
+    ("Lớp vào các ngày thứ Bảy từ 03/10 đến 24/10/2026, 8h00 - 11h00.", ["03/10", "10/10", "17/10", "24/10"]),
+])
+def test_each_day_of_a_range(text, days):
+    assert [s[0] for s in sessions(text)] == days
+
+
+def test_a_dated_event_with_no_hour_is_a_one_day_period():
+    found = read_times("", "Ngày 15/10 đóng đăng ký.\nNgày 20/10 diễn ra vòng 1.", ARRIVED)
+
+    assert found.sessions == ()
+    assert [(p.mode, p.first_day, p.label) for p in found.periods] == [("all_day", date(2026, 10, 20), "round_1")]
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Email này được gửi lúc 09:15 ngày 07/10/2026.\nHội thảo sẽ diễn ra vào 14:00 ngày 20/10/2026.",
+     [("20/10", "14:00", None, None, None)]),
+    ("Workshop dời từ 14h00 ngày 05/10/2026 sang 15h00 ngày 06/10/2026.", [("06/10", "15:00", None, None, None)]),
+    ("Hủy buổi workshop 14h00 ngày 05/10/2026 do thời tiết xấu.", []),
+    ("Buổi học ngày 04/12 lúc 13:00 sẽ chuyển từ phòng A1.201 sang A2.205.", []),
+    ("Workshop ngày 05/10/2026: 08:00 - 11:30.\nNghỉ giải lao 09:30 - 09:45.", [("05/10", "08:00", "11:30", None, None)]),
+], ids=["notice", "rescheduled", "cancelled", "room-change", "a-break-drops-only-its-line"])
+def test_what_is_dropped(text, expected):
+    assert sessions(text, arrived=date(2026, 9, 28)) == expected
+
+
+@pytest.mark.parametrize("text, modes", [
+    ("Workshop lúc 09:30 ngày 18/10/2026 trên Microsoft Teams.", ["online"]),
+    ("Link Teams sẽ mở lúc 13:45 ngày 15/10.\nChương trình bắt đầu lúc 14:00 ngày 15/10.", ["online"]),
+    ("Hội thảo lúc 14:00 ngày 15/10/2026 tại phòng A2.301.", [None]),  # no online words: no modes at all
+    ("Sáng 17/10: 08:00–11:30 trực tiếp tại hội trường. Tối 17/10: 19:00–21:00 online qua Zoom.", ["in_person", "online"]),
+], ids=["online-in-its-part", "only-online-words-in-the-email", "no-online-words", "both"])
+def test_session_modes(text, modes):
+    assert [s.mode for s in read_times("", text, ARRIVED).sessions] == modes
+
+
+@pytest.mark.parametrize("text, labels", [
+    ("Ca 1: 8:00–10:00; Ca 2: 13:00–15:00 ngày 30/9", ["shift_1", "shift_2"]),
+    ("Vòng sơ loại diễn ra vào 15/10 lúc 13h30.", ["preliminary"]),
+])
+def test_session_labels(text, labels):
+    assert [s.label for s in read_times("", text, ARRIVED).sessions] == labels

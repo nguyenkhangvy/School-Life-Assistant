@@ -30,6 +30,7 @@ WROTE = re.compile(r"\s*(?:on|vao)\b.*\b(?:wrote|da viet)\s*:\s*$")
 # Step 2 (§4.3), on folded text.
 DUE_TO = re.compile(r"\s+to\b")  # "due to the rain" is not a deadline
 LINK_BEFORE = re.compile(r"\btruoc\s+(?:do\s+)?(\d{1,3})\s*phut\b")  # "gửi trước 30 phút": 30 minutes before
+ESTIMATED_END = re.compile(r"\bdu kien\s*$")  # "dự kiến kết thúc lúc 20:30": an approximate end
 
 
 # ---- what the reader finds -------------------------------------------------------------------------------------------
@@ -413,6 +414,153 @@ def _periods(sentences, i, details_later):
     return periods, sessions
 
 
+# ---- step 2: sessions (§4.3, S) --------------------------------------------------------------------------------------
+
+
+def _day_source(sentence):
+    """The days a sentence gives the lines around it: its free dates, else the day a relative word gave it, else the
+    first day of its range or window."""
+    if sentence.skip:
+        return []
+    free = [d.day for d in sentence.free(sentence.days)]
+    if free:
+        return free
+    if sentence.relative:
+        return [sentence.relative[1]]
+    return [x.first for x in sentence.windows + sentence.ranges][:1]
+
+
+def _neighbour_days(sentences, i):
+    """S1: the days of the nearest line above that has some, else of the nearest line below."""
+    for j in list(range(i - 1, -1, -1)) + list(range(i + 1, len(sentences))):
+        days = _day_source(sentences[j])
+        if days:
+            return days
+    return []
+
+
+def _session_days(sentences, i, arrived):
+    """S1: ([day], relative code or None) for sentence i's times."""
+    sentence = sentences[i]
+    days = [d.day for d in sentence.free(sentence.days)] or _neighbour_days(sentences, i)
+    if days:
+        return days, None
+    if any(s.days for s in sentences[:i + 1]):
+        return [], None
+    relative = phrases.relative_day(sentence.text, arrived)
+    if relative is None:
+        return [], None
+    sentence.relative = relative
+    return [relative[1]], relative[0]
+
+
+def _sessions(sentences, i, arrived, given):
+    """S1–S3 for sentence i: sessions from its free times, with those P4 and P5 gave."""
+    sentence = sentences[i]
+    clocks = sentence.free(sentence.clocks)
+    approximate = set()
+    # S2: "bắt đầu X … kết thúc Y" is one session; a sentence with only an end ends the nearest session above.
+    for start, end in sentence.spans(words.END):
+        after = [c for c in clocks if c.start >= end and c.finish is None]
+        before = [c for c in clocks if c.end <= start and c.finish is None]
+        if not after:
+            continue
+        estimated = bool(ESTIMATED_END.search(fold(sentence.text[:start])))
+        if before:
+            first, last = before[-1], after[0]
+            joined = replace(first, finish=last.begin) if last.begin > first.begin else first
+            clocks = [joined if c is first else c for c in clocks if c is not last]
+            sentence.use(last)
+            if estimated:
+                approximate.add(id(joined))
+        elif len(clocks) == 1 and not sentence.free(sentence.days):
+            above = next((s for s in reversed(sentences[:i]) if s.sessions), None)
+            if above:
+                session, position = above.sessions[-1]
+                above.sessions[-1] = (replace(session, end=after[0].begin, end_is_approximate=estimated), position)
+            sentence.use(after[0])
+            clocks = []
+    found = list(given)
+    clocks = [c for c in clocks if c.begin not in DAY_EDGES]
+    days, relative = _session_days(sentences, i, arrived) if clocks else ([], None)
+    pairs = zip(days, clocks) if len(days) == len(clocks) else [(d, c) for d in days for c in clocks]
+    for day, clock in pairs:
+        start, end = clock.begin, clock.finish
+        if clock.offset is not None:  # S6
+            moved = datetime.combine(day, start) - clock.offset + phrases.VIETNAM
+            day, start = moved.date(), moved.time()
+            end = end and (datetime.combine(day, end) - clock.offset + phrases.VIETNAM).time()
+        found.append((FoundSession(day, start, end, id(clock) in approximate, relative=relative), clock.start))
+    sentence.sessions = found
+    # S3: a length ends the sessions of its sentence, or else of the nearest sentence above with sessions.
+    lengths = [n for n in sentence.lengths if not n.slot]
+    if not lengths:
+        return
+    minutes = next((n.minutes for n in lengths if not n.adds), 0) + sum(n.minutes for n in lengths if n.adds)
+    holder = sentence if found else next((s for s in reversed(sentences[:i]) if s.sessions), None)
+    if holder is None or not minutes:
+        return
+    for k, (session, position) in enumerate(holder.sessions):
+        end = datetime.combine(session.day, session.start) + timedelta(minutes=minutes)
+        if session.end is None and end.date() == session.day:
+            holder.sessions[k] = (replace(session, end=end.time(),
+                                          end_is_approximate=any(n.approximate for n in lengths)), position)
+
+
+def _join(sessions, day, at, field):
+    """S4, S5: sets `field` to `at` on the earliest session of `day` that starts at or after `at` and has none yet.
+    Whether one was found."""
+    later = [k for k, (s, _, _) in enumerate(sessions) if s.day == day and s.start >= at and getattr(s, field) is None]
+    if not later:
+        return False
+    k = min(later, key=lambda k: sessions[k][0].start)
+    session, i, position = sessions[k]
+    sessions[k] = (replace(session, **{field: at}), i, position)
+    return True
+
+
+def _check_ins(sentences, arrivals, sessions, arrived):
+    """S4: each arrival time [(sentence index, clock)] joins the earliest session of its day that starts at or after
+    it, as its check-in; with no such session it is a session of its own (A.1)."""
+    for i, clock in arrivals:
+        day = sentences[i].day_for(clock) or next(iter(_neighbour_days(sentences, i)), None)
+        if day is None and not any(s.days for s in sentences[:i + 1]):
+            relative = phrases.relative_day(sentences[i].text, arrived)
+            day = relative and relative[1]
+        if day is not None and not _join(sessions, day, clock.begin, "check_in"):
+            sessions.append((FoundSession(day, clock.begin, clock.finish), i, clock.start))
+
+
+def _link_times(sentences, links, sessions):
+    """S5: each link time [(sentence index, clock, minutes)] joins a session like an arrival time; "trước 30 phút"
+    (minutes) counts back from the start of the nearest session above."""
+    for i, clock, minutes in links:
+        if clock is not None:
+            day = sentences[i].day_for(clock) or next(iter(_neighbour_days(sentences, i)), None)
+            if day is not None:
+                _join(sessions, day, clock.begin, "link_opens")
+            continue
+        above = [k for k, (_, j, _) in enumerate(sessions) if j <= i]
+        if above:
+            session, j, position = sessions[above[-1]]
+            at = datetime.combine(session.day, session.start) - timedelta(minutes=minutes)
+            if at.date() == session.day and session.link_opens is None:
+                sessions[above[-1]] = (replace(session, link_opens=at.time()), j, position)
+
+
+def _one_day_periods(sentences, sessions, details_later):
+    """P6: each day with no hour, with an event word in its part and no session that day, as a one-day Period."""
+    periods, busy = [], {s.day for s, _, _ in sessions}
+    for sentence in sentences:
+        events = [sentence.part(start) for start, _ in sentence.spans(words.EVENT)]
+        for day in sentence.free(sentence.days):
+            if day.day not in busy and sentence.part(day.start) in events:
+                periods.append(FoundPeriod(day.day, day.day, "all_day", details_later=details_later,
+                                           label=_label(sentence, day.start)))
+                busy.add(day.day)
+    return periods
+
+
 # ---- what is kept, with its mode (§4.3, D4, M, S7) -------------------------------------------------------------------
 
 
@@ -454,6 +602,26 @@ def _kept_periods(periods, arrived):
                         key=lambda p: (p.first_day, p.last_day, p.from_time or time(0)))[:MAX_PERIODS])
 
 
+def _kept_sessions(sentences, sessions, arrived, modes):
+    """M, labels and S7: [(FoundSession, sentence index, position)] as kept: each with its mode and label, a check-in
+    that isn't before the start left out; none before `arrived`; a repeated day and start once, with the end found;
+    at most MAX_SESSIONS, soonest first."""
+    kept = {}
+    for session, i, position in sessions:
+        if session.day < arrived:
+            continue
+        sentence = sentences[i]
+        session = replace(session, mode=modes.of(sentence, position, whole_email=True),
+                          label=session.label or _label(sentence, position),
+                          check_in=session.check_in if session.check_in and session.check_in < session.start else None)
+        key = (session.day, session.start)
+        if key not in kept:
+            kept[key] = session
+        elif kept[key].end is None and session.end is not None:
+            kept[key] = replace(kept[key], end=session.end, end_is_approximate=session.end_is_approximate)
+    return tuple(sorted(kept.values(), key=lambda s: (s.day, s.start))[:MAX_SESSIONS])
+
+
 # ---- the reader ------------------------------------------------------------------------------------------------------
 
 
@@ -465,13 +633,26 @@ def read_times(subject, text, arrived):
     details_later = any(_says_later(s) for s in sentences)
 
     deadlines = [(heading, d, p) for d, p in _deadlines(heading)]  # the subject gives deadlines only
-    for sentence in sentences:
+    arrivals, links = [], []
+    for i, sentence in enumerate(sentences):
         _drop(sentence)
-        _arrivals(sentence)
+        arrivals += [(i, clock) for clock in _arrivals(sentence)]
         deadlines += [(sentence, d, p) for d, p in _deadlines(sentence)]
-        _links(sentence)
+        links += [(i, clock, minutes) for clock, minutes in _links(sentence)]
         _notices(sentence)
-    periods = []
+    periods, given = [], []
     for i in range(len(sentences)):
-        periods += _periods(sentences, i, details_later)[0]
-    return Found(periods=_kept_periods(periods, arrived), deadlines=_kept_deadlines(deadlines, heading, modes))
+        found, made = _periods(sentences, i, details_later)
+        periods += found
+        given.append(made)
+    for i in range(len(sentences)):
+        _sessions(sentences, i, arrived, given[i])
+    sessions = [(s, i, p) for i, sentence in enumerate(sentences) for s, p in sentence.sessions]
+    _check_ins(sentences, arrivals, sessions, arrived)
+    _link_times(sentences, links, sessions)
+    periods += _one_day_periods(sentences, sessions, details_later)
+    return Found(
+        sessions=_kept_sessions(sentences, sessions, arrived, modes),
+        periods=_kept_periods(periods, arrived),
+        deadlines=_kept_deadlines(deadlines, heading, modes),
+    )
