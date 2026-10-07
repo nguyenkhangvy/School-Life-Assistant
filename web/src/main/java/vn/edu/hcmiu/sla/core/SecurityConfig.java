@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,12 +14,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 
 import vn.edu.hcmiu.sla.auth.AccountCheck;
 import vn.edu.hcmiu.sla.auth.AppUserDetailsService;
 import vn.edu.hcmiu.sla.auth.LoggedIn;
+import vn.edu.hcmiu.sla.auth.LoginLimitFilter;
+import vn.edu.hcmiu.sla.auth.LoginLimits;
 import vn.edu.hcmiu.sla.auth.Role;
 import vn.edu.hcmiu.sla.auth.UserRepository;
 import vn.edu.hcmiu.sla.auth.WerkzeugPasswordEncoder;
@@ -40,7 +44,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain pages(HttpSecurity http, LoggedIn loggedIn, Refusals refusals, UserRepository users,
-            SecurityContextRepository logins) throws Exception {
+            SecurityContextRepository logins, LoginLimits limits) throws Exception {
         http
                 .authorizeHttpRequests(pages -> pages
                         .requestMatchers(ANYONE).permitAll()
@@ -50,13 +54,14 @@ public class SecurityConfig {
                         .requestMatchers(EVERY_ROLE).authenticated()
                         .anyRequest().authenticated()) // a mistyped address: "Page not found", for any role
                 .addFilterBefore(new AccountCheck(users, logins), AuthorizationFilter.class)
+                .addFilterBefore(new LoginLimitFilter(limits), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(refused -> refused.accessDeniedHandler(refusals))
                 .formLogin(login -> login
                         .loginPage("/auth/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
                         .successHandler(loggedIn) // back to the page that asked for login, else home
-                        .failureHandler(loginFailed())
+                        .failureHandler(loginFailed(limits))
                         .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
@@ -64,12 +69,20 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /** A wrong password or an unknown email: ?error. The right password for a deactivated account: ?deactivated. */
-    static AuthenticationFailureHandler loginFailed() {
-        ExceptionMappingAuthenticationFailureHandler failed = new ExceptionMappingAuthenticationFailureHandler();
-        failed.setDefaultFailureUrl("/auth/login?error");
-        failed.setExceptionMappings(Map.of(DisabledException.class.getName(), "/auth/login?deactivated"));
-        return failed;
+    /**
+     * A wrong password or an unknown email: counted (LoginLimits), then ?error. The right password for a deactivated
+     * account: ?deactivated, not counted (it isn't a guess).
+     */
+    static AuthenticationFailureHandler loginFailed(LoginLimits limits) {
+        ExceptionMappingAuthenticationFailureHandler pages = new ExceptionMappingAuthenticationFailureHandler();
+        pages.setDefaultFailureUrl("/auth/login?error");
+        pages.setExceptionMappings(Map.of(DisabledException.class.getName(), "/auth/login?deactivated"));
+        return (request, response, failure) -> {
+            if (failure instanceof BadCredentialsException) {
+                limits.failed(request.getParameter("email"), ClientAddress.of(request));
+            }
+            pages.onAuthenticationFailure(request, response, failure);
+        };
     }
 
     /**

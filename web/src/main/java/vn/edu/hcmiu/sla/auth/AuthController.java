@@ -1,5 +1,6 @@
 package vn.edu.hcmiu.sla.auth;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -18,6 +19,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import vn.edu.hcmiu.sla.core.Attempts;
 
 /**
  * Register and the login page. Spring Security itself handles POST /auth/login and POST /auth/logout. A new account
@@ -40,8 +44,13 @@ public class AuthController {
         this.sessions = sessions;
     }
 
+    /** ?wait=N comes from LoginLimitFilter; anything but 1 or 2 digits from 1 up shows no message. */
     @GetMapping("/login")
-    String login() {
+    String login(@RequestParam(required = false) String wait, Model model) {
+        if (wait != null && wait.matches("[0-9]{1,2}") && Integer.parseInt(wait) > 0) {
+            model.addAttribute("tooMany", "Too many wrong passwords. Try again in "
+                    + Attempts.inMinutes(Duration.ofMinutes(Integer.parseInt(wait))) + ".");
+        }
         return "auth/login";
     }
 

@@ -10,6 +10,7 @@
     <p th:if="${param.error}" class="flash flash-error">Email or password is incorrect.</p>
     <p th:if="${param.deactivated}" class="flash flash-error">This account has been deactivated. Ask the site's admin to turn it back on.</p>
     <p th:if="${param.changed}" class="flash">Your password was changed. Log in again.</p>
+    <p th:if="${tooMany}" class="flash flash-error" th:text="${tooMany}">Too many wrong passwords. Try again in 15 minutes.</p>
     <form method="post" th:action="@{/auth/login}" novalidate>
       <div class="field">
         <label for="email">Email</label>
