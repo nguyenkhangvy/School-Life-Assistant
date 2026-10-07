@@ -210,12 +210,14 @@ class AccountPageTest {
     void aNewPasswordIsSavedAndThisSessionStaysLoggedIn() throws Exception { // Review Focus: kept as typed
         MockHttpSession here = logIn();
         MockHttpSession elsewhere = logIn();
+        String idBefore = here.getId();
 
         mvc.perform(post("/account/password").session(here).with(csrf()).param("currentPassword", "correct-horse-8")
                         .param("password", "new horse 123 ").param("confirm", "new horse 123 "))
                 .andExpect(redirectedUrl("/account"))
                 .andExpect(flash().attribute("flashes", List.of(new Flash("message", "Password changed."))));
 
+        assertThat(here.getId()).isNotEqualTo(idBefore); // a new session id, so a copied cookie stops working
         assertThat(passwords.matches("new horse 123 ", an.getPasswordHash())).isTrue();
         assertThat(an.getUpdatedAt()).isEqualTo(NOW);
         mvc.perform(get("/").session(here)).andExpect(status().isOk());

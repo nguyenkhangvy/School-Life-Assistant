@@ -59,6 +59,17 @@ class RegisterTest {
     }
 
     @Test
+    void registeringGivesTheBrowserANewSessionId() throws Exception {
+        MockHttpSession session = new MockHttpSession(); // e.g. the one that showed the register page
+        String idBefore = session.getId();
+
+        mvc.perform(register("an@example.com", "An", "correct-horse-8", "correct-horse-8").session(session))
+                .andExpect(redirectedUrl("/"));
+
+        assertThat(session.getId()).isNotEqualTo(idBefore);
+    }
+
+    @Test
     void registeringMakesAStudentAndCountsAsTheFirstLogin() throws Exception {
         mvc.perform(register("an@example.com", "An", "correct-horse-8", "correct-horse-8"))
                 .andExpect(redirectedUrl("/"));
