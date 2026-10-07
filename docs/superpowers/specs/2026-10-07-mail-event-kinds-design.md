@@ -33,6 +33,7 @@ The core rule:
 - **The Past rule of 29/9 stays** (A.3): an Event whose registration has closed, with nothing joined, moves to Past. Now also nothing added, and not registered.
 - **The test set** is the student's 100 test mails (the student's own answer key for 1–50; 51–100 drafted and then checked by the student) plus the 57 real samples.
 - **Built in three stages** (§9). One-click fixes and the class-change additions get their own specs (§10).
+- **Whole days have no times** (decided in the review of the stage 1 plan): a Period from 00:00 to 23:59 is all day, so real sample 26's weekly contest rounds are all-day Periods.
 
 ### Not in scope
 
@@ -68,7 +69,7 @@ Email
 
 **Period.** Something the student may attend or do at any time within a range.
 
-- **all_day:** days only ("Tuần lễ diễn ra từ 26/10 đến 30/10").
+- **all_day:** days only ("Tuần lễ diễn ra từ 26/10 đến 30/10"). A Period from 00:00 to 23:59 is all_day too, with no times: those are the edges of the day, not times the email sets ("từ 00g00 ngày 14/9 đến 23g59 ngày 20/9" is open all week).
 - **daily_window:** the same hours each day ("mở cửa từ 09:00 đến 17:00 trong các ngày 02/11 đến 05/11").
 - **one_window:** from a time on the first day to a time on the last day ("từ 09:00 ngày 28/11 đến 16:00 ngày 29/11"); on one day, simply from–to that day ("08:00 đến 16:00 ngày 14/11").
 - **details later:** the email says the student's own time comes later ("sẽ được thông báo sau", "mỗi ứng viên sẽ có một khung giờ riêng").
@@ -220,7 +221,7 @@ The rules run in this order, and each time or date is used once.
    - **P1.** A range or window with an any-time word in its sentence or the next one ("… trong thời gian trên") is a Period: `daily_window` for a day range with hours, `one_window` for a window or one day's from–to, and `all_day` for a day range without hours. "Mở cửa từ X đến Y" is itself an any-time phrase. In P1 to P5, a day range "with hours" has a time range anywhere in its sentence ("từ ngày 01/10 đến ngày 05/10, từ 7h00 - 11h00 mỗi ngày"), and each of its time ranges gives its own Period or sessions ("8h00 - 11h30 & 13h00 - 16h00 (Từ nay đến 20/09)" gives two Periods).
    - **P2.** A range with a details-later word in its sentence or the next one is a Period in the same way, and so is a time range after "trong khoảng" ("Các buổi tư vấn diễn ra trong khoảng 09:00 đến 16:00 ngày 18/11"). When the email has a details-later word anywhere, its Periods are marked **details later**. A details-later word on a line about the place does not count: "Địa điểm: Thông tin chi tiết sẽ thông báo sau" is about where, not when.
    - **P3.** A day range without hours, outside registration, notice and not-an-event parts, is an `all_day` Period.
-   - **P4.** A window longer than 24 hours is a `one_window` Period. A window of 24 hours or less that crosses midnight is a session that ends the next day ("từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027").
+   - **P4.** A window longer than 24 hours is a `one_window` Period, or an `all_day` one when it runs from 00:00 to 23:59 (§2). A window of 24 hours or less that crosses midnight is a session that ends the next day ("từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027").
    - **P5.** A day range with hours and "mỗi ngày", "các buổi" or a weekday filter, but without an any-time word, gives one session per day (only the named weekdays) when that makes at most 10, and otherwise a `daily_window` Period. Without any of these words it is a `daily_window` Period.
 6. **Sessions (S)**, from every time that is left:
    - **S1. Day.** The date of its part; else of its sentence; else the day of the nearest line above that has one, skipping deadline, notice and cut lines (a line whose day came from a relative or weekday word counts, and a line holding a range or window gives its first day); else the same from the nearest line below; else a relative day or weekday word in its sentence, but only when there is no written date in the sentence or any line above it; else the time is dropped. Several dates and times on one line pair as in Events §3.2 rules 2–4.

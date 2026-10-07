@@ -2064,7 +2064,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ### Task 7: Step 2: Periods
 
-This task adds the Periods (P1–P5). First it adds two rules that must take their times before the Periods do: link times (S5; Task 8 joins them to their sessions) and notices (N). Each sentence's Periods are made before any session, so a time that a Period uses never becomes a session too.
+This task adds the Periods (P1–P5). First it adds two rules that must take their times before the Periods do: link times (S5; Task 8 joins them to their sessions) and notices (N). Each sentence's Periods are made before any session, so a time that a Period uses never becomes a session too. A Period from 00:00 to 23:59 is all day, with no times (spec §2): those are the edges of the day, not times the email sets.
 
 **Files:**
 - Modify: `agent/sla_agent/mail_times.py`
@@ -2076,6 +2076,7 @@ This task adds the Periods (P1–P5). First it adds two rules that must take the
   - `FoundPeriod(first_day, last_day, mode, from_time=None, to_time=None, details_later=False, label=None)`: `mode` is "all_day", "daily_window" or "one_window".
   - `FoundSession(day, start, end=None, end_is_approximate=False, ends_next_day=False, check_in=None, link_opens=None, mode=None, relative=None, label=None)`, defined now and filled in Task 8.
   - `read_times` returns Periods (soonest first, at most 5) and deadlines.
+  - `DAY_EDGES` (00:00 and 23:59): a Period between them is all day, and in Task 8 they never start a session.
   - For Task 8: `_label(sentence, position)`, `_links(sentence)`, `_notices(sentence)`, `_says_later(sentence)`, and `_periods(sentences, i, details_later) -> (Periods, the days and times P5 hands on as sessions)`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -2110,8 +2111,15 @@ def periods(text, arrived=ARRIVED):
     ("Thời gian: 8h00 - 11h30 & 13h00 - 16h00 (Từ nay đến 30/09).",
      [("daily_window", "28/09", "30/09", "08:00", "11:30", False, None),
       ("daily_window", "28/09", "30/09", "13:00", "16:00", False, None)]),
+    # 00:00 to 23:59 are the edges of the day, not times the email sets: the Period is all day (§2)
+    ("Vòng 1 diễn ra từ 00g00 ngày 05/10 đến 23g59 ngày 11/10/2026.",
+     [("all_day", "05/10", "11/10", None, None, False, "round_1")]),
+    ("Thư viện phục vụ từ 00:00 đến 23:59 trong các ngày 05/10 đến 09/10.",
+     [("all_day", "05/10", "09/10", None, None, False, None)]),
+    ("Phòng tự học mở từ 00:00 đến 23:59 ngày 06/10, sinh viên có thể đến bất kỳ lúc nào.",
+     [("all_day", "06/10", "06/10", None, None, False, None)]),
 ], ids=["days", "open-hours", "any-time-next-line", "over-a-day", "round", "within-and-booked", "later", "no-each-day",
-        "two-hour-ranges"])
+        "two-hour-ranges", "whole-days-window", "whole-days-each-day", "whole-day"])
 def test_periods(text, expected):
     assert periods(text) == expected
 
@@ -2132,7 +2140,7 @@ def test_not_periods(text):
 - [ ] **Step 2: Run them to see them fail**
 
 Run: `.venv/Scripts/python.exe -m pytest agent/tests/test_mail_times.py`
-Expected: FAIL with `9 failed`, all in `test_periods`: the reader finds no Periods yet.
+Expected: FAIL with `12 failed`, all in `test_periods`: the reader finds no Periods yet.
 
 - [ ] **Step 3: Add the Periods**
 
@@ -2153,6 +2161,14 @@ In `agent/sla_agent/mail_times.py`, add right before the line `MAX_DEADLINES = 5
 ```python
 MAX_SESSIONS = 10
 MAX_PERIODS = 5
+```
+
+In `agent/sla_agent/mail_times.py`, add right after the line `MAX_HEADING_WORDS = 8  # a heading line longer than this is a sentence of its own`:
+
+```python
+# The edges of a day, not times an email sets: they never start a session, and a Period from one to the other is all
+# day ("từ 00g00 ngày 21/9 đến 23g59 ngày 27/9" opens and closes a contest round).
+DAY_EDGES = (time(0, 0), time(23, 59))
 ```
 
 In `agent/sla_agent/mail_times.py`, add right after the line `DUE_TO = re.compile(r"\s+to\b")  # "due to the rain" is not a deadline`:
@@ -2253,6 +2269,8 @@ def _periods(sentences, i, details_later):
     periods, sessions = [], []
 
     def period(first, last, mode, position, begin=None, finish=None):
+        if (begin, finish) == DAY_EDGES:  # whole days: all day, with no times (§2)
+            mode, begin, finish = "all_day", None, None
         periods.append(FoundPeriod(first, last, mode, begin, finish, details_later, _label(sentence, position)))
 
     for window in sentence.free(sentence.windows):  # P4
@@ -2322,7 +2340,7 @@ def read_times(subject, text, arrived):
 - [ ] **Step 4: Run the tests**
 
 Run: `.venv/Scripts/python.exe -m pytest agent/tests/test_mail_times.py`
-Expected: PASS (`69 passed`)
+Expected: PASS (`72 passed`)
 
 - [ ] **Step 5: Commit**
 
@@ -2496,13 +2514,6 @@ Run: `.venv/Scripts/python.exe -m pytest agent/tests/test_mail_times.py`
 Expected: FAIL with `32 failed` in the new session tests (`test_the_day_of_a_time`, `test_the_end_of_a_session`, `test_check_in_and_link_times` and the others): the reader finds no sessions yet.
 
 - [ ] **Step 3: Add the sessions**
-
-In `agent/sla_agent/mail_times.py`, add right after the line `MAX_HEADING_WORDS = 8  # a heading line longer than this is a sentence of its own`:
-
-```python
-# The edges of a day never start a session: "từ 00g00 ngày 21/9 đến 23g59 ngày 27/9" opens and closes a contest round.
-DAY_EDGES = (time(0, 0), time(23, 59))
-```
 
 In `agent/sla_agent/mail_times.py`, add right after the line `LINK_BEFORE = re.compile(r"\btruoc\s+(?:do\s+)?(\d{1,3})\s*phut\b")  # "gửi trước 30 phút": 30 minutes before`:
 
@@ -2722,7 +2733,7 @@ def read_times(subject, text, arrived):
 - [ ] **Step 4: Run the tests**
 
 Run: `.venv/Scripts/python.exe -m pytest agent/tests/test_mail_times.py`
-Expected: PASS (`104 passed`)
+Expected: PASS (`107 passed`)
 
 - [ ] **Step 5: Commit**
 
@@ -2843,7 +2854,7 @@ def read_times(subject, text, arrived):
 - [ ] **Step 4: Run the reader's tests**
 
 Run: `.venv/Scripts/python.exe -m pytest agent/tests/test_mail_times.py agent/tests/test_mail_words.py agent/tests/test_mail_phrases.py`
-Expected: PASS (`218 passed`)
+Expected: PASS (`221 passed`)
 
 - [ ] **Step 5: Commit**
 
@@ -3566,7 +3577,7 @@ print("samples 20, 23 and 24 changed")
 - [ ] **Step 6: Run all the agent's tests**
 
 Run: `.venv/Scripts/python.exe -m pytest agent/tests`
-Expected: PASS (`1295 passed`)
+Expected: PASS (`1298 passed`)
 
 - [ ] **Step 7: Commit**
 
@@ -3794,7 +3805,7 @@ print(f"{len(samples['emails'])} samples now keep what the reader finds")
 | 20 | THÔNG BÁO: CHƯƠNG TRÌNH SINH HOẠT CÔNG DÂN GIỮA KHÓA (2026 - 2027) | Deadlines: registration opens Sun 20/09 · register by Tue 22/09 |
 | 23 | THÔNG BÁO: CHƯƠNG TRÌNH SINH HOẠT CÔNG DÂN GIỮA KHÓA (2026 - 2027) | Deadlines: registration opens Sun 20/09 · register by Tue 22/09 |
 | 24 | [Thông báo] Mời sinh viên ủng hộ trường theo chương trình [IU x beFood… | Period: Mon 14/09 → Sun 20/09 · all day · label Final<br>Period: Thu 17/09 → Sun 20/09 · 08:00–11:30 each day<br>Period: Thu 17/09 → Sun 20/09 · 13:00–16:00 each day |
-| 26 | THÔNG TIN VỀ CUỘC THI TIẾNG ANH STAR AWARD - VÒNG THI TRẮC NGHIỆM STAR… | Period: Fri 04/09 → Mon 05/10 · all day<br>Period: Mon 14/09 00:00 → Sun 20/09 23:59<br>Period: Mon 21/09 00:00 → Sun 27/09 23:59<br>Period: Mon 28/09 00:00 → Mon 05/10 23:59 |
+| 26 | THÔNG TIN VỀ CUỘC THI TIẾNG ANH STAR AWARD - VÒNG THI TRẮC NGHIỆM STAR… | Period: Fri 04/09 → Mon 05/10 · all day<br>Period: Mon 14/09 → Sun 20/09 · all day<br>Period: Mon 21/09 → Sun 27/09 · all day<br>Period: Mon 28/09 → Mon 05/10 · all day |
 | 27 | Web Application Development_S1_2026-27_G02: Online Class Notification … | Session: Tue 22/09 from 08:00 · online<br>Flags: meeting |
 | 28 | Your Teams meeting recording has expired and is now deleted | Flags: meeting |
 | 32 | Your Teams meeting recording has expired and is now deleted | Flags: meeting |
@@ -3862,7 +3873,7 @@ with:
 - [ ] **Step 2: Run every test of the project**
 
 Run: `.venv/Scripts/python.exe -m pytest`
-Expected: PASS (`1462 passed`)
+Expected: PASS (`1465 passed`)
 
 - [ ] **Step 3: Print the scorecard**
 
