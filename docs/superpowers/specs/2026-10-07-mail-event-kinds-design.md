@@ -3,7 +3,7 @@
 **Date:** 2026-10-07
 **Scope:** read the times in Vietnamese school mail far more reliably, still with rules on the laptop; give every time its kind (Session, Period or Deadline) with its check-in, link, mode and approximate end; let the student add Periods to the Timetable; show every deadline; let lecturers' class activities be joined; read Outlook meeting invitations
 **Owner:** Nguyen Khang Vy
-**Status:** Approved 2026-10-07; stage 1 being planned
+**Status:** Approved 2026-10-07; stage 1 built (agent 0.5.0)
 **Builds on:** [Outlook mail in a Mailbox tab](2026-09-28-outlook-mailbox-design.md) ("Outlook §5") and [a compact Mailbox, auto-Done, and events you can join](2026-09-28-mailbox-events-design.md) with its addendum ("Events §3.2", "A.1"). Everything there stays the same unless this document says otherwise. The reader reuses the accent-aware word matching of the sorting fixes on the branch `mail-rules-fixes` (082ed22).
 **Test cases:** [2026-10-07-mail-event-kinds-cases.md](2026-10-07-mail-event-kinds-cases.md)
 
