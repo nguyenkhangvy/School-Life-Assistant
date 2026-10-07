@@ -15,7 +15,8 @@ training points, promotions, Blackboard announcements). Replaces:
 - the whole text of every other email (replies from people, tickets, password resets, receipts, invoices).
 
 Each email's `expected` result is what the sorting rules give now, sessions included
-(docs/superpowers/specs/2026-09-28-mailbox-events-design.md, 3.2); the student checks them before the file is
+(docs/superpowers/specs/2026-09-28-mailbox-events-design.md, 3.2), and `found` everything the mail time reader
+finds (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md); the student checks them before the file is
 committed. The tool reads Outlook only; it writes nothing but the output file."""
 
 import argparse
@@ -28,6 +29,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from sla_agent.mail_rules import (
+    VIETNAM_OFFSET,
     Context,
     Email,
     blackboard_lecturer,
@@ -37,8 +39,11 @@ from sla_agent.mail_rules import (
     sender_handle,
     sort_email,
 )
+from sla_agent.mail_times import read_times
 from sla_agent.outlook_reader import inbox_of, open_outlook, read_emails, semester_start
 from sla_agent.state import load_state
+
+from agent.tools.mail_times_score import as_case_fields
 
 KEEP_TEXT = {"event", "school_task", "training_points", "promotion"}
 PLACEHOLDER_TEXT = "(Anonymized text.)"
@@ -177,6 +182,7 @@ def anonymize(emails, context, student_name, student_id, private=()):
 
 def sample(email, context):
     item = sort_email(email, context)
+    arrived = (email.received_at.astimezone(timezone.utc) + VIETNAM_OFFSET).date()
     return {
         "subject": email.subject, "sender_name": email.sender_name, "sender_address": email.sender_address,
         "received_at": email.received_at.isoformat(), "thread_id": email.thread_id, "text": email.text,
@@ -187,6 +193,7 @@ def sample(email, context):
             "register_by": item.register_by and item.register_by.isoformat(),
             "blackboard_title": item.blackboard_title,
             "class_changes": [c.model_dump(mode="json", exclude_none=True) for c in item.class_changes],
+            "found": as_case_fields(read_times(email.subject, email.text, arrived)),
         },
     }
 

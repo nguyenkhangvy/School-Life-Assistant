@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from agent.tools.anonymize_mail import PLACEHOLDER_TEXT, anonymize
+from agent.tools.anonymize_mail import PLACEHOLDER_TEXT, anonymize, sample
 from sla_agent.mail_rules import Context, Email, sort_email
 
 ARRIVED = datetime(2026, 9, 21, 1, 5, tzinfo=timezone.utc)
@@ -73,3 +73,16 @@ def test_an_events_times_survive_anonymizing():
 
     assert [(s.day.isoformat(), s.start.isoformat(), s.end.isoformat()) for s in sessions] == [
         ("2026-09-24", "13:30:00", "16:30:00")]
+
+
+def test_a_sample_keeps_everything_the_time_reader_finds():
+    workshop = Email(key="9" * 64, entry_id="00AB", thread_id=None, received_at=ARRIVED, sender_name="P.CTSV [OSS]",
+                     sender_address="oss@hcmiu.edu.vn", subject="Hội thảo",
+                     text="Hội thảo lúc 14:00 ngày 30/09/2026. Có mặt trước 13:45. Hạn đăng ký: 25/9.")
+
+    found = sample(workshop, Context())["expected"]["found"]
+
+    assert found["sessions"] == [dict(day="2026-09-30", start="14:00", end=None, end_is_approximate=False,
+                                      ends_next_day=False, check_in="13:45", link_opens=None, mode=None, relative=None,
+                                      label=None)]
+    assert found["deadlines"] == [dict(kind="register", day="2026-09-25", time=None, mode=None)]
