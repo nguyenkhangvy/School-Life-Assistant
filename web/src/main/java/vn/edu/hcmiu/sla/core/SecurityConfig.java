@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.ExceptionMappingAuthentic
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 
 import vn.edu.hcmiu.sla.auth.AccountCheck;
 import vn.edu.hcmiu.sla.auth.Accounts;
@@ -45,6 +46,13 @@ public class SecurityConfig {
     static final String[] STAFF = {"/admin/audit-log/**", "/admin/statistics/**"};
     static final String[] EVERY_ROLE = {"/", "/account/**", "/auth/logout"};
 
+    /** The Content-Security-Policy (security hardening spec, 5). */
+    static final String CONTENT_SECURITY_POLICY = "default-src 'self'; "
+            + "script-src 'self' https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/; "
+            + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; "
+            + "base-uri 'self'; frame-ancestors 'none'; form-action 'self' http://127.0.0.1:*";
+    static final String PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
+
     @Bean
     SecurityFilterChain pages(HttpSecurity http, LoggedIn loggedIn, Refusals refusals, UserRepository users,
             SecurityContextRepository logins, LoginLimits limits) throws Exception {
@@ -69,7 +77,21 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessUrl("/auth/login"));
+        securityHeaders(http);
         return http.build();
+    }
+
+    /**
+     * What both filter chains add (security hardening spec, 5): Content-Security-Policy, Referrer-Policy and
+     * Permissions-Policy, on top of Spring Security's HSTS, nosniff, X-Frame-Options and no-store. Scripts come only
+     * from the site and FullCalendar's folder on jsDelivr; form-action allows the redirect to the laptop app on this
+     * computer that ends the Connect page; FullCalendar adds its own <style>, hence 'unsafe-inline' for styles only.
+     */
+    public static void securityHeaders(HttpSecurity http) throws Exception {
+        http.headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
+                .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.SAME_ORIGIN))
+                .permissionsPolicyHeader(permissions -> permissions.policy(PERMISSIONS_POLICY)));
     }
 
     /**

@@ -203,4 +203,15 @@ class DevicesPageTest {
 
         assertThat(all()).isEmpty();
     }
+
+    @Test
+    void theDevicesPageRunsNoInlineCode() throws Exception { // security hardening spec, 5
+        deviceKeys.create(an.id(), "My laptop", LocalDateTime.of(2026, 9, 1, 0, 0));
+
+        assertThat(devicesPage())
+                .contains("<script src=\"/js/devices.js\" defer></script>")
+                .contains("<script src=\"/js/confirm.js\" defer></script>")
+                .contains("data-confirm=\"Cancel this device? It will stop syncing immediately.\"")
+                .doesNotContain("onsubmit");
+    }
 }
