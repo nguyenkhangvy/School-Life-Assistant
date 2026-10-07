@@ -3,7 +3,7 @@
 **Date:** 2026-10-07
 **Scope:** limits on wrong passwords, new accounts and the laptop's Connect trade-in; a honeypot on register; Argon2id password hashes, with old ones upgraded at login; Content-Security-Policy, Referrer-Policy and Permissions-Policy headers; Dependabot.
 **Owner:** Nguyen Khang Vy
-**Status:** Draft, waiting for review. One plan.
+**Status:** Approved 2026-10-07. Plan: docs/superpowers/plans/2026-10-07-security-hardening.md.
 **Builds on:** [Site roles](2026-10-06-site-roles-design.md) (SecurityConfig, AccountCheck, LoggedIn, Accounts, Sessions; this branch starts from `site-roles`), [Connect button](2026-10-04-connect-button-design.md) (the Connect page's redirect to the laptop, the trade-in) and [Java website](2026-09-26-java-website-design.md). Everything there stays the same unless this document says otherwise.
 
 ---
