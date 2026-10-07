@@ -1,0 +1,139 @@
+"""Step 1 of the mail time reader: what one sentence holds, and where (spec 2026-10-07-mail-event-kinds-design.md
+§4.2)."""
+
+from datetime import date, timedelta
+
+import pytest
+
+from sla_agent.mail_phrases import clocks_in, days_in, lengths_in, parts_of
+
+ARRIVED = date(2026, 9, 28)  # Mon, in Vietnam
+
+
+def days(sentence):
+    return [d.day for d in days_in(sentence, ARRIVED)]
+
+
+def clocks(sentence):
+    taken = [(d.start, d.end) for d in days_in(sentence, ARRIVED)] + [(n.start, n.end) for n in lengths_in(sentence)]
+    return [(c.begin.strftime("%H:%M"), c.finish and c.finish.strftime("%H:%M")) for c in clocks_in(sentence, taken)]
+
+
+def lengths(sentence):
+    return [(n.minutes, n.approximate) for n in lengths_in(sentence)]
+
+
+# ---- dates -----------------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("written, day", [
+    ("29/09/2026", date(2026, 9, 29)), ("27/9", date(2026, 9, 27)), ("18-9-2026", date(2026, 9, 18)),
+    ("ngày 18 tháng 9", date(2026, 9, 18)), ("September 24", date(2026, 9, 24)), ("24th September", date(2026, 9, 24)),
+    ("01.10.2026", date(2026, 10, 1)), ("05/10/26", date(2026, 10, 5)),
+    ("02/01", date(2027, 1, 2)),  # no year: the one closest to the day the email arrived
+])
+def test_each_way_of_writing_a_date(written, day):
+    assert days(f"Hội thảo {written}.") == [day]
+
+
+def test_dates_carry_where_they_are():
+    sentence = "Từ 26/10 đến 30/10"
+
+    first, last = days_in(sentence, ARRIVED)
+
+    assert (sentence[first.start:first.end], sentence[last.start:last.end]) == ("26/10", "30/10")
+
+
+# ---- times -----------------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("written, start", [
+    ("13:00", "13:00"), ("13.00", "13:00"), ("13h", "13:00"), ("13h30", "13:30"), ("13g", "13:00"), ("8g30", "08:30"),
+    ("14 giờ", "14:00"), ("14 giờ 30", "14:30"), ("14 giờ 30 phút", "14:30"), ("1:00 PM", "13:00"), ("1 PM", "13:00"),
+    ("12 PM", "12:00"), ("12:30 AM", "00:30"), ("2:00 CH", "14:00"), ("8:00 SA", "08:00"),
+])
+def test_each_way_of_writing_a_time(written, start):
+    assert clocks(f"Workshop lúc {written} ngày 01/10/2026") == [(start, None)]
+
+
+@pytest.mark.parametrize("sentence, expected", [
+    ("Workshop lúc 2h chiều", [("14:00", None)]),
+    ("Họp lúc 7h tối", [("19:00", None)]),
+    ("Meeting vào chiều thứ Sáu, bắt đầu lúc 3 giờ", [("15:00", None)]),  # the only time of day in the sentence
+    ("Ngày 03/10: sáng 8h00 - 10h00, chiều 13h30 - 15h00", [("08:00", "10:00"), ("13:30", "15:00")]),
+    ("Gặp lúc 11h trưa", [("11:00", None)]),
+    ("Gặp lúc 1h trưa", [("13:00", None)]),
+])
+def test_morning_and_afternoon_words(sentence, expected):
+    assert clocks(sentence) == expected
+
+
+@pytest.mark.parametrize("written", ["13:00 - 16:30", "13h00 – 16h30", "từ 13h đến 16h30", "1:00 – 4:30 PM",
+                                     "13:00 until 16:30", "13:00\u00a0-\u00a016:30"])
+def test_a_start_and_an_end(written):
+    assert clocks(f"Thời gian: {written}") == [("13:00", "16:30")]
+
+
+def test_a_range_ending_in_the_afternoon_starts_in_it_too():
+    assert clocks("Từ 1h - 3h chiều") == [("13:00", "15:00")]
+
+
+def test_an_end_that_is_not_after_its_start_is_dropped():
+    assert clocks("22h00 - 01h00") == [("22:00", None)]
+
+
+@pytest.mark.parametrize("sentence", [
+    "Giải nhất 15.000.000 VNĐ", "Hotline 028.3724.4270", "Workshop (2h)", "Phòng A2.301",
+    "Điều kiện: điểm trung bình từ 7.50 trở lên", "Thông báo ngày 01.10.2026", "Thời lượng: 1h30",
+])
+def test_not_times(sentence):
+    assert clocks(sentence) == []
+
+
+@pytest.mark.parametrize("written, hours", [("9:00 AM EST", -5), ("10:00 (GMT+8)", 8), ("14:00 ICT", 7),
+                                            ("8:00 UTC", 0)])
+def test_a_written_time_zone(written, hours):
+    [clock] = clocks_in(f"Webinar at {written}", [])
+
+    assert clock.offset == timedelta(hours=hours)
+
+
+# ---- lengths ---------------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("sentence, expected", [
+    ("Workshop kéo dài 2 tiếng", [(120, False)]),
+    ("Thời lượng: 1h30", [(90, False)]),
+    ("Workshop diễn ra trong 2 giờ", [(120, False)]),
+    ("Thời gian làm bài là 90 phút", [(90, False)]),
+    ("Mỗi sinh viên chỉ có 15 phút", [(15, False)]),
+    ("Kéo dài khoảng 2 giờ 30 phút", [(150, True)]),
+    ("Họp khoảng 1 tiếng", [(60, True)]),
+    ("Thời lượng dự kiến là 3 tiếng", [(180, True)]),
+    ("Talk lasting 2h", [(120, False)]),
+])
+def test_lengths(sentence, expected):
+    assert lengths(sentence) == expected
+
+
+@pytest.mark.parametrize("sentence", ["Họp khoảng 2 giờ chiều", "Trong 15 phút đầu", "Có mặt trước 15 phút"])
+def test_not_lengths(sentence):
+    assert lengths(sentence) == []
+
+
+def test_lengths_that_add_up_and_slot_lengths():
+    presented = lengths_in("Thời gian trình bày là 15 phút, sau đó có 10 phút hỏi đáp")
+    slot = lengths_in("Mỗi lượt tư vấn kéo dài khoảng 30 phút")
+
+    assert [(n.minutes, n.adds) for n in presented] == [(15, False), (10, True)]
+    assert [n.slot for n in slot] == [True]
+
+
+# ---- parts -----------------------------------------------------------------------------------------------------------
+
+
+def test_a_sentence_is_cut_into_parts_at_commas_and_semicolons():
+    sentence = "Ngày 05/10: hạn 12h00, workshop 14h00; check-in 13h00"
+
+    assert [sentence[a:b] for a, b in parts_of(sentence)] == ["Ngày 05/10: hạn 12h00", " workshop 14h00",
+                                                              " check-in 13h00"]
