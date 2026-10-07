@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import vn.edu.hcmiu.sla.core.Attempts;
+import vn.edu.hcmiu.sla.core.ClientAddress;
 
 /**
  * Register and the login page. Spring Security itself handles POST /auth/login and POST /auth/logout. A new account
@@ -32,16 +33,21 @@ import vn.edu.hcmiu.sla.core.Attempts;
 @RequestMapping("/auth")
 public class AuthController {
 
+    static final int NEW_ACCOUNTS_PER_IP = 30;
+    static final Duration NEW_ACCOUNTS_WINDOW = Duration.ofHours(1);
+
     private final UserRepository users;
     private final PasswordEncoder passwords;
     private final Sessions sessions;
+    private final Attempts attempts;
     /** Where Spring Security keeps the page that asked for login: its default, the one login reads. */
     private final RequestCache asked = new HttpSessionRequestCache();
 
-    public AuthController(UserRepository users, PasswordEncoder passwords, Sessions sessions) {
+    public AuthController(UserRepository users, PasswordEncoder passwords, Sessions sessions, Attempts attempts) {
         this.users = users;
         this.passwords = passwords;
         this.sessions = sessions;
+        this.attempts = attempts;
     }
 
     /** ?wait=N comes from LoginLimitFilter; anything but 1 or 2 digits from 1 up shows no message. */
@@ -63,6 +69,17 @@ public class AuthController {
     @PostMapping("/register")
     String register(@Valid @ModelAttribute("form") RegisterForm form, BindingResult errors,
                     HttpServletRequest request, HttpServletResponse response) {
+        String network = "register-ip:" + ClientAddress.of(request);
+        if (!form.getWebsite().isEmpty()) { // the honeypot: people never see it
+            errors.reject("trap", "Please try again.");
+            return "auth/register";
+        }
+        Duration wait = attempts.waitFor(network, NEW_ACCOUNTS_PER_IP, NEW_ACCOUNTS_WINDOW);
+        if (!wait.isZero()) {
+            errors.reject("tooMany",
+                    "Too many new accounts from this network. Try again in " + Attempts.inMinutes(wait) + ".");
+            return "auth/register";
+        }
         if (!form.getConfirm().isEmpty() && !form.getConfirm().equals(form.getPassword())) {
             errors.rejectValue("confirm", "mismatch", "Passwords don't match.");
         }
@@ -76,6 +93,7 @@ public class AuthController {
         User account = new User(form.getEmail(), form.getDisplayName(), passwords.encode(form.getPassword()), now);
         account.loggedIn(now); // registering logs the new account in: its first login
         User user = users.save(account);
+        attempts.add(network); // only accounts actually made count
         sessions.logIn(AppUser.of(user), request, response);
         SavedRequest page = asked.getRequest(request, response);
         return "redirect:" + (page != null ? page.getRedirectUrl() : "/");

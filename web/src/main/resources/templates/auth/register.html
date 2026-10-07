@@ -8,6 +8,7 @@
   <section class="card narrow">
     <h1>Create account</h1>
     <form method="post" th:action="@{/auth/register}" th:object="${form}" novalidate>
+      <p class="flash flash-error" th:each="error : ${#fields.globalErrors()}" th:text="${error}">Please try again.</p>
       <div class="field">
         <label for="email">Email</label>
         <input id="email" type="email" th:field="*{email}" autocomplete="email">
@@ -27,6 +28,10 @@
         <label for="confirm">Confirm password</label>
         <input id="confirm" type="password" th:field="*{confirm}" autocomplete="new-password">
         <p class="field-error" th:each="error : ${#fields.errors('confirm')}" th:text="${error}">Passwords don't match.</p>
+      </div>
+      <div class="trap" aria-hidden="true">
+        <label for="website">Leave this empty</label>
+        <input id="website" type="text" th:field="*{website}" tabindex="-1" autocomplete="off">
       </div>
       <button type="submit" class="button">Create account</button>
     </form>

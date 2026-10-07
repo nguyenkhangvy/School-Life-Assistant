@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import vn.edu.hcmiu.sla.auth.User;
@@ -71,6 +72,15 @@ class ConnectApiTest {
 
     ResultActions trade(String code, String verifier) throws Exception {
         return mvc.perform(post("/api/school/sync/connect").contentType(MediaType.APPLICATION_JSON)
+                .content(bytes(Map.of("code", code, "verifier", verifier))));
+    }
+
+    ResultActions tradeFrom(String ip, String code, String verifier) throws Exception {
+        RequestPostProcessor from = request -> {
+            request.setRemoteAddr(ip);
+            return request;
+        };
+        return mvc.perform(post("/api/school/sync/connect").with(from).contentType(MediaType.APPLICATION_JSON)
                 .content(bytes(Map.of("code", code, "verifier", verifier))));
     }
 
@@ -151,5 +161,29 @@ class ConnectApiTest {
                 .andExpect(status().is(422))
                 .andExpect(jsonPath("$.error").value("invalid_payload"));
         assertThat(devices.count()).isZero();
+    }
+
+    // ---- Limits (security hardening spec, 3.5) --------------------------------
+
+    @Test
+    void twentyFailedTradeInsFromOneNetworkThenEvenAGoodCodeWaits() throws Exception {
+        for (int i = 0; i < 20; i++) {
+            tradeFrom("203.0.113.9", "A".repeat(43), VERIFIER).andExpect(status().isBadRequest());
+        }
+
+        tradeFrom("203.0.113.9", code(), VERIFIER)
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error").value("too_many_attempts"));
+        assertThat(devices.count()).isZero();
+        tradeFrom("203.0.113.10", code(), VERIFIER).andExpect(status().isOk());
+    }
+
+    @Test
+    void aMalformedBodyIsNotCounted() throws Exception {
+        for (int i = 0; i < 25; i++) {
+            tradeFrom("203.0.113.11", "short", VERIFIER).andExpect(status().is(422));
+        }
+
+        tradeFrom("203.0.113.11", code(), VERIFIER).andExpect(status().isOk());
     }
 }

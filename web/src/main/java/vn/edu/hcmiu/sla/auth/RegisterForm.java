@@ -57,4 +57,15 @@ public class RegisterForm {
     public void setConfirm(String confirm) {
         this.confirm = confirm == null ? "" : confirm;
     }
+
+    /** The honeypot (spec 3.4 of security hardening): hidden from people, so only a bot fills it in. */
+    private String website = "";
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website == null ? "" : website;
+    }
 }
