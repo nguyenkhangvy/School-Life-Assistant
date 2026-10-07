@@ -8,8 +8,8 @@ Each case is a mail and what the reader should give for it. Days carry their wee
 | Group | Mails | Arrive | Answers |
 |---|---|---|---|
 | A | 01–50 | Wed 07/10/2026 | the student's answer key (2026-10-07) |
-| B | 51–100 | Mon 02/11/2026 | **drafted by Claude: to check** |
-| C | C01–C27 | Mon 28/09/2026 | short cases from the design discussion: **to check** |
+| B | 51–100 | Mon 02/11/2026 | drafted by Claude, checked by the student (2026-10-07) |
+| C | C01–C27 | Mon 28/09/2026 | short cases from the design discussion, checked by the student (2026-10-07) |
 
 The arrival day is what “ngày mai”, “tuần này” and a weekday on its own count from.
 
@@ -509,7 +509,7 @@ Link sẽ được gửi trước đó 30 phút.
 - **Session:** Fri 09/10 from 15:00 · link opens 14:30 · day from a relative word (a weekday alone)
 - **Flags:** meeting
 
-## Group B: mails 51–100 (arrive Mon 02/11/2026; drafted by Claude, to check)
+## Group B: mails 51–100 (arrive Mon 02/11/2026; drafted by Claude, checked by the student)
 
 ### Mail 51 · Workshop Git và GitHub
 
@@ -647,7 +647,7 @@ Mỗi lượt tư vấn kéo dài khoảng 30 phút.
 - **Period:** Wed 18/11 · 09:00–16:00 · details later
 - **Deadlines:** register by Sun 15/11
 - **Flags:** meeting
-- *Note:* each student books one 30-minute slot inside 09:00–16:00, so it is a Period with details later, not a session.
+- *Note:* 09:00–16:00 is the booking window, not a clash. Each student books one 30-minute slot inside it; that slot becomes a session only once the student has booked it (added by hand on the Join page).
 
 ### Mail 64 · Thông báo tuyển cộng tác viên
 
@@ -700,7 +700,7 @@ Lịch thi cụ thể của từng môn sẽ được công bố vào 20/11.
 ```
 
 - **Flags:** meeting
-- *Note:* exam season with no time: only the flag (“thi cuối kỳ”).
+- *Note:* exam season with no time: only the flag (“thi cuối kỳ”). The meeting flag marks a class activity that may need Join, not only a meeting (design §2).
 
 ### Mail 69 · Workshop kỹ năng thuyết trình
 
@@ -913,7 +913,7 @@ Danh sách phỏng vấn đã được công bố vào 15/12.
 ```
 
 - **Flags:** meeting
-- *Note:* both dates are announcements; only the flag (“phỏng vấn”).
+- *Note:* both dates are announcements; only the flag (“phỏng vấn”). The meeting flag marks a class activity that may need Join, not only a meeting (design §2).
 
 ### Mail 90 · Buổi gặp mặt sinh viên
 
@@ -1025,7 +1025,7 @@ Không có thời gian cụ thể cho từng hoạt động trong email này.
 
 - **Period:** Sat 02/01/2027 → Sun 10/01/2027 · all day · details later
 
-## Group C: short cases from the design discussion (arrive Mon 28/09/2026; to check)
+## Group C: short cases from the design discussion (arrive Mon 28/09/2026; checked by the student)
 
 ### C01 · Thông báo
 
@@ -1222,6 +1222,8 @@ Thời gian: 05/10/2026 2:00 CH - 3:00 CH
 ```
 
 - **Session:** Mon 05/10 14:00–15:00
+- **Flags:** meeting
+- *Note:* the subject “Lịch họp” sets the meeting flag (corrected while planning: the first draft left it out).
 
 ### C22 · Lớp kỹ năng
 

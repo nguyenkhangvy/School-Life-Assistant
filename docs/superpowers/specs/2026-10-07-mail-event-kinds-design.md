@@ -3,7 +3,7 @@
 **Date:** 2026-10-07
 **Scope:** read the times in Vietnamese school mail far more reliably, still with rules on the laptop; give every time its kind (Session, Period or Deadline) with its check-in, link, mode and approximate end; let the student add Periods to the Timetable; show every deadline; let lecturers' class activities be joined; read Outlook meeting invitations
 **Owner:** Nguyen Khang Vy
-**Status:** Designed, not built
+**Status:** Approved 2026-10-07; stage 1 being planned
 **Builds on:** [Outlook mail in a Mailbox tab](2026-09-28-outlook-mailbox-design.md) ("Outlook §5") and [a compact Mailbox, auto-Done, and events you can join](2026-09-28-mailbox-events-design.md) with its addendum ("Events §3.2", "A.1"). Everything there stays the same unless this document says otherwise. The reader reuses the accent-aware word matching of the sorting fixes on the branch `mail-rules-fixes` (082ed22).
 **Test cases:** [2026-10-07-mail-event-kinds-cases.md](2026-10-07-mail-event-kinds-cases.md)
 
@@ -82,7 +82,7 @@ Email
 
 **Flags.**
 
-- **meeting:** the email sets a time for the student to meet or to take part in a class activity. It has a meeting word (họp, gặp, hẹn, meeting, buổi trao đổi, tư vấn, consultation) or a class-activity word (kiểm tra giữa kỳ / cuối kỳ, thi giữa kỳ / cuối kỳ, thuyết trình, phỏng vấn) that does not come right after "không" or "không có", or it is an Outlook invitation (§5). It matters only for Class emails, which it makes event-like (§6.2).
+- **meeting:** despite its name, this marks any **class activity that may need Join**, not only a meeting: the email sets a time for the student to meet or to take part in a class activity. It has a meeting word (họp, gặp, hẹn, meeting, buổi trao đổi, tư vấn, consultation) or a class-activity word (kiểm tra giữa kỳ / cuối kỳ, thi giữa kỳ / cuối kỳ, thuyết trình, phỏng vấn) that does not come right after "không", "không có" or "kỹ năng" ("Workshop kỹ năng thuyết trình" is a skill topic), and is not "gặp gỡ" (meeting people at an event) or the sign-off "hẹn gặp lại"; or it is an Outlook invitation (§5). An email that announces a class change is not a meeting: its classes already reach the Timetable (Blackboard's "Please join the meeting on time" for an online class). It matters only for Class emails, which it makes event-like when they have a session (§6.2).
 - **registered:** the email confirms that the student is registered: "bạn/em đã đăng ký", "bạn/em đã xác nhận", "cảm ơn bạn/em đã đăng ký". A third-person sentence such as "Sinh viên đã đăng ký cần đến trước 07:15" does not count. The app has no other way to know.
 
 ---
@@ -158,20 +158,20 @@ The reader lives in `agent/sla_agent/mail_times.py` (pure functions). Every word
 ### 4.1 Step 0: clean the text
 
 1. Unicode NFC; links are ignored, as today.
-2. **Replies** (a subject starting with "RE:", "TL:" or "Trả lời:") are cut at their first quoted part: a "From:" or "Từ:" line followed within four lines by "Sent:", "Date:", "To:", "Đã gửi:", "Gửi:", "Ngày:" or "Đến:"; a "-----Original Message-----" line; or an "On … wrote:" or "Vào … đã viết:" line. **Forwards** ("FW:", "Fwd:", "CT:", "Chuyển tiếp:") keep everything, because the forwarded part is the content.
+2. **Replies** (a subject starting with "RE:", "TL:" or "Trả lời:") are cut at their first quoted part: a "From:" or "Từ:" line followed within four lines by "Sent:", "Date:", "To:", "Đã gửi:", "Gửi:", "Ngày:" or "Đến:" ("Từ: 14h00" is a time, not a header); a "-----Original Message-----" line; an "On … wrote:" or "Vào … đã viết:" line; or a line starting with ">". **Forwards** ("FW:", "Fwd:", "CT:", "Chuyển tiếp:") keep everything, because the forwarded part is the content.
 3. **Signatures:** everything from a line that is only "--" is cut, and lines starting with "Giờ làm việc", "Working hours" or "Office hours" are dropped.
 
 The cleaned text is also what `dates` (Outlook §5.4) and the flags read. The categories (Outlook §5.2) keep reading the whole email.
 
 ### 4.2 Step 1: find and label
 
-The text is split into sentences (lines and sentence ends, as today), and each sentence into **parts** at commas, semicolons and labels such as "Thời gian đăng ký:" or "Hạn nộp slide:". In each part the reader finds these phrases:
+The text is split into sentences (lines and sentence ends, as today). A heading line about registration or a deadline, with no number in it and at most 8 words, is read together with the line after it: "THỜI GIAN ĐĂNG KÝ" then "Từ ngày 20/09 đến 22/09/2026.", or "Thời hạn thực hiện:" then the line saying what by when. Each sentence is split into **parts** at commas and semicolons. In each sentence the reader finds these phrases, and which part each is in:
 
 | Phrase | Examples |
 |---|---|
 | times | 13:00, 13.00, 13h, 13h30, 13g, 8g30, 14 giờ, 14 giờ 30 (phút), 1:00 PM, 2:00 CH, 8:00 SA. Sáng / chiều / tối / trưa before or after the hour in the same sentence ("chiều thứ Sáu, bắt đầu lúc 3 giờ" is 15:00). A time zone after the time (GMT+7, UTC+8, ICT, EST, EDT, PST, PDT, CET, JST, KST, SGT) is converted to Vietnam time |
 | time ranges | 13:00–16:00, từ 13:00 đến 16:00, 1h - 3h chiều |
-| lengths | kéo dài 2 tiếng, thời lượng 3 tiếng, trong 2 giờ, thời gian làm bài là 90 phút, chỉ có 15 phút, 2 giờ 30 phút. "15 phút, sau đó có 10 phút" adds up |
+| lengths | kéo dài 2 tiếng, thời lượng 3 tiếng, thời lượng: 1h30, trong 2 giờ, thời gian làm bài là 90 phút, chỉ có 15 phút, khoảng 2 giờ 30 phút. "15 phút, sau đó có 10 phút" adds up. After "khoảng" or "about" alone only tiếng, phút and hours count: "khoảng 2 giờ chiều" is a time. "Trong 15 phút" alone is not a length |
 | dates | the formats of Events §3.2, plus two-digit years (05/10/26) |
 | date ranges | từ 26/10 đến 30/10, 26/10 – 30/10, từ nay đến 20/09, trong khoảng 02/01 đến 10/01 |
 | windows | từ 8h00 ngày 01/10 đến 17h00 ngày 05/10 |
@@ -185,8 +185,9 @@ Each part's **words** are labelled by role. The full lists live in `mail_words.p
 | Role | Words | Used by |
 |---|---|---|
 | registration | đăng ký, register, registration, sign up, form, hồ sơ, đặt lịch, ứng tuyển. Not "đã đăng ký" | D |
-| opening | in a sentence with a registration word: mở, mở từ, bắt đầu, từ + one date with no end | D3 |
-| closing | hạn chót, hạn cuối, hạn đăng ký, hạn nộp, hạn xác nhận, thời hạn, deadline, đóng, ngừng tiếp nhận, mở đến, đến hết; "trước" or "by" + a time or date; in a registration sentence also "kết thúc" and "đến" + a time or date with no "từ" before it. Bare "hạn" (Số lượng có hạn) does not count, as today | D1 |
+| opening | in a sentence with a registration word: mở đăng ký, đăng ký từ, mở từ, form mở, cổng mở, bắt đầu nhận, đăng ký bắt đầu | D3 |
+| closing, strong | hạn chót, hạn cuối, hạn đăng ký, hạn nộp, hạn xác nhận, thời hạn, deadline, due (not "due to"). Bare "hạn" (Số lượng có hạn) does not count, as today | D1 |
+| closing, soft | đóng, ngừng tiếp nhận, mở đến, đến hết; "trước" or "by" right before a time or date; in a registration sentence also "kết thúc" and "đến" | D1 |
 | confirm | xác nhận tham dự, xác nhận tham gia, xác nhận chỗ | D1 |
 | due | nộp, nộp bài, báo cáo, slide, project, bài kiểm tra … hoàn thành, học phí, thanh toán | D1 |
 | arrival | check-in, điểm danh, có mặt, đến trước, vui lòng đến, tập trung, đăng nhập, mở cửa từ + one time, vào khu vực từ, đăng ký tại chỗ | S4 |
@@ -209,15 +210,15 @@ The rules run in this order, and each time or date is used once.
 
 1. **Arrival phrases take their times first**, including their "trước" ("có mặt trước 13:45", "đến trước 07:15"), so that "trước" is not read as a deadline.
 2. **Deadlines (D):**
-   - **D1.** A closing word points at the time or date right after it in its part, or, when there is none after it, at the one before it ("Ngày 15/10 đóng đăng ký"). Its kind comes from the nearest confirm, due or registration word in its sentence ("đăng ký trước ngày 30/10 để được xác nhận suất tham dự" is register). With none of these words, it is not a deadline: "Link tham gia sẽ được gửi trước 09:00" is a link time. A deadline's day is its own date, else the date in its sentence; a time with no date in its sentence is not a deadline.
+   - **D1.** A closing word points at the time or date right after it in its part, or, when there is none after it, at the one before it ("Ngày 15/10 đóng đăng ký"). Its kind comes from the nearest confirm, due or registration word in its sentence ("đăng ký trước ngày 30/10 để được xác nhận suất tham dự" is register). With none of these words, a strong closing word still makes a `due` deadline ("Hạn chót: 30/9", "Thời hạn khảo sát: đến hết ngày 27/08"), and a soft one makes none: "Link tham gia sẽ được gửi trước 09:00" is a link time. A deadline's day is its own date, else the date in its sentence; a time with no date in its sentence is not a deadline.
    - **D2.** A registration window, meaning a registration word with a date range or window ("đăng ký từ 01/10 đến 05/10", "Thời gian đăng ký: 8h00 - 12h00 ngày 05/10", "Đăng ký bắt đầu 18/12 và kết thúc 22/12 lúc 23:59"), gives `opens` at its start and `register` at its end.
    - **D3.** An opening word gives `opens` at its date and time.
    - **D4.** Deadlines with the same kind, day and mode are kept once, with the time when one of them has it; at most 5, soonest first. `register_by` is the latest register deadline's day. Deadlines before the arrival day are kept, as A.2.
 3. **Link times (S5)** are taken next, before notices, so "link sẽ được gửi trước 30 phút" is a link time.
 4. **Dropped (N):** notices; the old time of a rescheduling (its new time stays: "dời từ 14h00 ngày 05/10 sang 15h00 ngày 06/10" gives 06/10 15:00); cancelled times; not-an-event parts (their dates stay in `dates`).
 5. **Periods (P):**
-   - **P1.** A range or window with an any-time word in its sentence or the next one ("… trong thời gian trên") is a Period: `daily_window` for a day range with hours, `one_window` for a window or one day's from–to, and `all_day` for a day range without hours. "Mở cửa từ X đến Y" is itself an any-time phrase. In P1 to P5, a day range "with hours" has a time range anywhere in its sentence ("từ ngày 01/10 đến ngày 05/10, từ 7h00 - 11h00 mỗi ngày").
-   - **P2.** A range with a details-later word in its sentence or the next one is a Period in the same way, and so is a time range after "trong khoảng" ("Các buổi tư vấn diễn ra trong khoảng 09:00 đến 16:00 ngày 18/11"). When the email has a details-later word anywhere, its Periods are marked **details later**.
+   - **P1.** A range or window with an any-time word in its sentence or the next one ("… trong thời gian trên") is a Period: `daily_window` for a day range with hours, `one_window` for a window or one day's from–to, and `all_day` for a day range without hours. "Mở cửa từ X đến Y" is itself an any-time phrase. In P1 to P5, a day range "with hours" has a time range anywhere in its sentence ("từ ngày 01/10 đến ngày 05/10, từ 7h00 - 11h00 mỗi ngày"), and each of its time ranges gives its own Period or sessions ("8h00 - 11h30 & 13h00 - 16h00 (Từ nay đến 20/09)" gives two Periods).
+   - **P2.** A range with a details-later word in its sentence or the next one is a Period in the same way, and so is a time range after "trong khoảng" ("Các buổi tư vấn diễn ra trong khoảng 09:00 đến 16:00 ngày 18/11"). When the email has a details-later word anywhere, its Periods are marked **details later**. A details-later word on a line about the place does not count: "Địa điểm: Thông tin chi tiết sẽ thông báo sau" is about where, not when.
    - **P3.** A day range without hours, outside registration, notice and not-an-event parts, is an `all_day` Period.
    - **P4.** A window longer than 24 hours is a `one_window` Period. A window of 24 hours or less that crosses midnight is a session that ends the next day ("từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027").
    - **P5.** A day range with hours and "mỗi ngày", "các buổi" or a weekday filter, but without an any-time word, gives one session per day (only the named weekdays) when that makes at most 10, and otherwise a `daily_window` Period. Without any of these words it is a `daily_window` Period.
@@ -230,7 +231,7 @@ The rules run in this order, and each time or date is used once.
    - **S6.** Times with a zone are converted to Vietnam time, and the day may change.
    - **S7.** As today: sessions on days before the arrival day are dropped, repeats are kept once, and at most 10 sessions are kept, soonest first.
 7. **P6.** A day with no hour, whose part has an event word, is a one-day `all_day` Period when the email gives no session on that day ("Ngày 20/10 diễn ra vòng 1").
-8. **M, mode.** When the email has online words, sessions and deadlines in parts with online words are online. When it also has in-person words, those in parts with in-person words are in person. When it has only online words, all of its sessions and deadlines are online. An email without online words gets no modes.
+8. **M, mode.** When the email has online words, sessions and deadlines with online words in their part (else their sentence) are online. When it also has in-person words, those with in-person words are in person. When it has only online words, all of its sessions are online; a deadline takes a mode only from its own words. An email without online words gets no modes.
 9. **Labels** come from the label words of the item's part. Periods whose last day is before the arrival day are dropped, and at most 5 Periods are kept, soonest first.
 10. **F, flags:** `meeting` and `registered` as in §2, read from the subject and the cleaned text.
 
@@ -266,7 +267,7 @@ Periods, the other deadlines and the flags are not sent. So stage 1 changes no w
 
 ### 6.2 Mailbox
 
-- **Event-like** (Events §4.2): the categories include Event or School task, **or Class with `meeting`**. The student's Move to… choice wins, as today.
+- **Event-like** (Events §4.2): the categories include Event or School task, **or Class with `meeting` and at least one session** (a lecturer's email that has a time and a meeting word). The student's Move to… choice wins, as today.
 - **Registration state** of a card, in Vietnam time, from all its emails' opens and register deadlines: *not open* before the earliest opening; *open*; *closed* after the last register deadline (at its time, or at the end of its day when it has none). For each kind and mode the latest deadline counts, so a reminder can extend it, as A.3. The tag reads:
   - not open: "Registration opens Thu 08/10", adding ", closes Mon 12/10" when known
   - open: "Register by 17:00 Mon 12/10". With modes, each mode's deadline: "In person 12:00 Sat 03/10 · Online 17:00 Mon 12/10", a passed one struck out
@@ -316,7 +317,7 @@ A session is busy from its check-in (or its start) to its end; without an end, u
 
 ## 8. Testing
 
-1. **The test set** is `agent/tests/fixtures/mail-times-cases.json`, made from the [cases document](2026-10-07-mail-event-kinds-cases.md): the student's 100 mails (1–50 arrive Wed 07/10/2026, with answers from the student's key; 51–100 arrive Mon 02/11/2026, with answers drafted and then checked by the student) and the 27 short cases from the design discussion. The 57 real samples (`mail-samples.json`) keep their checked results and gain the new fields; each sample whose results change is checked by the student (samples 24, beFood, and 26, Star Award, are expected to).
+1. **The test set** is `agent/tests/fixtures/mail-times-cases.json`, made from the [cases document](2026-10-07-mail-event-kinds-cases.md): the student's 100 mails (1–50 arrive Wed 07/10/2026, with answers from the student's key; 51–100 arrive Mon 02/11/2026, with answers drafted and then checked by the student) and the 27 short cases from the design discussion. The 57 real samples (`mail-samples.json`) keep their checked results and gain the reader's full results; each sample whose results change is checked by the student. In stage 1, three change what they upload: samples 20 and 23 (civic education: registration closes 22/09, from their "THỜI GIAN ĐĂNG KÝ" heading) and 24 (beFood: its ordering hours become two daily Periods instead of two events on 20/09). The old session tests (`test_sessions.py`) keep their expectations, except where this design changes them on purpose: a length now gives the end ("kéo dài 2h"), and "8 giờ sáng" is read.
 2. **A scorecard,** `agent/tools/mail_times_score.py`, prints how many cases are right for each part (sessions, check-in, end, deadlines, Periods, flags) and lists the wrong ones.
 3. **A stage is done** when every case passes or is on the "known misses" list in the cases document, which the student agrees to.
 4. **Agent:** step 0 (replies cut, forwards kept, signatures), step 1 (each time and date form, scores, time zones), step 2 (each rule of §4.3 on its own), the word lists (no word in two roles that contradict each other), the stage 1 upload (§4.4), privacy (§7.5), and a failure that gives no times and logs no text.
