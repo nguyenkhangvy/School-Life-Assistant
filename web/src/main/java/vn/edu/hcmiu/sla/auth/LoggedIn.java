@@ -23,11 +23,13 @@ public class LoggedIn extends SavedRequestAwareAuthenticationSuccessHandler {
 
     private final Accounts accounts;
     private final LoginLimits limits;
+    private final Sessions sessions;
     private final Clock clock;
 
-    public LoggedIn(Accounts accounts, LoginLimits limits, Clock clock) {
+    public LoggedIn(Accounts accounts, LoginLimits limits, Sessions sessions, Clock clock) {
         this.accounts = accounts;
         this.limits = limits;
+        this.sessions = sessions;
         this.clock = clock;
         setDefaultTargetUrl("/");
     }
@@ -37,7 +39,10 @@ public class LoggedIn extends SavedRequestAwareAuthenticationSuccessHandler {
             Authentication authentication) throws IOException, ServletException {
         if (authentication.getPrincipal() instanceof AppUser user) {
             limits.succeeded(user.email(), ClientAddress.of(request));
-            accounts.loggedIn(user.id(), LocalDateTime.now(clock));
+            // The account as now saved: Spring may have just re-hashed its password (Accounts.rehash), and the session
+            // must hold the new hash, or AccountCheck would log this session out on its next click.
+            accounts.loggedIn(user.id(), LocalDateTime.now(clock))
+                    .ifPresent(saved -> sessions.refresh(AppUser.of(saved), request, response));
         }
         super.onAuthenticationSuccess(request, response, authentication);
     }

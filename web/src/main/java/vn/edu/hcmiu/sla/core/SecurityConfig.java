@@ -9,6 +9,8 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
@@ -19,6 +21,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextRepository;
 
 import vn.edu.hcmiu.sla.auth.AccountCheck;
+import vn.edu.hcmiu.sla.auth.Accounts;
 import vn.edu.hcmiu.sla.auth.AppUserDetailsService;
 import vn.edu.hcmiu.sla.auth.LoggedIn;
 import vn.edu.hcmiu.sla.auth.LoginLimitFilter;
@@ -89,12 +92,14 @@ public class SecurityConfig {
      * Checks the email and password. Spring Security normally refuses a disabled account before it looks at the
      * password, which would tell anyone which emails have accounts; here only the right password learns that the
      * account is deactivated (docs/superpowers/specs/2026-10-06-site-roles-design.md, 5.1). The site's only
-     * AuthenticationProvider, so Spring Security uses it for every login.
+     * AuthenticationProvider, so Spring Security uses it for every login. Spring re-hashes an old password at login
+     * through Accounts.rehash.
      */
     @Bean
-    DaoAuthenticationProvider passwordLogin(AppUserDetailsService accounts, PasswordEncoder passwords) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(accounts);
+    DaoAuthenticationProvider passwordLogin(AppUserDetailsService users, PasswordEncoder passwords, Accounts accounts) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(users);
         provider.setPasswordEncoder(passwords);
+        provider.setUserDetailsPasswordService(accounts::rehash); // an old hash becomes Argon2id at login
         provider.setPreAuthenticationChecks(account -> {
         });
         provider.setPostAuthenticationChecks(account -> {
@@ -105,9 +110,17 @@ public class SecurityConfig {
         return provider;
     }
 
+    /**
+     * New hashes are Argon2id with OWASP's settings (security hardening spec, 4): {argon2}$argon2id$…. A hash with no
+     * {id} prefix is the old scrypt (Werkzeug) format, which WerkzeugPasswordEncoder still checks; the login provider
+     * re-hashes it at the next login (Accounts.rehash).
+     */
     @Bean
     PasswordEncoder passwordEncoder() {
-        return new WerkzeugPasswordEncoder();
+        DelegatingPasswordEncoder passwords = new DelegatingPasswordEncoder("argon2",
+                Map.of("argon2", new Argon2PasswordEncoder(16, 32, 1, 19456, 2)));
+        passwords.setDefaultPasswordEncoderForMatches(new WerkzeugPasswordEncoder());
+        return passwords;
     }
 
     /** Where a login is kept between requests; the register page uses it to log the new account in. */

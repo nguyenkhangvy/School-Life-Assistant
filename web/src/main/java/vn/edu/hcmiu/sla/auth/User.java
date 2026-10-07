@@ -162,6 +162,11 @@ public class User {
         changed(by, now);
     }
 
+    /** The same password hashed anew, with a stronger algorithm: not a change by anyone, so updated_at stays. */
+    public void rehash(String newPasswordHash) {
+        passwordHash = newPasswordHash;
+    }
+
     /** A login isn't a change to the account: updated_at stays. */
     public void loggedIn(LocalDateTime now) {
         lastLoginAt = now;
