@@ -622,13 +622,25 @@ def _kept_sessions(sentences, sessions, arrived, modes):
     return tuple(sorted(kept.values(), key=lambda s: (s.day, s.start))[:MAX_SESSIONS])
 
 
+# ---- flags (§2) ------------------------------------------------------------------------------------------------------
+
+
+def _flag(text, role, unless=None):
+    """Whether `text` (NFC) has a word of `role` that is not inside a word of `unless`."""
+    spans = role.spans(text)
+    if unless is not None:
+        spans = [s for s in spans if not any(a <= s[0] and s[1] <= b for a, b in unless.spans(text))]
+    return bool(spans)
+
+
 # ---- the reader ------------------------------------------------------------------------------------------------------
 
 
 def read_times(subject, text, arrived):
-    """Found: what one email that arrived on `arrived` (a Vietnam date) holds."""
+    """Found: the sessions, Periods, deadlines and flags of one email that arrived on `arrived` (a Vietnam date)."""
     sentences = [_Sentence(s, arrived) for s in _sentences(clean(subject, text))]
-    heading = _Sentence(unicodedata.normalize("NFC", subject or ""), arrived)
+    subject = unicodedata.normalize("NFC", subject or "")
+    heading = _Sentence(subject, arrived)
     modes = _Modes(any(s.spans(words.ONLINE) for s in sentences), any(s.spans(words.IN_PERSON) for s in sentences))
     details_later = any(_says_later(s) for s in sentences)
 
@@ -651,8 +663,11 @@ def read_times(subject, text, arrived):
     _check_ins(sentences, arrivals, sessions, arrived)
     _link_times(sentences, links, sessions)
     periods += _one_day_periods(sentences, sessions, details_later)
+    texts = [subject] + [s.text for s in sentences]
     return Found(
         sessions=_kept_sessions(sentences, sessions, arrived, modes),
         periods=_kept_periods(periods, arrived),
         deadlines=_kept_deadlines(deadlines, heading, modes),
+        meeting=any(_flag(t, words.MEETING, words.NOT_A_MEETING) for t in texts),
+        registered=any(_flag(t, words.REGISTERED) for t in texts),
     )

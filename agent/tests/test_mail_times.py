@@ -349,3 +349,30 @@ def test_session_modes(text, modes):
 ])
 def test_session_labels(text, labels):
     assert [s.label for s in read_times("", text, ARRIVED).sessions] == labels
+
+
+# ---- flags (§2) ------------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("subject, text, meeting", [
+    ("Họp nhóm", "", True),  # the subject counts
+    ("", "Thầy hẹn cả nhóm họp lúc 9h.", True),
+    ("", "Bài kiểm tra giữa kỳ sẽ bắt đầu lúc 08:00 ngày 12/11.", True),
+    ("", "Đây là email nhắc hạn thanh toán, không có buổi gặp trực tiếp.", False),
+    ("Workshop kỹ năng thuyết trình", "Workshop diễn ra vào 24/11 lúc 13:00.", False),
+    ("", "Gặp gỡ các builder Web3.", False),
+    ("", "Xin cảm ơn và hẹn gặp lại bạn.", False),
+], ids=["subject", "meeting-word", "class-activity", "not-after-khong-co", "a-skill", "gap-go", "sign-off"])
+def test_the_meeting_flag(subject, text, meeting):
+    assert read_times(subject, text, ARRIVED).meeting is meeting
+
+
+@pytest.mark.parametrize("text, registered", [
+    ("Bạn đã đăng ký thành công vào ngày 05/10/2026.", True),
+    ("Cảm ơn bạn đã đăng ký tham gia chương trình.", True),
+    ("Bạn đã xác nhận tham gia hội thảo.", True),
+    ("Sinh viên đã đăng ký cần đến trước 07:15.", False),  # not "you"
+    ("Những sinh viên đăng ký thành công sẽ tham gia vào 15/10.", False),
+])
+def test_the_registered_flag(text, registered):
+    assert read_times("", text, ARRIVED).registered is registered
