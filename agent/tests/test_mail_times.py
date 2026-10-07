@@ -170,3 +170,56 @@ def test_a_deadline_takes_a_mode_only_from_its_own_words():
     assert [(d.day, d.mode) for d in read_times("", both, ARRIVED).deadlines] == [
         (date(2026, 10, 3), "in_person"), (date(2026, 10, 5), "online")]
     assert [d.mode for d in read_times("", online_event, ARRIVED).deadlines] == [None]
+
+
+# ---- Periods (§4.3, P) -----------------------------------------------------------------------------------------------
+
+
+def periods(text, arrived=ARRIVED):
+    return [(p.mode, p.first_day.strftime("%d/%m"), p.last_day.strftime("%d/%m"),
+             p.from_time and p.from_time.strftime("%H:%M"), p.to_time and p.to_time.strftime("%H:%M"), p.details_later,
+             p.label) for p in read_times("", text, arrived).periods]
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Tuần lễ diễn ra từ 26/10 đến 30/10/2026.", [("all_day", "26/10", "30/10", None, None, False, None)]),
+    ("Triển lãm mở cửa từ 09:00 đến 17:00 trong các ngày 02/11 đến 05/11.",
+     [("daily_window", "02/11", "05/11", "09:00", "17:00", False, None)]),
+    ("Ngày hội mở cửa từ 08:00 đến 16:00 ngày 14/11/2026.\nSinh viên có thể đến bất kỳ thời điểm nào trong thời gian trên.",
+     [("one_window", "14/11", "14/11", "08:00", "16:00", False, None)]),
+    ("Chương trình diễn ra từ 09:00 ngày 28/11 đến 16:00 ngày 29/11.",
+     [("one_window", "28/11", "29/11", "09:00", "16:00", False, None)]),
+    ("Vòng 1 diễn ra từ 8h00 ngày 01/10/2026 đến 17h00 ngày 05/10/2026.",
+     [("one_window", "01/10", "05/10", "08:00", "17:00", False, "round_1")]),
+    ("Các buổi tư vấn diễn ra trong khoảng 09:00 đến 16:00 ngày 18/11.\nSinh viên cần đặt lịch trước 15/11.",
+     [("one_window", "18/11", "18/11", "09:00", "16:00", True, None)]),
+    ("Ngày hội thể thao diễn ra từ 07:00 đến 17:00 ngày 06/12.\nCác trận đấu của bạn sẽ được thông báo sau.",
+     [("one_window", "06/12", "06/12", "07:00", "17:00", True, None)]),
+    ("Hội thao từ 01/10 đến 05/10, 7h00 - 11h00.", [("daily_window", "01/10", "05/10", "07:00", "11:00", False, None)]),
+    ("Thời gian: 8h00 - 11h30 & 13h00 - 16h00 (Từ nay đến 30/09).",
+     [("daily_window", "28/09", "30/09", "08:00", "11:30", False, None),
+      ("daily_window", "28/09", "30/09", "13:00", "16:00", False, None)]),
+    # 00:00 to 23:59 are the edges of the day, not times the email sets: the Period is all day (§2)
+    ("Vòng 1 diễn ra từ 00g00 ngày 05/10 đến 23g59 ngày 11/10/2026.",
+     [("all_day", "05/10", "11/10", None, None, False, "round_1")]),
+    ("Thư viện phục vụ từ 00:00 đến 23:59 trong các ngày 05/10 đến 09/10.",
+     [("all_day", "05/10", "09/10", None, None, False, None)]),
+    ("Phòng tự học mở từ 00:00 đến 23:59 ngày 06/10, sinh viên có thể đến bất kỳ lúc nào.",
+     [("all_day", "06/10", "06/10", None, None, False, None)]),
+], ids=["days", "open-hours", "any-time-next-line", "over-a-day", "round", "within-and-booked", "later", "no-each-day",
+        "two-hour-ranges", "whole-days-window", "whole-days-each-day", "whole-day"])
+def test_periods(text, expected):
+    assert periods(text) == expected
+
+
+@pytest.mark.parametrize("text", [
+    "Sinh viên đăng ký từ 01/11 đến 05/11.",  # a registration window (D2)
+    "Trường nghỉ từ 24/12 đến 26/12.",  # not an event
+    "Thời gian tiếp nhận: từ 01/10 đến 05/10.",  # a notice
+    "Hội thao diễn ra từ 01/10 đến 03/10, từ 7h00 - 11h00 mỗi ngày.",  # each day: sessions (P5)
+    "Sự kiện diễn ra từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027.",  # a night: one session (P4)
+    "Tuần 3: Từ 00g00 ngày 14/9 đến 23g59 ngày 20/9/2026.",  # over before the email arrived
+    "Thời gian: 14g00 - 17g00, ngày 11/10/2026.\nĐịa điểm: Thông tin chi tiết sẽ thông báo sau.",  # later is about where
+])
+def test_not_periods(text):
+    assert periods(text) == []

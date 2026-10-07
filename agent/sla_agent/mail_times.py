@@ -7,14 +7,19 @@ The rule names in the comments (D1, P4, S3 …) are the spec's, §4.3."""
 import re
 import unicodedata
 from dataclasses import dataclass, replace
-from datetime import date, time
+from datetime import date, datetime, time, timedelta
 
 from sla_agent import mail_phrases as phrases
 from sla_agent import mail_words as words
 from sla_agent.class_changes import SENTENCE_END, URL, fold
 
+MAX_SESSIONS = 10
+MAX_PERIODS = 5
 MAX_DEADLINES = 5
 MAX_HEADING_WORDS = 8  # a heading line longer than this is a sentence of its own
+# The edges of a day, not times an email sets: they never start a session, and a Period from one to the other is all
+# day ("từ 00g00 ngày 21/9 đến 23g59 ngày 27/9" opens and closes a contest round).
+DAY_EDGES = (time(0, 0), time(23, 59))
 
 # Step 0 (§4.1), on folded text.
 REPLY = re.compile(r"\s*(?:re|tl|tra loi)\s*:")
@@ -24,9 +29,35 @@ ORIGINAL = re.compile(r"\s*-{2,}\s*original message\s*-{2,}")
 WROTE = re.compile(r"\s*(?:on|vao)\b.*\b(?:wrote|da viet)\s*:\s*$")
 # Step 2 (§4.3), on folded text.
 DUE_TO = re.compile(r"\s+to\b")  # "due to the rain" is not a deadline
+LINK_BEFORE = re.compile(r"\btruoc\s+(?:do\s+)?(\d{1,3})\s*phut\b")  # "gửi trước 30 phút": 30 minutes before
 
 
 # ---- what the reader finds -------------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class FoundSession:
+    day: date
+    start: time
+    end: time | None = None
+    end_is_approximate: bool = False
+    ends_next_day: bool = False
+    check_in: time | None = None
+    link_opens: time | None = None
+    mode: str | None = None
+    relative: str | None = None
+    label: str | None = None
+
+
+@dataclass(frozen=True)
+class FoundPeriod:
+    first_day: date
+    last_day: date
+    mode: str  # "all_day", "daily_window" or "one_window"
+    from_time: time | None = None
+    to_time: time | None = None
+    details_later: bool = False
+    label: str | None = None
 
 
 @dataclass(frozen=True)
@@ -193,6 +224,11 @@ def _within(span, spans):
     return any(start <= span[0] and span[1] <= end and (start, end) != span for start, end in spans)
 
 
+def _label(sentence, position):
+    part = sentence.parts[sentence.part(position)]
+    return next((code for start, _, code in words.LABELS.spans(sentence.text) if part[0] <= start < part[1]), None)
+
+
 # ---- step 2: what each sentence takes, in order (§4.3, steps 1–4) ----------------------------------------------------
 
 
@@ -288,6 +324,95 @@ def _deadlines(sentence):
     return found
 
 
+def _links(sentence):
+    """S5: [(clock, None)] for "Link … mở lúc 13:45", [(None, minutes)] for "Link … gửi trước 30 phút"."""
+    found = []
+    folded = fold(sentence.text)
+    for span in sentence.spans(words.LINK):
+        before = LINK_BEFORE.search(folded, span[1])
+        if before:
+            found.append((None, int(before.group(1))))
+            continue
+        part = sentence.part(span[0])
+        clock = next((c for c in sentence.free(sentence.clocks)
+                      if c.finish is None and sentence.part(c.start) == part and c.start >= span[1]), None)
+        if clock is not None:
+            sentence.use(clock)
+            found.append((clock, None))
+    return found
+
+
+def _notices(sentence):
+    """N: a notice takes the dates and times after it in its part ("Email này được gửi lúc 09:15 ngày 07/10")."""
+    closing = sentence.spans(words.CLOSING_SOFT) + sentence.spans(words.CLOSING_STRONG)
+    for span in sentence.spans(words.NOTICE):
+        if any(start <= span[0] < end for start, end in closing):
+            continue
+        part = sentence.part(span[0])
+        taken = [x for x in sentence.free(sentence.days + sentence.clocks + sentence.ranges + sentence.windows)
+                 if sentence.part(x.start) == part and x.start >= span[1]]
+        if taken:
+            sentence.use(*taken)
+            sentence.skip = True
+
+
+# ---- step 2: Periods (§4.3, P) ---------------------------------------------------------------------------------------
+
+
+def _says_later(sentence):
+    """P2: the sentence says the student's own time comes later. Not on a line about the place: "Địa điểm: Thông tin
+    chi tiết sẽ thông báo sau" is about where, not when."""
+    return bool(sentence.spans(words.DETAILS_LATER)) and not sentence.spans(words.PLACE)
+
+
+def _periods(sentences, i, details_later):
+    """P1–P5 for sentence i: (its Periods, the sessions its ranges and windows give as [(FoundSession, position)])."""
+    sentence = sentences[i]
+    near = sentences[i:i + 2]
+    any_time = any(s.spans(words.ANY_TIME) for s in near)
+    later = any(_says_later(s) for s in near)
+    open_hours = any(c.finish for c in sentence.free(sentence.clocks) for _, end in sentence.spans(words.DOORS)
+                     if c.start >= end)
+    period_words = any_time or later or open_hours
+    periods, sessions = [], []
+
+    def period(first, last, mode, position, begin=None, finish=None):
+        if (begin, finish) == DAY_EDGES:  # whole days: all day, with no times (§2)
+            mode, begin, finish = "all_day", None, None
+        periods.append(FoundPeriod(first, last, mode, begin, finish, details_later, _label(sentence, position)))
+
+    for window in sentence.free(sentence.windows):  # P4
+        sentence.use(window)
+        length = datetime.combine(window.last, window.finish) - datetime.combine(window.first, window.begin)
+        if length > timedelta(hours=24) or period_words:
+            period(window.first, window.last, "one_window", window.start, window.begin, window.finish)
+        else:
+            sessions.append((FoundSession(window.first, window.begin, window.finish,
+                                          ends_next_day=window.last > window.first), window.start))
+    hour_ranges = [c for c in sentence.free(sentence.clocks) if c.finish is not None]
+    for day_range in sentence.free(sentence.ranges):
+        sentence.use(day_range, *hour_ranges)
+        if not hour_ranges:  # P1, P3
+            period(day_range.first, day_range.last, "all_day", day_range.start)
+            continue
+        days = [day_range.first + timedelta(days=n) for n in range((day_range.last - day_range.first).days + 1)]
+        if sentence.weekday is not None:
+            days = [d for d in days if d.weekday() == sentence.weekday]
+        each_day = sentence.spans(words.EACH_DAY) or sentence.weekday is not None
+        for hours in hour_ranges:  # "8h00 - 11h30 & 13h00 - 16h00": one each
+            if each_day and not period_words and len(days) * len(hour_ranges) <= MAX_SESSIONS:  # P5
+                sessions += [(FoundSession(d, hours.begin, hours.finish), hours.start) for d in days]
+            else:  # P1, P5
+                period(day_range.first, day_range.last, "daily_window", day_range.start, hours.begin, hours.finish)
+    if period_words or sentence.spans(words.WITHIN):  # P1, P2: one day's from–to
+        for clock in sentence.free(sentence.clocks):
+            day = clock.finish is not None and sentence.day_for(clock)
+            if day:
+                sentence.use(clock, *[d for d in sentence.days if d.day == day])
+                period(day, day, "one_window", clock.start, clock.begin, clock.finish)
+    return periods, sessions
+
+
 # ---- what is kept, with its mode (§4.3, D4, M, S7) -------------------------------------------------------------------
 
 
@@ -323,6 +448,12 @@ def _kept_deadlines(deadlines, heading, modes):
     return tuple(sorted(unique.values(), key=lambda d: (d.day, d.at or time(0)))[:MAX_DEADLINES])
 
 
+def _kept_periods(periods, arrived):
+    """The Periods that haven't ended by `arrived`, each once, at most MAX_PERIODS, soonest first."""
+    return tuple(sorted({p for p in periods if p.last_day >= arrived},
+                        key=lambda p: (p.first_day, p.last_day, p.from_time or time(0)))[:MAX_PERIODS])
+
+
 # ---- the reader ------------------------------------------------------------------------------------------------------
 
 
@@ -331,10 +462,16 @@ def read_times(subject, text, arrived):
     sentences = [_Sentence(s, arrived) for s in _sentences(clean(subject, text))]
     heading = _Sentence(unicodedata.normalize("NFC", subject or ""), arrived)
     modes = _Modes(any(s.spans(words.ONLINE) for s in sentences), any(s.spans(words.IN_PERSON) for s in sentences))
+    details_later = any(_says_later(s) for s in sentences)
 
     deadlines = [(heading, d, p) for d, p in _deadlines(heading)]  # the subject gives deadlines only
     for sentence in sentences:
         _drop(sentence)
         _arrivals(sentence)
         deadlines += [(sentence, d, p) for d, p in _deadlines(sentence)]
-    return Found(deadlines=_kept_deadlines(deadlines, heading, modes))
+        _links(sentence)
+        _notices(sentence)
+    periods = []
+    for i in range(len(sentences)):
+        periods += _periods(sentences, i, details_later)[0]
+    return Found(periods=_kept_periods(periods, arrived), deadlines=_kept_deadlines(deadlines, heading, modes))
