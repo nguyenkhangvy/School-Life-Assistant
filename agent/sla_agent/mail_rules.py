@@ -1,6 +1,6 @@
-"""Sorting one email on the laptop: who sent it, its categories, its dates, and the class changes it
+"""Sorting one email on the laptop: who sent it, its categories, its dates, its times, and the class changes it
 announces. Pure functions. The rules are in docs/superpowers/specs/2026-09-28-outlook-mailbox-design.md,
-section 5.
+section 5; the times are read by mail_times (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md).
 
 The email's text is only read here, in memory. What leaves this module is a MailItem, which has no
 field for text."""
@@ -12,7 +12,8 @@ from datetime import datetime, timedelta, timezone
 
 from sla_contract.schema import MailClassChange, MailItem, MailSession
 
-from sla_agent.class_changes import dates_in, fold, read_announcement, register_by_in, sessions_in
+from sla_agent.class_changes import dates_in, fold, read_announcement
+from sla_agent.mail_times import Found, clean, read_times
 from sla_agent.mail_words import Words
 
 log = logging.getLogger(__name__)
@@ -208,27 +209,26 @@ def class_changes(email, code):
             for a in found][:MAX_CLASS_CHANGES]
 
 
-def sessions_of(email, arrived):
-    """The times the email's event or school task takes place (mailbox-events 3.2), found in every email so they
-    are ready when the student moves one to Event. Only the text is read: a time in the subject is often a summary
-    that repeats (or rounds) the text's. [] when the finder fails on it."""
+def times_of(email, arrived):
+    """The email's sessions, Periods, deadlines and flags (mail_times), read in every email so they are ready when
+    the student moves one to Event. An empty Found when the reader fails on it."""
     try:
-        return [MailSession(day=s.day, start=s.start, end=s.end) for s in sessions_in(email.text, arrived)]
+        return read_times(email.subject, email.text, arrived)
     except Exception as error:  # the message could quote the email
         log.warning("Couldn't read the times in an email (%s); it is uploaded without them",
                     error.__class__.__name__)
-        return []
+        return Found()
 
 
-def register_by_of(email, arrived):
-    """The email's registration deadline (mailbox-events addendum A.2), found in every email; None when there is
-    none or the reader fails on it."""
-    try:
-        return register_by_in(email.subject + "\n" + email.text, arrived)
-    except Exception as error:  # the message could quote the email
-        log.warning("Couldn't read the registration deadline in an email (%s); it is uploaded without one",
-                    error.__class__.__name__)
-        return None
+def upload_sessions(found):
+    """The sessions as today's upload holds them (spec 2026-10-07-mail-event-kinds-design.md §4.4): a check-in moves
+    the start (mailbox-events addendum A.1), and an end on the next day is left out."""
+    kept = {}
+    for session in found.sessions:
+        start = session.check_in or session.start
+        end = None if session.ends_next_day else session.end
+        kept.setdefault((session.day, start), MailSession(day=session.day, start=start, end=end))
+    return [kept[key] for key in sorted(kept)]
 
 
 def sort_email(email, context):
@@ -240,13 +240,14 @@ def sort_email(email, context):
         lecturer = is_from_lecturer(email, context)
         arrived = (email.received_at.astimezone(timezone.utc) + VIETNAM_OFFSET).date()
         code = course_of(email, context) if lecturer else None
+        found = times_of(email, arrived)
         return MailItem(
             **known,
             categories=categories(email, lecturer),
             from_lecturer=lecturer,
-            dates=dates_in(email.subject + "\n" + email.text, arrived)[:MAX_DATES],
-            sessions=sessions_of(email, arrived),
-            register_by=register_by_of(email, arrived),
+            dates=dates_in(email.subject + "\n" + clean(email.subject, email.text), arrived)[:MAX_DATES],
+            sessions=upload_sessions(found),
+            register_by=found.register_by,
             blackboard_title=blackboard_title(email),
             class_changes=class_changes(email, code) if code else [],
         )

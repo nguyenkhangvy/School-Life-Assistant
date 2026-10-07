@@ -1,5 +1,5 @@
-"""Class changes announced by lecturers: online, cancelled and make-up classes; the dates in a text; and the
-times an event takes place (sessions). Pure functions.
+"""Class changes announced by lecturers: online, cancelled and make-up classes; and the dates in a text. Pure
+functions. (An email's own times are read by mail_times, docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md.)
 
 A sentence that mentions a class, a change word and a date makes a change; each date takes the
 nearest cancel or make-up word, or an online word when the sentence has neither. The rules are in
@@ -8,10 +8,7 @@ docs/superpowers/specs/2026-09-26-class-changes-and-to-submit-design.md, section
 The website reads Blackboard announcements with its Java twin
 (web/src/main/java/vn/edu/hcmiu/sla/school/schedule/ClassChanges.java); the agent reads lecturers'
 emails with this one. contract/samples/class-changes/sentences.json keeps the two in step: both test
-suites check every example in it.
-
-Sessions follow docs/superpowers/specs/2026-09-28-mailbox-events-design.md, section 3.2, and its addendum of
-2026-09-29 (check-in times, the registration deadline)."""
+suites check every example in it."""
 
 import re
 import unicodedata
@@ -67,47 +64,10 @@ SENTENCE_END = re.compile(
 )
 
 
-# Sessions (mailbox-events 3.2): a time is a start alone, or a start and an end joined by one of these. "01.10"
-# followed by ".2026" is a date, not a time.
-SESSION_TIME = re.compile(
-    r"(?<![\w/.:,])(?P<hour>\d{1,2})(?:(?:[:.](?=\d{2})|[hg])(?P<minute>\d{2})?|(?=\s*[ap]\.?m\b))"
-    r"(?:\s*(?P<ampm>[ap])\.?m\.?)?(?!\w|\.\d)",
-    re.IGNORECASE,
-)
-SESSION_JOIN = re.compile(r"\s*(?:-|–|—|to|until|đến)\s*", re.IGNORECASE)
-# Words of a deadline, compared without accents or letter case. Bare "hạn" and "trước" don't count: "Số lượng
-# có hạn" and "có mặt trước 15 phút" sit next to real event times. "due" counts unless "to" follows: "due to the
-# rain" is not a deadline.
-DEADLINE_WORDS = ("hạn chót", "hạn đăng ký", "hạn nộp", "thời hạn", "trước ngày", "đăng ký trước", "deadline")
-# A length, not a time: right after one of these words (compared the same way), or a bare hour under
-# EARLIEST_BARE_HOUR without minutes or AM/PM, like "(2h)": events don't start in the small hours.
-LENGTH_WORDS = ("thời lượng", "kéo dài", "trong vòng", "duration", "lasting", "lasts")
-EARLIEST_BARE_HOUR = 6
-# The edges of a day: "từ 00g00 ngày 21/9 đến 23g59 ngày 27/9" is when a contest round opens and closes, not when
-# anything takes place. Never a start (an end at 23:59 is kept: "19h00 - 23h59").
-DAY_EDGES = (time(0, 0), time(23, 59))
-MAX_SESSIONS = 10
-
-
 def fold(text):
     """Lower case without accents: "Hóa Đơn" -> "hoa don"."""
     text = unicodedata.normalize("NFD", (text or "").replace("đ", "d").replace("Đ", "D"))
     return "".join(c for c in text if not unicodedata.combining(c)).lower()
-
-
-def _words(words):
-    """A pattern for any of `words`, on folded text."""
-    return "|".join(r"\s+".join(fold(w).split()) for w in words)
-
-
-DEADLINE = re.compile(r"\b(?:" + _words(DEADLINE_WORDS) + r"|due(?!\s+to\b))\b")
-# On folded text, right after a time: the time of day that says morning or afternoon ("2h chiều" is 14:00).
-TIME_OF_DAY = re.compile(r"\s*(sang|chieu|toi|trua)\b")
-LENGTH_BEFORE = re.compile(r"\b(?:" + _words(LENGTH_WORDS) + r")\s*:?\s*(?:khoang|about|around)?\s*$")
-# On folded text: "check in", "check-in", "checkin", "điểm danh" mark a check-in time; "đăng ký", "register",
-# "registration", "sign up" make a deadline sentence a registration deadline (addendum A.1 and A.2).
-CHECK_IN = re.compile(r"\b(?:check\s*-?\s*in|diem\s+danh)\b")
-REGISTER = re.compile(r"\b(?:dang\s+ky|register|registration|sign\s*-?\s*up)\b")
 
 
 class Announced(NamedTuple):
@@ -116,12 +76,6 @@ class Announced(NamedTuple):
     start: time | None = None  # make-up only
     end: time | None = None
     room: str | None = None
-
-
-class Session(NamedTuple):
-    day: date  # in Vietnam
-    start: time
-    end: time | None = None
 
 
 def _date(match, posted_day):
@@ -213,110 +167,3 @@ def dates_in(text, from_day):
     without a year takes the year that puts it closest to `from_day`."""
     text = URL.sub(" ", unicodedata.normalize("NFC", text or ""))
     return sorted({day for _, _, day in _dates(text, from_day, formats=MAIL_DATE_FORMATS)})
-
-
-def _ampm(sentence, match):
-    """"a" / "p" for this time: its own AM/PM, else a time of day right after it ("2h chiều", "7h tối", "8h sáng";
-    "trưa" is noon, so only 1h–3h trưa are afternoon), else None."""
-    if match.group("ampm"):
-        return match.group("ampm").lower()
-    word = TIME_OF_DAY.match(fold(sentence[match.end():]))
-    if not word:
-        return None
-    if word.group(1) == "trua":
-        return "p" if int(match.group("hour")) <= 3 else None
-    return "a" if word.group(1) == "sang" else "p"
-
-
-def _is_length(sentence, match, ampm):
-    """Whether this time in `sentence` is a length ("kéo dài 2h", "(2h)") rather than when something starts."""
-    if LENGTH_BEFORE.search(fold(sentence[:match.start()])):
-        return True
-    return match.group("minute") is None and ampm is None and int(match.group("hour")) < EARLIEST_BARE_HOUR
-
-
-def _session_times(sentence, taken):
-    """[(start, end, position)] of every time in `sentence` outside the spans in `taken` (its dates), lengths and
-    DAY_EDGES left out, in order; position is where the time starts in `sentence`. A start and an end joined by
-    "-", "đến", "to" … make one range; the end is dropped when it isn't after the start. In a range, a start without
-    AM/PM (or a time of day) takes the end's when that keeps it before the end: "1:00 – 2:30 PM", "1h - 3h chiều"."""
-    matches = [m for m in SESSION_TIME.finditer(sentence)
-               if not any(m.start() < end and start < m.end() for start, end in taken)]
-    found, i = [], 0
-    while i < len(matches):
-        first, end = matches[i], None
-        first_ampm = _ampm(sentence, first)
-        start = _time(first, first_ampm)
-        i += 1
-        if i < len(matches) and SESSION_JOIN.fullmatch(sentence[first.end():matches[i].start()]):
-            second = matches[i]
-            second_ampm = _ampm(sentence, second)
-            end = _time(second, second_ampm)
-            i += 1
-            if start and end and not first_ampm and second_ampm:
-                shifted = _time(first, ampm=second_ampm)
-                if shifted and shifted < end:
-                    start, first_ampm = shifted, second_ampm
-        if start is not None and start not in DAY_EDGES and not _is_length(sentence, first, first_ampm):
-            found.append((start, end if end is not None and end > start else None, first.start()))
-    return found
-
-
-def _is_check_in(sentence, position):
-    """Whether the time at `position` is a check-in time: its own part of the sentence (between commas or
-    semicolons) says "check in" or "điểm danh", so "check-in 13h00, chương trình 14h00" has one of each."""
-    begin = max(sentence.rfind(",", 0, position), sentence.rfind(";", 0, position)) + 1
-    ends = [i for i in (sentence.find(",", position), sentence.find(";", position)) if i >= 0]
-    return bool(CHECK_IN.search(fold(sentence[begin:min(ends, default=len(sentence))])))
-
-
-def sessions_in(text, from_day):
-    """The times an event takes place (mailbox-events 3.2): each sentence's times go with its dates, or with the
-    dates of the nearest sentence above that has some. Several dates and one time, or one date and several
-    times, give one session each; equal numbers pair in order. Sentences about a deadline are skipped. A check-in
-    time (addendum A.1; only the part of a sentence that says "check in") joins the earliest other session of its
-    day that starts at or after it. Sessions before
-    `from_day` are dropped; a repeated day and start is kept once, with the first end found; at most
-    MAX_SESSIONS, in time order."""
-    text = URL.sub(" ", unicodedata.normalize("NFC", text or ""))
-    above, found, check_ins = [], [], []
-    for sentence in SENTENCE_END.split(text):
-        folded = fold(sentence)
-        if DEADLINE.search(folded):
-            continue
-        dates = _dates(sentence, from_day, keep_past=True, formats=MAIL_DATE_FORMATS)
-        days = [day for _, _, day in dates]
-        times = _session_times(sentence, [(start, end) for start, end, _ in dates])
-        if days:
-            above = days
-        if not times or not above:
-            continue
-        pairs = zip(above, times) if len(above) == len(times) else [(d, t) for d in above for t in times]
-        for day, (start, end, position) in pairs:
-            (check_ins if _is_check_in(sentence, position) else found).append(Session(day, start, end))
-    for check_in in check_ins:
-        later = [i for i, s in enumerate(found) if s.day == check_in.day and s.start >= check_in.start]
-        if later:
-            first = min(later, key=lambda i: found[i].start)
-            found[first] = found[first]._replace(start=check_in.start)
-        else:
-            found.append(check_in)
-    kept = {}
-    for session in found:
-        if session.day < from_day:
-            continue
-        key = (session.day, session.start)
-        if key not in kept or (kept[key].end is None and session.end is not None):
-            kept[key] = session if key not in kept else kept[key]._replace(end=session.end)
-    return sorted(kept.values())[:MAX_SESSIONS]
-
-
-def register_by_in(text, from_day):
-    """The registration deadline (mailbox-events addendum A.2): the latest date in the sentences that have a deadline
-    word and a registering word, or None. Dates in links are ignored; a date without a year takes the year closest
-    to `from_day`."""
-    text = URL.sub(" ", unicodedata.normalize("NFC", text or ""))
-    days = [day for sentence in SENTENCE_END.split(text)
-            if DEADLINE.search(fold(sentence)) and REGISTER.search(fold(sentence))
-            for _, _, day in _dates(sentence, from_day, keep_past=True, formats=MAIL_DATE_FORMATS)]
-    return max(days, default=None)

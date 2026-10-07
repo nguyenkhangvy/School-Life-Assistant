@@ -197,16 +197,16 @@ def test_sessions_come_from_the_text_never_the_subject():
     assert sort_email(subject_only, CONTEXT).sessions == []
 
 
-def test_an_email_the_session_finder_fails_on_keeps_its_sorting_and_logs_no_text(monkeypatch, caplog):
-    def broken(text, from_day):
+def test_an_email_the_time_reader_fails_on_keeps_its_sorting_and_logs_no_text(monkeypatch, caplog):
+    def broken(subject, text, arrived):
         raise ValueError(text)
 
-    monkeypatch.setattr(mail_rules, "sessions_in", broken)
+    monkeypatch.setattr(mail_rules, "read_times", broken)
 
     with caplog.at_level(logging.WARNING):
-        item = sort_email(email("Workshop ngày 30/9", "Bí mật riêng tư 12345, 14h00."), CONTEXT)
+        item = sort_email(email("Workshop ngày 30/9", "Bí mật riêng tư 12345, 14h00. Hạn đăng ký 25/9."), CONTEXT)
 
-    assert (item.sorted, item.sessions, item.categories) == (True, [], ["event"])
+    assert (item.sorted, item.sessions, item.register_by, item.categories) == (True, [], None, ["event"])
     assert "Bí mật" not in caplog.text and "12345" not in caplog.text
 
 
@@ -216,17 +216,26 @@ def test_the_registration_deadline_is_found_in_every_email():
     assert (item.categories, item.register_by) == ([], date(2026, 9, 25))
 
 
-def test_an_email_the_deadline_reader_fails_on_keeps_its_sorting_and_logs_no_text(monkeypatch, caplog):
-    def broken(text, from_day):
-        raise ValueError(text)
+def test_a_replys_quoted_part_gives_no_dates_and_no_sessions():
+    reply = email("RE: Họp nhóm", "Ok em, gặp thầy ngày 05/10/2026 lúc 15h00 nhé.\n\nFrom: Đặng Văn Long\n"
+                                  "Sent: Monday\nCả nhóm gặp thầy lúc 10h00 ngày 02/10/2026.")
 
-    monkeypatch.setattr(mail_rules, "register_by_in", broken)
+    item = sort_email(reply, CONTEXT)
 
-    with caplog.at_level(logging.WARNING):
-        item = sort_email(email("Workshop ngày 30/9", "Bí mật riêng tư 12345. Hạn đăng ký 25/9."), CONTEXT)
+    assert item.dates == [date(2026, 10, 5)]
+    assert [(s.day, s.start) for s in item.sessions] == [(date(2026, 10, 5), time(15, 0))]
 
-    assert (item.sorted, item.register_by, item.categories) == (True, None, ["event"])
-    assert "Bí mật" not in caplog.text and "12345" not in caplog.text
+
+@pytest.mark.parametrize("text", [
+    "🎉" * 5000,
+    "\u200b14:00\u200b ngày\u00a005/10/2026 \x00",
+    "Thời gian: " + "x" * 200_000 + " 14h ngày 05/10",
+    "Từ ngày 32/13/2026 đến 99/99, 25:61 - 13h",
+], ids=["emoji", "invisible-characters", "a-very-long-line", "impossible-dates-and-times"])
+def test_odd_texts_never_stop_an_email(text):
+    item = sort_email(email("Thông báo", text), CONTEXT)
+
+    assert item.sorted
 
 
 def test_the_text_never_leaves_in_the_result():

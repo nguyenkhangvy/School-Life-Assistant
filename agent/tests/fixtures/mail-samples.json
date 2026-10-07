@@ -565,7 +565,7 @@
      "2026-11-15"
     ],
     "sessions": [],
-    "register_by": null,
+    "register_by": "2026-09-22",
     "blackboard_title": null,
     "class_changes": []
    }
@@ -629,7 +629,7 @@
      "2026-11-15"
     ],
     "sessions": [],
-    "register_by": null,
+    "register_by": "2026-09-22",
     "blackboard_title": null,
     "class_changes": []
    }
@@ -649,18 +649,7 @@
     "dates": [
      "2026-09-20"
     ],
-    "sessions": [
-     {
-      "day": "2026-09-20",
-      "start": "08:00:00",
-      "end": "11:30:00"
-     },
-     {
-      "day": "2026-09-20",
-      "start": "13:00:00",
-      "end": "16:00:00"
-     }
-    ],
+    "sessions": [],
     "register_by": null,
     "blackboard_title": null,
     "class_changes": []

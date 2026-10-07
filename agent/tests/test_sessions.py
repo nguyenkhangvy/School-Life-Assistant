@@ -1,19 +1,26 @@
-"""The times an event takes place, found in an email's subject and text on the laptop (spec
-2026-09-28-mailbox-events-design.md, section 3.2). Only days and times ever leave the laptop."""
+"""The times an event takes place, as stage 1 uploads them (spec 2026-10-07-mail-event-kinds-design.md §4.4): read by
+the mail time reader, with a check-in moving the start (mailbox-events addendum A.1). These are the expectations the
+first reader had (mailbox-events 3.2); the new design changes two on purpose: a length now gives the end ("kéo dài
+2h"), and "8 giờ sáng" is read. Only days and times ever leave the laptop."""
 
 import unicodedata
 from datetime import date, time
 
 import pytest
 
-from sla_agent.class_changes import MAX_SESSIONS, Session, register_by_in, sessions_in
+from sla_agent.mail_rules import upload_sessions
+from sla_agent.mail_times import MAX_SESSIONS, read_times
 
 ARRIVED = date(2026, 9, 28)  # Mon, in Vietnam
 
 
-def found(text):
+def found(text, arrived=ARRIVED):
     return [(s.day.strftime("%d/%m"), s.start.strftime("%H:%M"), s.end and s.end.strftime("%H:%M"))
-            for s in sessions_in(text, ARRIVED)]
+            for s in upload_sessions(read_times("", text, arrived))]
+
+
+def register_by(text, arrived=ARRIVED):
+    return read_times("", text, arrived).register_by
 
 
 @pytest.mark.parametrize("written, start", [
@@ -100,15 +107,15 @@ def test_the_edges_of_a_day_are_not_event_times():
     assert found("Đêm nhạc ngày 30/9, 19h00 - 23h59") == [("30/09", "19:00", "23:59")]
 
 
-@pytest.mark.parametrize("text", [
-    "Thời gian: 14h00 ngày 30/9, kéo dài 2h",
-    "Workshop 14h ngày 30/9 (2h)",
-    "Ngày 30/9 lúc 14h. Thời lượng: 1h30",
-    "Ngày 30/9 lúc 14h, mỗi buổi trong vòng 2h",
-    "Talk on 30/9 at 14h, lasting 2h",
+@pytest.mark.parametrize("text, end", [
+    ("Thời gian: 14h00 ngày 30/9, kéo dài 2h", "16:00"),  # changed on purpose: a length gives the end
+    ("Workshop 14h ngày 30/9 (2h)", None),
+    ("Ngày 30/9 lúc 14h. Thời lượng: 1h30", "15:30"),
+    ("Ngày 30/9 lúc 14h, mỗi buổi trong vòng 2h", "16:00"),
+    ("Talk on 30/9 at 14h, lasting 2h", "16:00"),
 ])
-def test_a_length_is_not_a_time(text):
-    assert found(text) == [("30/09", "14:00", None)]
+def test_a_length_is_not_a_time(text, end):
+    assert found(text) == [("30/09", "14:00", end)]
 
 
 def test_small_hours_are_still_times_with_am_or_minutes():
@@ -117,11 +124,11 @@ def test_small_hours_are_still_times_with_am_or_minutes():
 
 
 @pytest.mark.parametrize("written, start", [
-    ("2h chiều", "14:00"), ("2h30 chiều", "14:30"), ("7h tối", "19:00"), ("8 giờ sáng", None), ("8h sáng", "08:00"),
+    ("2h chiều", "14:00"), ("2h30 chiều", "14:30"), ("7h tối", "19:00"), ("8 giờ sáng", "08:00"), ("8h sáng", "08:00"),
     ("5h sáng", "05:00"), ("1h trưa", "13:00"), ("11h trưa", "11:00"), ("12h trưa", "12:00"), ("14h chiều", "14:00"),
 ])
 def test_a_time_of_day_word_after_the_hour(written, start):
-    assert found(f"Ngày 30/9 lúc {written}") == ([("30/09", start, None)] if start else [])
+    assert found(f"Ngày 30/9 lúc {written}") == [("30/09", start, None)]
 
 
 def test_a_range_ending_in_the_afternoon():
@@ -140,11 +147,11 @@ def test_times_and_dates_in_links_are_ignored():
 def test_at_most_ten_sessions_in_time_order():
     days = ", ".join(f"{d}/10" for d in range(12, 0, -1))
 
-    sessions = sessions_in(f"Các buổi: {days}, lúc 18h", ARRIVED)
+    sessions = upload_sessions(read_times("", f"Các buổi: {days}, lúc 18h", ARRIVED))
 
     assert len(sessions) == MAX_SESSIONS
-    assert sessions[0] == Session(date(2026, 10, 1), time(18, 0))
-    assert sessions == sorted(sessions)
+    assert (sessions[0].day, sessions[0].start) == (date(2026, 10, 1), time(18, 0))
+    assert sessions == sorted(sessions, key=lambda s: (s.day, s.start))
 
 
 def test_english_invitations():
@@ -159,8 +166,8 @@ def test_vietnamese_typed_with_separate_accent_marks_reads_the_same():
 
 
 def test_nothing():
-    assert sessions_in("", ARRIVED) == []
-    assert sessions_in(None, ARRIVED) == []
+    assert found("") == []
+    assert found(None) == []
 
 
 # ---- check-in times (addendum A.1) --------------------------------------------------------------------------------
@@ -200,6 +207,10 @@ def test_a_check_in_without_a_later_session_stays_on_its_own():
         ("29/09", "09:00", None), ("29/09", "17:00", None)]
 
 
+def test_a_session_that_ends_the_next_day_is_uploaded_without_its_end():
+    assert found("Sự kiện diễn ra từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027.") == [("31/12", "22:00", None)]
+
+
 # ---- the registration deadline (addendum A.2) ---------------------------------------------------------------------
 
 CLOSING = """Link đăng ký: https://iuoss.com/BM-HTSV-2026
@@ -209,8 +220,8 @@ Thông tin đăng ký Lễ Bế mạc HTSV như sau:
 
 
 def test_the_closing_ceremony_closes_registration_on_22_9_and_takes_place_on_30_9():
-    assert register_by_in(CLOSING, date(2026, 9, 20)) == date(2026, 9, 22)
-    assert sessions_in(CLOSING, date(2026, 9, 20)) == [Session(date(2026, 9, 30), time(9, 45))]
+    assert register_by(CLOSING, date(2026, 9, 20)) == date(2026, 9, 22)
+    assert found(CLOSING, date(2026, 9, 20)) == [("30/09", "09:45", None)]
 
 
 @pytest.mark.parametrize("text, deadline", [
@@ -223,7 +234,7 @@ def test_the_closing_ceremony_closes_registration_on_22_9_and_takes_place_on_30_
     ("Hạn đăng ký: 25.09.2026", date(2026, 9, 25)),
 ])
 def test_each_way_of_writing_a_registration_deadline(text, deadline):
-    assert register_by_in(text, ARRIVED) == deadline
+    assert register_by(text) == deadline
 
 
 @pytest.mark.parametrize("text", [
@@ -235,4 +246,4 @@ def test_each_way_of_writing_a_registration_deadline(text, deadline):
     None,
 ])
 def test_not_a_registration_deadline(text):
-    assert register_by_in(text, ARRIVED) is None
+    assert register_by(text) is None
