@@ -7,14 +7,13 @@ field for text."""
 
 import logging
 import re
-import unicodedata
 from dataclasses import dataclass
-from functools import lru_cache
 from datetime import datetime, timedelta, timezone
 
 from sla_contract.schema import MailClassChange, MailItem, MailSession
 
 from sla_agent.class_changes import dates_in, fold, read_announcement, register_by_in, sessions_in
+from sla_agent.mail_words import Words
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ MAX_DATES = 30
 MAX_CLASS_CHANGES = 10
 
 # Words are written as they are read; they are compared without letter case, and with accents only when the email
-# writes them (see Words).
+# writes them (see mail_words.Words).
 SCHOOL_TASK_WORDS = ("khảo sát", "survey", "tạm trú", "cư trú", "sinh hoạt công dân", "bảo hiểm y tế", "BHYT")
 REQUIRED_WORDS = ("bắt buộc",)  # a school task too, but not right after NOT: "không bắt buộc" is optional
 NOT = "không"
@@ -68,55 +67,6 @@ class Context:
 
     courses: tuple = ()  # (course code, course name, lecturer as EduSoft writes it, e.g. "P.Q.Hùng")
     bb_courses: tuple = ()  # (Blackboard course name, course code)
-
-
-@lru_cache(maxsize=None)
-def _fold_letter(letter):
-    return fold(letter)
-
-
-@lru_cache(maxsize=8)
-def _folded(text):
-    """fold(text), and for each of its letters the place in `text` it comes from."""
-    folded, places = [], []
-    for place, letter in enumerate(text):
-        for f in _fold_letter(letter):
-            folded.append(f)
-            places.append(place)
-    return "".join(folded), places
-
-
-def _accents(word):
-    """A word's accent marks in no order, so it doesn't matter where the tone mark sits: "hoá" and "hóa" give the
-    same."""
-    word = word.lower()
-    marks = sorted(c for c in unicodedata.normalize("NFD", word) if unicodedata.combining(c))
-    return "".join(marks) + "đ" * word.count("đ")
-
-
-class Words:
-    """Words to look for, as whole words, in any letter case. Written without accents they always count; written with
-    accents, only with their own, wherever the tone mark sits ("học bóng" is not "học bổng", "hoá" is "hóa")."""
-
-    def __init__(self, words, unless_after=None):
-        self.accents = {}  # folded words -> the accents of each way they are written
-        for word in words:
-            self.accents.setdefault(fold(word), set()).add(tuple(_accents(part) for part in word.split()))
-        parts = [r"\s+".join(re.escape(part) for part in folded.split()) for folded in self.accents]
-        self.pattern = re.compile(r"\b(?:" + "|".join(parts) + r")\b")
-        self.unless_after = unless_after and re.compile(r"\b" + re.escape(fold(unless_after)) + r"\s+$")
-
-    def search(self, text):
-        text = unicodedata.normalize("NFC", text or "")
-        folded, places = _folded(text)
-        for match in self.pattern.finditer(folded):
-            if self.unless_after and self.unless_after.search(folded, 0, match.start()):
-                continue
-            as_written = text[places[match.start()]:places[match.end() - 1] + 1]
-            written = tuple(_accents(word) for word in as_written.split())
-            if not any(written) or written in self.accents[" ".join(match.group().split())]:
-                return True
-        return False
 
 
 SCHOOL_TASK = Words(SCHOOL_TASK_WORDS)
