@@ -63,6 +63,8 @@ Website
 
 ### 3.2 Finding sessions
 
+**Changed later (2026-10-07):** replaced by the two-step reader of [mail event kinds](2026-10-07-mail-event-kinds-design.md) §4; the pairing rules below stay, extended.
+
 Only the email's **text** is read, line by line; the subject is not (decided with the student on 2026-09-29: a time in the subject often repeats or rounds the text's, and read together the two could split one event in two). An email whose time is only in its subject has no sessions; the student can add one on the Join page. A **session** is a day and a start time, with an end time when the email gives one. Days and times are Vietnam time.
 
 **Times** (a start alone, or a start and an end joined by `-`, `–`, `—`, `đến`, `to`, `until`):
@@ -126,6 +128,8 @@ Saving an `outlook` part stores each email's sessions. Stale choices are still d
 ### 4.2 The Mailbox page
 
 Layout as in the mockup `mailbox-rows.html` (kept in `.superpowers/brainstorm/`, not committed). An **event-like card** is one whose categories (the student's Move to… choice wins) include Event or School task; only event-like cards show sessions and marks and get Join… and the auto-Done exception. Sessions of other cards are stored but not shown.
+
+**Changed later (2026-10-07):** a Class card with the `meeting` flag is event-like too, and rows gain deadline tags, Periods and more on each session; see [mail event kinds](2026-10-07-mail-event-kinds-design.md) §6.2.
 
 - **Width:** the Mailbox page is up to 1200 px wide (the site's other pages stay 960 px).
 - **Box titles** show counts: "From lecturers (8)". Every card of a box is shown; "Everything else" has no limit and no "Show all". Past and Done stay folded (`<details>`).
@@ -265,6 +269,8 @@ When this is built, the Outlook spec is updated so the two agree: §4.4 (`sessio
 ---
 
 ## Addendum (2026-09-29): check-in times and registration deadlines
+
+**Changed later (2026-10-07):** check-in times are sent separately from stage 2 on, every deadline is kept with its time, kind and mode, and A.3 also counts added Periods and the registered flag; see [mail event kinds](2026-10-07-mail-event-kinds-design.md) §11.
 
 Decided with the student at the real-sync check of 2026-09-29, after two real emails came out wrong: the UHub "Bean to Bold" workshop gave its check-in time (13:00–13:45) as a second session next to the programme (14:00–16:30), and the "Bế mạc HTSV" invitation stayed upcoming although its registration had closed on 22/9. This addendum changes §3.2, §3.3, §4.1, §4.2 and §4.4; everything else stays.
 
