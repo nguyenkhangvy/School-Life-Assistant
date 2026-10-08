@@ -44,6 +44,9 @@ class MailboxTest {
         List<LocalDate> dates = List.of();
         LocalDate registerBy;
         boolean sorted = true;
+        boolean meeting;
+        boolean registered;
+        String invitation;
 
         Mail(String key, int hoursAgo, String... categories) {
             this.key = key;
@@ -87,10 +90,26 @@ class MailboxTest {
             return this;
         }
 
+        Mail meeting() {
+            this.meeting = true;
+            return this;
+        }
+
+        Mail registered() {
+            this.registered = true;
+            return this;
+        }
+
+        Mail invitation(String invitation) {
+            this.invitation = invitation;
+            return this;
+        }
+
         SchoolMail row() {
             SchoolMail row = new SchoolMail(1, key, "00" + key.hashCode(), thread, NOW.minusHours(hoursAgo), "Sender",
                     sender, subject, categories, lecturer, dates, sorted, null);
             row.setRegisterBy(registerBy);
+            row.setFlags(meeting, registered, invitation);
             return row;
         }
     }

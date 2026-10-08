@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Join…: the sessions ticked (by MailSessions.Line.id, e.g. "2026-09-29T13:30"), one session added by hand (day,
- * start and an optional end; day "" means none), and an optional place.
+ * Join…: the sessions ticked (by MailSessions.Line.id, e.g. "2026-09-29T13:30"), the Periods ticked (by
+ * Mailbox.Period.id, e.g. "2026-11-02/2026-11-05/daily_window/09:00"), one session added by hand (day, start and an
+ * optional end; day "" means none), and an optional place.
  */
 public class JoinForm {
 
     private List<String> sessions = new ArrayList<>();
+    private List<String> periods = new ArrayList<>();
     private String day = "";
     private String start = "";
     private String end = "";
@@ -18,8 +20,9 @@ public class JoinForm {
     public JoinForm() {
     }
 
-    JoinForm(List<String> sessions, String place) {
+    JoinForm(List<String> sessions, List<String> periods, String place) {
         this.sessions = new ArrayList<>(sessions);
+        this.periods = new ArrayList<>(periods);
         this.place = place;
     }
 
@@ -29,6 +32,14 @@ public class JoinForm {
 
     public void setSessions(List<String> sessions) {
         this.sessions = sessions == null ? new ArrayList<>() : sessions;
+    }
+
+    public List<String> getPeriods() {
+        return periods;
+    }
+
+    public void setPeriods(List<String> periods) {
+        this.periods = periods == null ? new ArrayList<>() : periods;
     }
 
     public String getDay() {

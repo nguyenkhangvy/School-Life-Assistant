@@ -12,17 +12,39 @@
     <p><strong th:text="${card.subject.isEmpty() ? '(no subject)' : card.subject}">[THƯ MỜI] Workshop</strong><br>
       <span class="muted" th:text="${card.senderName}">P.CTSV [OSS]</span></p>
     <p class="field-error" th:if="${error != null}" th:text="${error}">Choose a day that isn't over yet.</p>
+    <p class="status-warning" th:if="${card.cancelled}">This meeting was cancelled. Its times can't be joined; you can
+      still leave what you joined.</p>
+    <!--/* docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md, 6.3: the deadlines as text, passed ones struck out */-->
+    <ul class="join-deadlines" th:unless="${card.deadlines.isEmpty()}">
+      <li th:each="deadline : ${card.deadlines}"><s th:if="${deadline.passed(now)}"
+          th:text="${deadline.text}">Register by 12:00 Sat 10/10</s><th:block
+          th:unless="${deadline.passed(now)}" th:text="${deadline.text}">Due
+          23:59 Sun 18/10</th:block></li>
+    </ul>
 
     <form method="post" th:action="@{/school/mailbox/{key}/join(key=${card.key})}" th:object="${form}">
       <fieldset class="join-sessions">
         <legend th:text="${card.suggested ? 'Found in this email' : 'Sessions'}">Sessions</legend>
         <p class="muted" th:if="${lines.isEmpty()}">No times found in this email. Add one below.</p>
-        <label class="check join-line" th:each="line : ${lines}">
-          <input type="checkbox" name="sessions" th:value="${line.id}" th:checked="${form.sessions.contains(line.id)}">
-          <span th:text="${line.when}">Tue 29/09 13:00–14:00</span>
-          <span th:class="${line.mark.conflict ? 'mark mark-conflict' : 'mark mark-free'}"
+        <label class="check join-line" th:each="line : ${lines}"
+               th:with="off=${card.cancelled and !line.joined}">
+          <input type="checkbox" name="sessions" th:value="${line.id}" th:checked="${form.sessions.contains(line.id)}"
+                 th:disabled="${off}">
+          <s th:if="${off}" th:text="${line.when}">Tue 29/09 13:00–14:00</s>
+          <span th:unless="${off}" th:text="${line.when}">Tue 29/09 13:00–14:00</span>
+          <span th:unless="${off}" th:class="${line.mark.conflict ? 'mark mark-conflict' : 'mark mark-free'}"
                 th:text="${line.mark.text}">✓ No conflict</span>
           <span class="muted" th:unless="${line.found}">added by you</span>
+        </label>
+      </fieldset>
+      <fieldset class="join-sessions" th:unless="${periods.isEmpty()}">
+        <legend>Periods: come at any time</legend>
+        <label class="check join-line" th:each="line : ${periods}" th:with="off=${card.cancelled and !line.added}">
+          <input type="checkbox" name="periods" th:value="${line.id}" th:checked="${form.periods.contains(line.id)}"
+                 th:disabled="${off}">
+          <s th:if="${off}" th:text="${line.text}">Period · Mon 26/10 → Fri 30/10 · all day</s>
+          <span th:unless="${off}" th:text="${line.text}">Period · Mon 02/11 → Thu 05/11 · 09:00–17:00 each day</span>
+          <span class="muted" th:unless="${off}">Add to my Timetable</span>
         </label>
       </fieldset>
       <fieldset class="join-add">

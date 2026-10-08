@@ -8,7 +8,8 @@ import vn.edu.hcmiu.sla.school.mail.Mailbox.Session;
 
 /**
  * Whether an event's session clashes with the timetable (docs/superpowers/specs/2026-09-28-mailbox-events-design.md,
- * section 4.5). Pure functions; times are Vietnam wall-clock times.
+ * section 4.5, busy from the check-in as 2026-10-07-mail-event-kinds-design.md, 6.4). Pure functions; times are
+ * Vietnam wall-clock times.
  */
 public final class Conflicts {
 
@@ -35,10 +36,13 @@ public final class Conflicts {
         }
     }
 
-    /** A session clashes with what its time overlaps; back-to-back (one ends as the other starts) doesn't. */
+    /**
+     * A session clashes with what its time overlaps, from its check-in (or start) to its end; back-to-back (one ends
+     * as the other starts) doesn't.
+     */
     public static Mark of(Session session, List<Busy> busy) {
         return new Mark(busy.stream()
-                .filter(b -> session.startAt().isBefore(b.end()) && b.start().isBefore(session.endAt()))
+                .filter(b -> session.busyFrom().isBefore(b.end()) && b.start().isBefore(session.endAt()))
                 .sorted(Comparator.comparing(Busy::start))
                 .map(Busy::name)
                 .toList());
