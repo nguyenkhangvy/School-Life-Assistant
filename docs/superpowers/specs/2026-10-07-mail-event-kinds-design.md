@@ -3,7 +3,7 @@
 **Date:** 2026-10-07
 **Scope:** read the times in Vietnamese school mail far more reliably, still with rules on the laptop; give every time its kind (Session, Period or Deadline) with its check-in, link, mode and approximate end; let the student add Periods to the Timetable; show every deadline; let lecturers' class activities be joined; read Outlook meeting invitations
 **Owner:** Nguyen Khang Vy
-**Status:** Approved 2026-10-07; stage 1 built (agent 0.5.0)
+**Status:** Approved 2026-10-07; stage 1 built (agent 0.5.0); stages 2 and 3 built (agent 0.6.0), see §13
 **Builds on:** [Outlook mail in a Mailbox tab](2026-09-28-outlook-mailbox-design.md) ("Outlook §5") and [a compact Mailbox, auto-Done, and events you can join](2026-09-28-mailbox-events-design.md) with its addendum ("Events §3.2", "A.1"). Everything there stays the same unless this document says otherwise. The reader reuses the accent-aware word matching of the sorting fixes on the branch `mail-rules-fixes` (082ed22).
 **Test cases:** [2026-10-07-mail-event-kinds-cases.md](2026-10-07-mail-event-kinds-cases.md)
 
@@ -379,3 +379,20 @@ A session is busy from its check-in (or its start) to its end; without an end, u
 - **A relative day read wrong,** such as a "thứ Ba" that meant last week. It is shown as "from 'Tuesday'" so the student can check it.
 - **A reply cut too much or too little.** Only reply subjects are cut; forwards are untouched.
 - **An older agent with a newer server, or the reverse.** Every new field is optional, and the server is updated first.
+
+---
+
+## 13. Decided while building stages 2 and 3 (2026-10-08)
+
+- **Columns:** a deadline's day and time are stored in `deadline_day` and `deadline_time` (`day` is a reserved word), like `session_day`.
+- **Added Periods' key** also holds `from_time`: one email can give two daily windows over the same days (real sample 24, beFood: "8h00 - 11h30 & 13h00 - 16h00"), and both can be added.
+- **Where the tags go:** "Registered ✓" and "Cancelled" sit on the row, next to "sent 2×". The deadline tags start the line under the row, before the sessions and Periods, so a long tag never squeezes the subject. Each session and Period is one piece on that line, so its details never wrap away from it.
+- **Which cards have tags:** every card's deadlines give tags, not only event-like cards' (a lecturer's "Hạn nộp" shows "Due …" on its Class row). As A.3, "Register by …" is not shown in Past, and "Registration closed" only on a card in Past.
+- **Tag texts:** with modes, "Register by: In person 12:00 Sat 03/10 · Online 17:00 Mon 12/10", a passed one struck out. A registration that has opened with no closing day known reads "Registration open". "Confirm by …" and "Due …" show the soonest one of each mode that hasn't passed, so an earlier deadline is never hidden behind a later one.
+- **A class change is not a meeting (§2):** the reader can't see class changes, so `sort_email` clears `meeting` on an email that announces one (real sample 27, Blackboard's "Please join the meeting on time").
+- **A cancelled meeting** offers Join… only when something of it was joined or added, so it can be left; its found sessions can't be ticked.
+- **Hidden while Done (§6.5)** uses Mailbox's own cards: an added Period is hidden when the card holding its email is Done.
+- **Clashes** keep using the Timetable without added Periods, which are never busy; the calendar and Overview add them.
+- **A multi-day one_window on the Timetable** reads "09:00 Sat until 16:00 Sun".
+- **Recurring invitations (§5):** the next occurrences are found by asking Outlook for the occurrence on each of the next 120 days, so moved and skipped ones come out right. An all-day meeting gives an `all_day` Period. A session the text gives at the same day and start lends its check-in, link, mode and label; otherwise "Teams", "Zoom" or "online" in the location or text makes it online. When Outlook can't give the appointment, the text's times are used, as for any email. The minute's mail check counts a new meeting request as new mail.
+- **Deploying:** the server goes first (`update.sh`), then the agent release: an older agent's upload stays valid on the new server, but the new agent's would be refused by an older one.
