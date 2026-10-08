@@ -42,9 +42,9 @@
         <label class="check join-line" th:each="line : ${periods}" th:with="off=${card.cancelled and !line.added}">
           <input type="checkbox" name="periods" th:value="${line.id}" th:checked="${form.periods.contains(line.id)}"
                  th:disabled="${off}">
-          <s th:if="${off}" th:text="${line.text}">Period · Mon 26/10 → Fri 30/10 · all day</s>
-          <span th:unless="${off}" th:text="${line.text}">Period · Mon 02/11 → Thu 05/11 · 09:00–17:00 each day</span>
-          <span class="muted" th:unless="${off}">Add to my Timetable</span>
+          <s class="join-text" th:if="${off}" th:text="${line.text}">Period · Mon 26/10 → Fri 30/10 · all day</s>
+          <span class="join-text" th:unless="${off}"><th:block th:text="${line.text}">Period · Mon 02/11 → Thu 05/11 ·
+            09:00–17:00 each day</th:block> <span class="muted">· Add to my Timetable</span></span>
         </label>
       </fieldset>
       <fieldset class="join-add">
