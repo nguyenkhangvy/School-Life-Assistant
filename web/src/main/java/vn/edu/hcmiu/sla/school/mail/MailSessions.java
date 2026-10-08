@@ -129,13 +129,6 @@ public class MailSessions {
         added.saveAll(periods);
     }
 
-    /** Puts `rows` in place of the joined sessions that haven't ended, and leaves the added Periods as they are. */
-    public void replaceUpcoming(Integer userId, Collection<String> keys, LocalDateTime now,
-            List<SchoolMailJoined> rows) {
-        replaceUpcoming(userId, keys, now, rows, upcomingAdded(userId, keys, now).stream()
-                .map(SchoolMailAddedPeriod::copy).toList());
-    }
-
     /**
      * Removes the student's joined sessions and added Periods of one card's emails that haven't ended at `now`, in
      * one transaction.
