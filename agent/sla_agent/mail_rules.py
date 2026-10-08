@@ -10,7 +10,8 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
-from sla_contract.schema import MailClassChange, MailItem, MailSession
+from pydantic import ValidationError
+from sla_contract.schema import MailClassChange, MailDeadline, MailItem, MailPeriod, MailSession
 
 from sla_agent.class_changes import dates_in, fold, read_announcement
 from sla_agent.mail_times import Found, clean, read_times
@@ -220,15 +221,48 @@ def times_of(email, arrived):
         return Found()
 
 
+def upload_session(session):
+    """One FoundSession as the upload holds it (spec 2026-10-07-mail-event-kinds-design.md §3.1), with its check-in and
+    link time apart from its start (from stage 2; mailbox-events addendum A.1 moved the start). What the format
+    can't hold is left out of it: an end not after the start (without the next day), a check-in or link after it."""
+    end = session.end
+    if end is not None and not session.ends_next_day and end <= session.start:
+        end = None
+    return MailSession(
+        day=session.day, start=session.start, end=end, end_is_approximate=session.end_is_approximate and end is not None,
+        ends_next_day=session.ends_next_day and end is not None,
+        check_in=session.check_in if session.check_in and session.check_in <= session.start else None,
+        link_opens=session.link_opens if session.link_opens and session.link_opens <= session.start else None,
+        mode=session.mode, relative=session.relative, label=session.label)
+
+
 def upload_sessions(found):
-    """The sessions as today's upload holds them (spec 2026-10-07-mail-event-kinds-design.md §4.4): a check-in moves
-    the start (mailbox-events addendum A.1), and an end on the next day is left out."""
+    """The sessions as the upload holds them: each day and start once, in time order."""
     kept = {}
     for session in found.sessions:
-        start = session.check_in or session.start
-        end = None if session.ends_next_day else session.end
-        kept.setdefault((session.day, start), MailSession(day=session.day, start=start, end=end))
+        kept.setdefault((session.day, session.start), upload_session(session))
     return [kept[key] for key in sorted(kept)]
+
+
+def _each(make, items):
+    """make(item) for each item the format can hold; one it can't (a Period whose times don't fit its mode) is left
+    out, not the whole email."""
+    kept = []
+    for item in items:
+        try:
+            kept.append(make(item))
+        except ValidationError:
+            log.debug("Left out a time the upload format can't hold")
+    return kept
+
+
+def upload_periods(found):
+    return _each(lambda p: MailPeriod(first_day=p.first_day, last_day=p.last_day, mode=p.mode, from_time=p.from_time,
+                                      to_time=p.to_time, details_later=p.details_later, label=p.label), found.periods)
+
+
+def upload_deadlines(found):
+    return _each(lambda d: MailDeadline(kind=d.kind, day=d.day, time=d.at, mode=d.mode), found.deadlines)
 
 
 def sort_email(email, context):
@@ -241,15 +275,22 @@ def sort_email(email, context):
         arrived = (email.received_at.astimezone(timezone.utc) + VIETNAM_OFFSET).date()
         code = course_of(email, context) if lecturer else None
         found = times_of(email, arrived)
+        changes = class_changes(email, code) if code else []
         return MailItem(
             **known,
             categories=categories(email, lecturer),
             from_lecturer=lecturer,
             dates=dates_in(email.subject + "\n" + clean(email.subject, email.text), arrived)[:MAX_DATES],
             sessions=upload_sessions(found),
+            periods=upload_periods(found),
+            deadlines=upload_deadlines(found),
             register_by=found.register_by,
+            # An email announcing a class change is not a meeting: its classes already reach the Timetable
+            # (Blackboard's "Please join the meeting on time" for an online class; spec §2).
+            meeting=found.meeting and not changes,
+            registered=found.registered,
             blackboard_title=blackboard_title(email),
-            class_changes=class_changes(email, code) if code else [],
+            class_changes=changes,
         )
     except Exception as error:  # one email must never stop the others; the message could quote the email
         log.warning("Couldn't sort an email (%s); it is uploaded unsorted", error.__class__.__name__)

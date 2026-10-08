@@ -209,8 +209,9 @@
     "sessions": [
      {
       "day": "2026-09-29",
-      "start": "13:00:00",
-      "end": "16:30:00"
+      "start": "14:00:00",
+      "end": "16:30:00",
+      "check_in": "13:00:00"
      }
     ],
     "register_by": null,
@@ -1124,7 +1125,8 @@
     "sessions": [
      {
       "day": "2026-09-22",
-      "start": "08:00:00"
+      "start": "08:00:00",
+      "mode": "online"
      }
     ],
     "register_by": null,
@@ -1864,7 +1866,8 @@
     "sessions": [
      {
       "day": "2026-08-31",
-      "start": "19:30:00"
+      "start": "19:30:00",
+      "mode": "online"
      }
     ],
     "register_by": null,
@@ -1976,7 +1979,8 @@
     "sessions": [
      {
       "day": "2026-08-25",
-      "start": "19:30:00"
+      "start": "19:30:00",
+      "mode": "online"
      }
     ],
     "register_by": null,

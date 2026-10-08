@@ -8,6 +8,7 @@ import pytest
 
 from sla_agent import mail_rules
 from sla_agent.mail_rules import Context, Email, categories, course_of, is_from_lecturer, name_handles, sort_email
+from sla_agent.mail_times import Found, FoundDeadline, FoundPeriod, FoundSession
 
 ARRIVED = datetime(2026, 9, 21, 1, 5, tzinfo=timezone.utc)  # Mon 21/09 08:05 in Vietnam
 CONTEXT = Context(
@@ -192,8 +193,8 @@ def test_sessions_come_from_the_text_never_the_subject():
                           "Thời gian: 14:00 - 16:30, ngày 29/09/2026\nCheck in: 13:00 - 13:45, ngày 29/09/2026")
     subject_only = email("Link học online sáng thứ Sáu, 18/9/2026, 8g00-9g40", "Friday, September 18")
 
-    assert [(s.day, s.start, s.end) for s in sort_email(with_check_in, CONTEXT).sessions] == [
-        (date(2026, 9, 29), time(13, 0), time(16, 30))]
+    assert [(s.day, s.start, s.end, s.check_in) for s in sort_email(with_check_in, CONTEXT).sessions] == [
+        (date(2026, 9, 29), time(14, 0), time(16, 30), time(13, 0))]
     assert sort_email(subject_only, CONTEXT).sessions == []
 
 
@@ -208,6 +209,74 @@ def test_an_email_the_time_reader_fails_on_keeps_its_sorting_and_logs_no_text(mo
 
     assert (item.sorted, item.sessions, item.register_by, item.categories) == (True, [], None, ["event"])
     assert "Bí mật" not in caplog.text and "12345" not in caplog.text
+
+
+# ---- what the upload holds (spec 2026-10-07-mail-event-kinds-design.md §3, from stage 2) ---------------------------
+
+
+def test_everything_the_reader_finds_is_uploaded(monkeypatch):
+    found = Found(
+        sessions=(FoundSession(date(2026, 10, 20), time(13, 30), time(15, 30), end_is_approximate=True,
+                               check_in=time(13, 0), mode="in_person", label="round_1"),
+                  FoundSession(date(2026, 12, 31), time(22, 0), time(0, 30), ends_next_day=True,
+                               link_opens=time(21, 45), mode="online", relative="tomorrow")),
+        periods=(FoundPeriod(date(2026, 11, 2), date(2026, 11, 5), "daily_window", time(9), time(17), label="opening"),
+                 FoundPeriod(date(2026, 10, 26), date(2026, 10, 30), "all_day", details_later=True)),
+        deadlines=(FoundDeadline("opens", date(2026, 10, 8), time(8)),
+                   FoundDeadline("register", date(2026, 10, 12), time(17), "online")),
+        meeting=True, registered=True)
+    monkeypatch.setattr(mail_rules, "read_times", lambda subject, text, arrived: found)
+
+    item = sort_email(email("[THƯ MỜI] Cuộc thi", "…"), CONTEXT)
+
+    assert [s.model_dump(mode="json", exclude_defaults=True) for s in item.sessions] == [
+        {"day": "2026-10-20", "start": "13:30:00", "end": "15:30:00", "end_is_approximate": True,
+         "check_in": "13:00:00", "mode": "in_person", "label": "round_1"},
+        {"day": "2026-12-31", "start": "22:00:00", "end": "00:30:00", "ends_next_day": True, "link_opens": "21:45:00",
+         "mode": "online", "relative": "tomorrow"}]
+    assert [p.model_dump(mode="json", exclude_defaults=True) for p in item.periods] == [
+        {"first_day": "2026-11-02", "last_day": "2026-11-05", "mode": "daily_window", "from_time": "09:00:00",
+         "to_time": "17:00:00", "label": "opening"},
+        {"first_day": "2026-10-26", "last_day": "2026-10-30", "mode": "all_day", "details_later": True}]
+    assert [d.model_dump(mode="json", exclude_defaults=True) for d in item.deadlines] == [
+        {"kind": "opens", "day": "2026-10-08", "time": "08:00:00"},
+        {"kind": "register", "day": "2026-10-12", "time": "17:00:00", "mode": "online"}]
+    assert (item.register_by, item.meeting, item.registered, item.invitation) == (date(2026, 10, 12), True, True, None)
+
+
+def test_what_the_format_cant_hold_is_left_out_and_never_the_email(monkeypatch):
+    found = Found(
+        sessions=(FoundSession(date(2026, 10, 20), time(13, 30), time(13, 0), end_is_approximate=True,
+                               check_in=time(14, 0), link_opens=time(13, 45)),),
+        periods=(FoundPeriod(date(2026, 11, 2), date(2026, 11, 5), "daily_window", time(17), time(9)),
+                 FoundPeriod(date(2026, 11, 2), date(2026, 11, 5), "all_day")))
+    monkeypatch.setattr(mail_rules, "read_times", lambda subject, text, arrived: found)
+
+    item = sort_email(email("[THƯ MỜI] Cuộc thi", "…"), CONTEXT)
+
+    assert item.sorted
+    assert [s.model_dump(mode="json", exclude_defaults=True) for s in item.sessions] == [
+        {"day": "2026-10-20", "start": "13:30:00"}]
+    assert [p.mode for p in item.periods] == ["all_day"]
+
+
+def test_a_check_in_is_sent_apart_from_the_start():
+    item = sort_email(email("[THƯ MỜI] Workshop", "Ngày 29/9/2026: check-in 13h00, chương trình 14h00 - 16h30."),
+                      CONTEXT)
+
+    assert [(s.start, s.end, s.check_in) for s in item.sessions] == [(time(14, 0), time(16, 30), time(13, 0))]
+
+
+def test_a_lecturers_meeting_is_flagged_but_a_class_change_is_not():
+    meeting = sort_email(email("Họp nhóm đồ án", "Cả nhóm gặp thầy lúc 10h00 ngày 02/10/2026 tại phòng A1.309.",
+                               "vmkhoa@hcmiu.edu.vn", "Vo Minh Khoa"), CONTEXT)
+    online = sort_email(email("Web Application Development_S1_2026-27_G02: Online class on 22/9",
+                              "Our class on 22/9 will be online on MS Teams. Please join the meeting on time.",
+                              "bb@hcmiu.edu.vn", "Tran Van An - tvan@hcmiu.edu.vn"), CONTEXT)
+
+    assert (meeting.categories, meeting.meeting) == (["class"], True)
+    assert [c.kind for c in online.class_changes] == ["online"]
+    assert online.meeting is False
 
 
 def test_the_registration_deadline_is_found_in_every_email():

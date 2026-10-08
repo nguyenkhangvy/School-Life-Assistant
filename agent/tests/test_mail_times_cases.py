@@ -31,8 +31,12 @@ def test_each_case_reads_as_the_student_checked(case):
     assert as_case_fields(found) == {field: case[field] for field in FIELDS}
 
 
-def _strings(value, leave_out=("subject", "categories")):
-    """Every string inside an upload, but its subject (already shown) and its categories (codes)."""
+# Fields holding a code from a fixed list of the upload format (spec §3.2), never the email's words.
+CODES = ("categories", "mode", "relative", "label", "kind", "invitation")
+
+
+def _strings(value, leave_out=("subject",) + CODES):
+    """Every string inside an upload, but its subject (already shown) and its codes."""
     if isinstance(value, str):
         yield value
     elif isinstance(value, dict):

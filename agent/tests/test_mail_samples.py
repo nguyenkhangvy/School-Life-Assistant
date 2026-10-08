@@ -29,7 +29,7 @@ def test_each_email_sorts_as_the_student_checked(sample):
     assert {
         "categories": item.categories, "from_lecturer": item.from_lecturer,
         "dates": [d.isoformat() for d in item.dates],
-        "sessions": [s.model_dump(mode="json", exclude_none=True) for s in item.sessions],
+        "sessions": [s.model_dump(mode="json", exclude_defaults=True) for s in item.sessions],
         "register_by": item.register_by and item.register_by.isoformat(),
         "blackboard_title": item.blackboard_title,
         "class_changes": [c.model_dump(mode="json", exclude_none=True) for c in item.class_changes],

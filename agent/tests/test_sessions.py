@@ -1,7 +1,8 @@
-"""The times an event takes place, as stage 1 uploads them (spec 2026-10-07-mail-event-kinds-design.md §4.4): read by
-the mail time reader, with a check-in moving the start (mailbox-events addendum A.1). These are the expectations the
-first reader had (mailbox-events 3.2); the new design changes two on purpose: a length now gives the end ("kéo dài
-2h"), and "8 giờ sáng" is read. Only days and times ever leave the laptop."""
+"""The times an event takes place, as the upload holds them (spec 2026-10-07-mail-event-kinds-design.md §3.1): read by
+the mail time reader. These are the expectations the first reader had (mailbox-events 3.2); the new design changes
+some on purpose: a length now gives the end ("kéo dài 2h"), "8 giờ sáng" is read, and from stage 2 a check-in is sent
+apart from the start instead of moving it (mailbox-events addendum A.1, spec §11) and an end on the next day is kept.
+Only days, times and codes ever leave the laptop."""
 
 import unicodedata
 from datetime import date, time
@@ -17,6 +18,10 @@ ARRIVED = date(2026, 9, 28)  # Mon, in Vietnam
 def found(text, arrived=ARRIVED):
     return [(s.day.strftime("%d/%m"), s.start.strftime("%H:%M"), s.end and s.end.strftime("%H:%M"))
             for s in upload_sessions(read_times("", text, arrived))]
+
+
+def check_ins(text, arrived=ARRIVED):
+    return [s.check_in and s.check_in.strftime("%H:%M") for s in upload_sessions(read_times("", text, arrived))]
 
 
 def register_by(text, arrived=ARRIVED):
@@ -170,7 +175,7 @@ def test_nothing():
     assert found(None) == []
 
 
-# ---- check-in times (addendum A.1) --------------------------------------------------------------------------------
+# ---- check-in times (addendum A.1; from stage 2 sent apart from the start) ----------------------------------------
 
 BEAN_TO_BOLD = """Thông tin chi tiết chương trình:
 ⏰Thời gian chương trình: 14:00 - 16:30, ngày 29/09/2026.
@@ -179,18 +184,22 @@ BEAN_TO_BOLD = """Thông tin chi tiết chương trình:
 
 
 def test_a_check_in_time_joins_its_event():
-    assert found(BEAN_TO_BOLD) == [("29/09", "13:00", "16:30")]
+    assert found(BEAN_TO_BOLD) == [("29/09", "14:00", "16:30")]
+    assert check_ins(BEAN_TO_BOLD) == ["13:00"]
 
 
 @pytest.mark.parametrize("check_in", ["Check-in: 7h30", "CHECKIN lúc 7h30", "Sinh viên có mặt lúc 7h30 để điểm danh"])
 def test_every_way_of_writing_check_in(check_in):
-    assert found(f"Ngày 03/10/2026. {check_in}. Chương trình: 8h00 - 11h00") == [("03/10", "07:30", "11:00")]
+    text = f"Ngày 03/10/2026. {check_in}. Chương trình: 8h00 - 11h00"
+
+    assert (found(text), check_ins(text)) == ([("03/10", "08:00", "11:00")], ["07:30"])
 
 
 def test_a_check_in_joins_the_earliest_session_after_it_that_day():
     text = "Ngày 03/10: sáng 8h00 - 10h00, chiều 13h30 - 15h00. Check in: 13h00 - 13h20, ngày 03/10"
 
-    assert found(text) == [("03/10", "08:00", "10:00"), ("03/10", "13:00", "15:00")]
+    assert found(text) == [("03/10", "08:00", "10:00"), ("03/10", "13:30", "15:00")]
+    assert check_ins(text) == [None, "13:00"]
 
 
 @pytest.mark.parametrize("text", [
@@ -198,7 +207,7 @@ def test_a_check_in_joins_the_earliest_session_after_it_that_day():
     "Ngày 29/9: chương trình 14h00 - 16h30; điểm danh lúc 13h00",
 ])
 def test_a_check_in_in_the_same_sentence_as_the_programme_joins_it(text):
-    assert found(text) == [("29/09", "13:00", "16:30")]
+    assert (found(text), check_ins(text)) == ([("29/09", "14:00", "16:30")], ["13:00"])
 
 
 def test_a_check_in_without_a_later_session_stays_on_its_own():
@@ -207,8 +216,12 @@ def test_a_check_in_without_a_later_session_stays_on_its_own():
         ("29/09", "09:00", None), ("29/09", "17:00", None)]
 
 
-def test_a_session_that_ends_the_next_day_is_uploaded_without_its_end():
-    assert found("Sự kiện diễn ra từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027.") == [("31/12", "22:00", None)]
+def test_a_session_that_ends_the_next_day_is_uploaded_with_its_end():
+    sessions = upload_sessions(read_times("", "Sự kiện diễn ra từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027.",
+                                          ARRIVED))
+
+    assert [(s.day, s.start, s.end, s.ends_next_day) for s in sessions] == [
+        (date(2026, 12, 31), time(22, 0), time(0, 30), True)]
 
 
 # ---- the registration deadline (addendum A.2) ---------------------------------------------------------------------
