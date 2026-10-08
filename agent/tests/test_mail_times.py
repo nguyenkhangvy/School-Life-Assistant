@@ -376,3 +376,34 @@ def test_the_meeting_flag(subject, text, meeting):
 ])
 def test_the_registered_flag(text, registered):
     assert read_times("", text, ARRIVED).registered is registered
+
+
+# ---- review fixes ------------------------------------------------------------------------------------------------------
+
+
+def test_a_line_full_of_dates_and_times_is_read_quickly():
+    import time as clock
+    text = "14h ngày 05/10/2026, " * 600 + "\n" + "từ 8h ngày 1/10 đến 9h ngày 2/10, " * 300
+    began = clock.perf_counter()
+    read_times("", text, ARRIVED)
+    assert clock.perf_counter() - began < 10
+
+
+@pytest.mark.parametrize("text", [
+    "Chương trình từ 17h00 ngày 05/11/2026 đến 16h00 ngày 05/11/2026.",
+    "Chương trình từ 17h ngày 06/11/2026 đến 8h ngày 05/11/2026.",
+])
+def test_a_window_that_ends_before_it_starts_is_no_session(text):
+    assert all(s.end is None or s.end > s.start for s in read_times("", text, ARRIVED).sessions)
+
+
+def test_a_time_zone_that_moves_the_end_past_midnight_ends_the_next_day():
+    [session] = read_times("", "The talk is at 8:00 AM - 10:00 AM PST on October 5, 2026.", ARRIVED).sessions
+    assert (session.day, session.start, session.end, session.ends_next_day) == (
+        date(2026, 10, 5), time(23, 0), time(1, 0), True)
+
+
+@pytest.mark.parametrize("space", ["​", "﻿", "​ "])
+def test_invisible_spaces_keep_a_range_whole(space):
+    [session] = read_times("", f"Thời gian: 13:00{space}-{space}16:30 ngày 15/10/2026", ARRIVED).sessions
+    assert (session.start, session.end) == (time(13, 0), time(16, 30))

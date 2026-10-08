@@ -21,7 +21,10 @@ MAX_HEADING_WORDS = 8  # a heading line longer than this is a sentence of its ow
 # day ("từ 00g00 ngày 21/9 đến 23g59 ngày 27/9" opens and closes a contest round).
 DAY_EDGES = (time(0, 0), time(23, 59))
 
-# Step 0 (§4.1), on folded text.
+# Step 0 (§4.1): invisible characters go, and a no-break space is a space, so "13:00\u200b-\u200b16:30" stays a range.
+INVISIBLE = str.maketrans({"\u200b": None, "\u200c": None, "\u200d": None, "\ufeff": None, "\u00ad": None,
+                           "\u00a0": " "})
+# On folded text.
 REPLY = re.compile(r"\s*(?:re|tl|tra loi)\s*:")
 QUOTE_FROM = re.compile(r"\s*(?:from|tu)\s*:(?!\s*\d)")  # "Từ: 14h00" is a time, not a header
 QUOTE_HEADER = re.compile(r"\s*(?:sent|date|to|da gui|gui|ngay|den)\s*:")
@@ -103,7 +106,7 @@ def _before_quote(lines):
 def clean(subject, text):
     """The text the times are read from: links removed; a reply without its quoted part (a forward keeps everything);
     no signature (from a line "--" on) and no lines giving office hours."""
-    text = URL.sub(" ", unicodedata.normalize("NFC", text or "")).replace("\r\n", "\n").replace("\r", "\n")
+    text = URL.sub(" ", unicodedata.normalize("NFC", text or "").translate(INVISIBLE)).replace("\r\n", "\n").replace("\r", "\n")
     lines = text.split("\n")
     if REPLY.match(fold(subject or "")):
         lines = _before_quote(lines)
@@ -179,7 +182,7 @@ class _Sentence:
     def next_to(self, clock, day):
         """Whether a time and a date sit together: "14:00 ngày 15/10", "17/10 lúc 23:59"."""
         a, b = (clock.end, day.start) if clock.start < day.start else (day.end, clock.start)
-        return a <= b and phrases.FILLER.fullmatch(fold(self.text[a:b])) is not None
+        return a <= b and b - a <= phrases.FILLER_MOST and phrases.FILLER.fullmatch(fold(self.text[a:b])) is not None
 
     def day_for(self, clock):
         """A day for `clock` from this sentence: the date next to it, else a free date in its part, else in the
@@ -202,7 +205,8 @@ def _target(sentence, span, right_after=False):
              if sentence.part(x.start) == part and not any(a <= x.start and x.end <= b for a, b in spans)]
     after = sorted((x for x in items if x.start >= span[1]), key=lambda x: x.start)
     if after:
-        if right_after and not phrases.FILLER.fullmatch(fold(sentence.text[span[1]:after[0].start])):
+        gap = sentence.text[span[1]:after[0].start]
+        if right_after and (len(gap) > phrases.FILLER_MOST or not phrases.FILLER.fullmatch(fold(gap))):
             return None
         return after[0]
     before = [x for x in items if x.end <= span[0]]
@@ -490,7 +494,8 @@ def _sessions(sentences, i, arrived, given):
             moved = datetime.combine(day, start) - clock.offset + phrases.VIETNAM
             day, start = moved.date(), moved.time()
             end = end and (datetime.combine(day, end) - clock.offset + phrases.VIETNAM).time()
-        found.append((FoundSession(day, start, end, id(clock) in approximate, relative=relative), clock.start))
+        found.append((FoundSession(day, start, end, id(clock) in approximate, ends_next_day=bool(end and end <= start),
+                                   relative=relative), clock.start))
     sentence.sessions = found
     # S3: a length ends the sessions of its sentence, or else of the nearest sentence above with sessions.
     lengths = [n for n in sentence.lengths if not n.slot]

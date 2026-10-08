@@ -324,3 +324,11 @@ def test_an_email_the_rules_fail_on_is_uploaded_unsorted(monkeypatch, caplog):
 
     assert (item.sorted, item.categories, item.subject) == (False, [], "Tạm trú")
     assert "SECRET-SUBJECT-TEXT" not in caplog.text
+
+
+def test_an_end_the_upload_format_refuses_never_unsorts_the_email():
+    from sla_agent.mail_times import Found, FoundSession
+    from sla_agent.mail_rules import upload_sessions
+    from datetime import date, time
+    found = Found(sessions=(FoundSession(date(2026, 11, 5), time(17, 0), time(16, 0)),))
+    assert [(s.start, s.end) for s in upload_sessions(found)] == [(time(17, 0), None)]

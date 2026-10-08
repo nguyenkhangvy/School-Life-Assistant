@@ -34,6 +34,7 @@ FROM_NOW = re.compile(r"\btu\s+nay\s+(?:den|toi)\s+(?:het\s+)?(?:ngay\s+)?$")
 # On folded text, right after a time: the time of day ("2h chiều" is 14:00).
 TIME_OF_DAY_AFTER = re.compile(r"\s*(sang|chieu|toi|trua)\b")
 TIME_OF_DAY = re.compile(r"\b(sang|chieu|toi|trua)\b")
+FILLER_MOST = 40  # FILLER never spans more letters: a longer gap is never folded (a line full of dates)
 EARLIEST_BARE_HOUR = 6  # a bare hour under this, without minutes or AM/PM, is a length: "(2h)"
 # A length: a lead word, then hours and/or minutes, on folded text. After a weak lead ("khoảng", "about") only units
 # that can't be a time of day count: "khoảng 1 tiếng" is a length, "khoảng 2 giờ chiều" a time. "Trong" leads only
@@ -245,7 +246,7 @@ def ranges_in(sentence, days, clocks, arrived):
     to a time and date ("từ 8h00 ngày 01/10 đến 17h00 ngày 05/10")."""
     def next_to(clock, day):
         a, b = (clock.end, day.start) if clock.start < day.start else (day.end, clock.start)
-        return FILLER.fullmatch(_between(sentence, a, b)) is not None
+        return b - a <= FILLER_MOST and FILLER.fullmatch(_between(sentence, a, b)) is not None
 
     windows, day_ranges, used = [], [], set()
     for i in range(len(days) - 1):
@@ -254,7 +255,9 @@ def ranges_in(sentence, days, clocks, arrived):
         c2 = next((c for c in clocks if c.finish is None and next_to(c, d2) and c is not c1), None)
         if c1 and c2:
             left_end, right_start = max(c1.end, d1.end), min(c2.start, d2.start)
-            if left_end <= right_start and JOIN.match(_between(sentence, left_end, right_start) + " "):
+            if (left_end <= right_start and (d1.day, c1.begin) < (d2.day, c2.begin)
+                    and right_start - left_end <= FILLER_MOST
+                    and JOIN.match(_between(sentence, left_end, right_start) + " ")):
                 windows.append(Window(min(c1.start, d1.start), max(c2.end, d2.end), d1.day, c1.begin, d2.day, c2.begin))
                 used.update((i, i + 1))
                 continue
