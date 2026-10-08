@@ -299,6 +299,128 @@ class SyncContractTest {
         assertRefused(new HashMap<>(Map.of("outlook", ok(data))));
     }
 
+    // Sessions, Periods, deadlines and flags (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md, 3): codes,
+    // days, times and yes/no only. contract/samples/finish-outlook-event-kinds.json has every field; Python reads it too.
+
+    static Map<String, Object> eventKindsPayload() {
+        return at(Payloads.sample("finish-outlook-event-kinds.json"), "outlook", "data");
+    }
+
+    @Test
+    void everyNewFieldOfAnEmailIsRead() {
+        var emails = read(new HashMap<>(Map.of("outlook", ok(eventKindsPayload())))).outlook().data().emails();
+        var contest = emails.get(0);
+
+        var first = contest.sessions().get(0);
+        assertThat(List.of(first.checkIn(), first.end(), first.endIsApproximate(), first.mode(), first.label()))
+                .containsExactly(LocalTime.of(13, 0), LocalTime.of(15, 30), true, "in_person", "round_1");
+        var lastNight = contest.sessions().get(1);
+        assertThat(List.of(lastNight.end(), lastNight.endsNextDay(), lastNight.linkOpens()))
+                .containsExactly(LocalTime.of(0, 30), true, LocalTime.of(21, 45));
+        var weekday = contest.sessions().get(2);
+        assertThat(weekday.relative()).isEqualTo("weekday");
+        assertThat(List.of(weekday.endIsApproximate(), weekday.endsNextDay())).containsExactly(false, false);
+        assertThat(contest.periods()).extracting(p -> p.mode() + " " + p.fromTime() + " " + p.detailsLater() + " "
+                + p.label()).containsExactly("all_day null true null", "daily_window 09:00 false opening",
+                        "one_window 09:00 false null");
+        assertThat(contest.deadlines()).extracting(d -> d.kind() + " " + d.day() + " " + d.time() + " " + d.mode())
+                .containsExactly("opens 2026-10-08 08:00 null", "register 2026-10-10 12:00 in_person",
+                        "register 2026-10-12 17:00 online", "confirm 2026-10-15 null null",
+                        "due 2026-10-18 23:59 null");
+        assertThat(List.of(contest.registered(), contest.meeting())).containsExactly(true, false);
+        assertThat(contest.invitation()).isNull();
+        assertThat(List.of(emails.get(1).meeting(), emails.get(1).invitation(), emails.get(2).invitation()))
+                .containsExactly(true, "request", "cancelled");
+        assertThat(emails.get(2).sessions()).isEmpty();
+    }
+
+    @Test
+    void anOlderAgentsEmailHasNoneOfTheNewFields() {
+        var email = read(new HashMap<>(Map.of("outlook", ok(outlookPayload())))).outlook().data().emails().get(1);
+
+        assertThat(List.of(email.periods(), email.deadlines())).containsExactly(List.of(), List.of());
+        assertThat(List.of(email.meeting(), email.registered())).containsExactly(false, false);
+        assertThat(email.invitation()).isNull();
+        var session = email.sessions().get(0);
+        assertThat(List.of(session.endsNextDay(), session.endIsApproximate())).containsExactly(false, false);
+        assertThat(session.checkIn()).isNull();
+    }
+
+    static Stream<Arguments> badEventKinds() {
+        return Stream.<Arguments>of(
+                Arguments.of("unknown-label", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0, "sessions", 0)
+                        .put("label", "Vòng 1")),
+                Arguments.of("unknown-relative-day", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "sessions", 2).put("relative", "yesterday")),
+                Arguments.of("unknown-session-mode", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "sessions", 0).put("mode", "hybrid")),
+                Arguments.of("unknown-period-label", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "periods", 0).put("label", "semi_final")),
+                Arguments.of("unknown-deadline-kind", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "deadlines", 0).put("kind", "closes")),
+                Arguments.of("unknown-deadline-mode", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "deadlines", 0).put("mode", "offline")),
+                Arguments.of("unknown-invitation", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0)
+                        .put("invitation", "accepted")),
+                Arguments.of("end-before-start-without-next-day", (Consumer<Map<String, Object>>) p -> at(p,
+                        "emails", 0, "sessions", 1).remove("ends_next_day")),
+                Arguments.of("approximate-without-end", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "sessions", 2).put("end_is_approximate", true)),
+                Arguments.of("next-day-without-end", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "sessions", 2).put("ends_next_day", true)),
+                Arguments.of("check-in-after-start", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "sessions", 0).put("check_in", "13:31:00")),
+                Arguments.of("link-after-start", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0, "sessions",
+                        1).put("link_opens", "22:01:00")),
+                Arguments.of("last-day-before-first", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "periods", 0).put("last_day", "2026-10-25")),
+                Arguments.of("all-day-with-times", (Consumer<Map<String, Object>>) p -> {
+                    at(p, "emails", 0, "periods", 0).put("from_time", "09:00:00");
+                    at(p, "emails", 0, "periods", 0).put("to_time", "17:00:00");
+                }),
+                Arguments.of("window-without-end-time", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "periods", 1).remove("to_time")),
+                Arguments.of("daily-window-ends-at-start", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "periods", 1).put("to_time", "09:00:00")),
+                Arguments.of("one-day-window-ends-before-start", (Consumer<Map<String, Object>>) p -> {
+                    at(p, "emails", 0, "periods", 2).put("last_day", "2026-11-28");
+                    at(p, "emails", 0, "periods", 2).put("to_time", "08:00:00");
+                }),
+                Arguments.of("one-window-without-start-time", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "periods", 2).remove("from_time")),
+                Arguments.of("deadline-with-text", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "deadlines", 0).put("note", "Đăng ký tại phòng A1.101")),
+                Arguments.of("six-periods", (Consumer<Map<String, Object>>) p -> {
+                    List<Object> periods = new ArrayList<>(list(p, "emails", 0, "periods"));
+                    periods.addAll(list(p, "emails", 0, "periods"));
+                    at(p, "emails", 0).put("periods", periods);
+                }),
+                Arguments.of("six-deadlines", (Consumer<Map<String, Object>>) p -> list(p, "emails", 0, "deadlines")
+                        .add(list(p, "emails", 0, "deadlines").get(0))),
+                Arguments.of("bad-deadline-time", (Consumer<Map<String, Object>>) p -> at(p, "emails", 0,
+                        "deadlines", 0).put("time", "8h00")));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("badEventKinds")
+    void badEventKindsAreRejected(String name, Consumer<Map<String, Object>> change) {
+        Map<String, Object> data = eventKindsPayload();
+        change.accept(data);
+
+        assertRefused(new HashMap<>(Map.of("outlook", ok(data))));
+    }
+
+    @Test
+    void aWindowOverSeveralDaysMayEndEarlierInTheDayThanItStarts() {
+        Map<String, Object> data = eventKindsPayload();
+        at(data, "emails", 0, "periods", 2).put("from_time", "16:00:00");
+        at(data, "emails", 0, "periods", 2).put("to_time", "09:00:00");
+
+        var period = read(new HashMap<>(Map.of("outlook", ok(data)))).outlook().data().emails().get(0).periods().get(2);
+
+        assertThat(List.of(period.fromTime(), period.toTime())).containsExactly(LocalTime.of(16, 0), LocalTime.of(9, 0));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"outlook_not_set_up", "outlook_blocked"})
     void aFailedOutlookPartSaysWhy(String code) {

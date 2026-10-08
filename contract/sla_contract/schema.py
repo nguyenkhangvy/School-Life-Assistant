@@ -191,18 +191,75 @@ class MailClassChange(_Strict):
     room: Room | None = None
 
 
+# Codes from fixed lists, never the email's words (spec 2026-10-07-mail-event-kinds-design.md §3.2).
+MailLabel = Literal["round_1", "round_2", "round_3", "round_4", "round_5", "preliminary", "qualifying", "semifinal",
+                    "final", "opening", "closing", "shift_1", "shift_2", "shift_3", "shift_4", "shift_5"]
+MailRelativeDay = Literal["today", "tomorrow", "day_after_tomorrow", "this_week", "next_week", "weekday"]
+MailMode = Literal["online", "in_person"]
+TimeOfDay = time  # for the deadline's field called "time", which would hide the type
+
+
 class MailSession(_Strict):
-    """One time an event or school task takes place, as the laptop found it in the email. Vietnam time."""
+    """One time an event or school task takes place, as the laptop found it in the email. Vietnam time.
+    check_in: when to be there by; link_opens: when an online event's link becomes available. relative: the day came
+    from a word such as "ngày mai"."""
 
     day: date
     start: time
     end: time | None = None
+    end_is_approximate: bool = False  # "khoảng 1 tiếng", "dự kiến"
+    ends_next_day: bool = False  # the end is on the next day, and may be earlier than the start
+    check_in: time | None = None
+    link_opens: time | None = None
+    mode: MailMode | None = None
+    relative: MailRelativeDay | None = None
+    label: MailLabel | None = None
 
     @model_validator(mode="after")
     def _end_after_start(self):
-        if self.end is not None and self.end <= self.start:
+        if self.end is None and (self.end_is_approximate or self.ends_next_day):
+            raise ValueError("end_is_approximate and ends_next_day need an end")
+        if self.end is not None and not self.ends_next_day and self.end <= self.start:
             raise ValueError("end must be after start")
+        if any(t is not None and t > self.start for t in (self.check_in, self.link_opens)):
+            raise ValueError("check_in and link_opens can't be after start")
         return self
+
+
+class MailPeriod(_Strict):
+    """A range of days in which the student may come or do something at any time. Vietnam time. all_day: days only;
+    daily_window: from_time to to_time each day; one_window: from from_time on first_day to to_time on last_day."""
+
+    first_day: date
+    last_day: date
+    mode: Literal["all_day", "daily_window", "one_window"]
+    from_time: time | None = None
+    to_time: time | None = None
+    details_later: bool = False  # the student's own time comes later
+    label: MailLabel | None = None
+
+    @model_validator(mode="after")
+    def _times_match_mode(self):
+        if self.last_day < self.first_day:
+            raise ValueError("last_day can't be before first_day")
+        if self.mode == "all_day":
+            if self.from_time is not None or self.to_time is not None:
+                raise ValueError("an all_day Period has no times")
+        elif self.from_time is None or self.to_time is None:
+            raise ValueError("a daily_window or one_window Period needs from_time and to_time")
+        elif (self.mode == "daily_window" or self.first_day == self.last_day) and self.to_time <= self.from_time:
+            raise ValueError("to_time must be after from_time")
+        return self
+
+
+class MailDeadline(_Strict):
+    """A deadline: information only, never event time. opens: registration opens; register: it closes; confirm:
+    confirming a place closes; due: something must be handed in or paid. Vietnam time."""
+
+    kind: Literal["opens", "register", "confirm", "due"]
+    day: date
+    time: TimeOfDay | None = None
+    mode: MailMode | None = None
 
 
 class MailItem(_Strict):
@@ -219,7 +276,12 @@ class MailItem(_Strict):
     from_lecturer: bool = False
     dates: Annotated[list[date], Field(max_length=30)] = []
     sessions: Annotated[list[MailSession], Field(max_length=10)] = []  # found in any email; shown for events
-    register_by: date | None = None  # the registration deadline, found in any email (Vietnam date)
+    periods: Annotated[list[MailPeriod], Field(max_length=5)] = []
+    deadlines: Annotated[list[MailDeadline], Field(max_length=5)] = []
+    register_by: date | None = None  # the latest register deadline's day, for servers older than the deadlines
+    meeting: bool = False  # a meeting or class activity the student may need to join
+    registered: bool = False  # the email confirms the student is registered
+    invitation: Literal["request", "cancelled"] | None = None  # an Outlook meeting request or its cancellation
     sorted: bool = True  # False: the sorting rules failed on this email
     blackboard_title: Annotated[str, Field(max_length=255)] | None = None
     class_changes: Annotated[list[MailClassChange], Field(max_length=10)] = []

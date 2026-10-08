@@ -1,0 +1,21 @@
+{
+  "outlook": {
+    "status": "ok",
+    "data": {
+      "since": "2026-08-01",
+      "connected": true,
+      "emails": [
+        {
+          "key": "51e77916873ea9f29962ffb91e14c24907e439a41fc6bfdfad52010416af1631",
+          "entry_id": "00000000A1B2C3D5",
+          "received_at": "2026-10-07T03:30:00+00:00",
+          "categories": ["event"],
+          "periods": [
+            {"first_day": "2026-10-26", "last_day": "2026-10-30", "mode": "all_day", "from_time": "09:00:00",
+             "to_time": "17:00:00"}
+          ]
+        }
+      ]
+    }
+  }
+}
