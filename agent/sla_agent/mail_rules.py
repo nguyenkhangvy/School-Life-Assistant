@@ -226,7 +226,7 @@ def upload_sessions(found):
     kept = {}
     for session in found.sessions:
         start = session.check_in or session.start
-        end = None if session.ends_next_day else session.end
+        end = None if session.ends_next_day or (session.end and session.end <= start) else session.end
         kept.setdefault((session.day, start), MailSession(day=session.day, start=start, end=end))
     return [kept[key] for key in sorted(kept)]
 
