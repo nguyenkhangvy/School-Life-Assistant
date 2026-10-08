@@ -72,7 +72,8 @@ public final class MailTexts {
         };
     }
 
-    static String clock(LocalTime time) {
+    /** "13:30". */
+    public static String clock(LocalTime time) {
         return CLOCK.format(time);
     }
 

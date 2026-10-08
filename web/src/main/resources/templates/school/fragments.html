@@ -45,11 +45,11 @@
     <th:block th:if="${item.label != null}"><strong th:text="|${item.label}:|">Final exam:</strong> </th:block><th:block
         th:text="${item.title}">Web Application Development</th:block>
   </span>
-  <span class="item-meta" th:if="${item.kind == 'event' or item.kind == 'mine'}">
+  <span class="item-meta" th:if="${item.kind == 'event' or item.kind == 'mine' or item.kind == 'period'}">
     <th:block th:if="${item.room != null}" th:text="|${item.room} · |">Hall A2 · </th:block><a
         th:href="@{${item.source.link}}" th:text="${item.source.text}">See email</a>
   </span>
-  <span class="item-meta" th:unless="${item.kind == 'event' or item.kind == 'mine'}">
+  <span class="item-meta" th:unless="${item.kind == 'event' or item.kind == 'mine' or item.kind == 'period'}">
     <th:block th:text="${item.code}">IT093IU</th:block>
     <th:block th:if="${item.room != null and !item.room.isEmpty() and item.change != 'online'}">
       · <span th:if="${item.room.toUpperCase().startsWith('ONLINE')}" class="badge">Online</span><th:block

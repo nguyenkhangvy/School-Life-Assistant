@@ -294,6 +294,14 @@ h1, .module-card h2, .bb-item h3 { overflow-wrap: anywhere; }
 .fc .fc-list-event.event-event { background: transparent; color: var(--text); }
 .fc .fc-list-event.event-event .fc-list-event-dot { border-color: var(--event-color); }
 .item-event { border-left-color: var(--event-color); }
+/* Periods added from Mailbox (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md, 6.5): light green with a
+   dashed edge, in the All-day row; never busy. */
+:root { --period-color: #e3f4e9; }
+.legend-period::before { background: var(--period-color); border: 1px dashed var(--event-color); }
+.fc .event-period { background: var(--period-color); border: 1px dashed var(--event-color); color: var(--text); }
+.fc .fc-list-event.event-period { background: transparent; }
+.fc .fc-list-event.event-period .fc-list-event-dot { border-color: var(--event-color); border-style: dashed; }
+.item-period { border-left: 4px dashed var(--event-color); }
 
 /* School: the student's own events */
 :root { --mine-color: #6d28d9; }

@@ -3,6 +3,7 @@ package vn.edu.hcmiu.sla.school.schedule;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -17,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import vn.edu.hcmiu.sla.school.VietnamTime;
 import vn.edu.hcmiu.sla.school.events.Occurrences;
+import vn.edu.hcmiu.sla.school.mail.MailDone;
+import vn.edu.hcmiu.sla.school.mail.MailTexts;
+import vn.edu.hcmiu.sla.school.mail.Mailbox.Period;
 import vn.edu.hcmiu.sla.school.model.SchoolBbAnnouncementRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolBbAssignment;
 import vn.edu.hcmiu.sla.school.model.SchoolBbAssignmentRepository;
@@ -26,6 +30,8 @@ import vn.edu.hcmiu.sla.school.model.SchoolCourse;
 import vn.edu.hcmiu.sla.school.model.SchoolCourseRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolExam;
 import vn.edu.hcmiu.sla.school.model.SchoolExamRepository;
+import vn.edu.hcmiu.sla.school.model.SchoolMailAddedPeriod;
+import vn.edu.hcmiu.sla.school.model.SchoolMailAddedPeriodRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChange;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChangeRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailJoined;
@@ -53,14 +59,16 @@ public class Schedule {
     static final Duration JOINED_WITHOUT_END = Duration.ofHours(1); // an event session whose email gave no end
     public static final String MINE = "mine"; // one day of the student's own event
     public static final String MY_EVENT = "My event";
+    public static final String PERIOD = "period"; // a Period added from Mailbox: all day, never busy
 
     /**
-     * A class, an exam, a joined event or one day of the student's own event on the timetable. Times are UTC;
-     * endAt may be empty. label: "Final exam" for exams, "Event" or "★ Training points" for joined events, "My event"
-     * for own events (whose code is empty and room the place typed). change: online / cancelled / makeup, from a
-     * Blackboard announcement or a lecturer's email, with source the app's page where it was announced (for an event,
-     * its email in Mailbox; for an own event, its edit page for that day). allDay: a make-up class announced without
-     * a time. eventId: the own event's id, for kind "mine" only.
+     * A class, an exam, a joined event, one day of the student's own event or an added Period on the timetable. Times
+     * are UTC; endAt may be empty. label: "Final exam" for exams, "Event" or "★ Training points" for joined events, "My
+     * event" for own events (whose code is empty and room the place typed), "Period" for added Periods. change: online
+     * / cancelled / makeup, from a Blackboard announcement or a lecturer's email, with source the app's page where it
+     * was announced (for an event or a Period, its email in Mailbox; for an own event, its edit page for that day).
+     * allDay: a make-up class announced without a time, or an added Period (from its first day; endAt is the start of
+     * the day after its last). eventId: the own event's id, for kind "mine" only.
      */
     public record Item(String kind, LocalDateTime startAt, LocalDateTime endAt, String code, String title, String room,
             String label, String change, Source source, boolean allDay, Integer eventId) {
@@ -85,11 +93,13 @@ public class Schedule {
     private final SchoolMailChangeRepository mailChanges;
     private final SchoolMailJoinedRepository joined;
     private final SchoolMyEventRepository myEvents;
+    private final SchoolMailAddedPeriodRepository addedPeriods;
+    private final MailDone mailDone;
 
     public Schedule(SchoolClassMeetingRepository meetings, SchoolExamRepository exams, SchoolCourseRepository courses,
             SchoolBbAnnouncementRepository announcements, SchoolBbAssignmentRepository assignments,
             SchoolMailChangeRepository mailChanges, SchoolMailJoinedRepository joined,
-            SchoolMyEventRepository myEvents) {
+            SchoolMyEventRepository myEvents, SchoolMailAddedPeriodRepository addedPeriods, MailDone mailDone) {
         this.meetings = meetings;
         this.exams = exams;
         this.courses = courses;
@@ -98,6 +108,8 @@ public class Schedule {
         this.mailChanges = mailChanges;
         this.joined = joined;
         this.myEvents = myEvents;
+        this.addedPeriods = addedPeriods;
+        this.mailDone = mailDone;
     }
 
     /** Classes, exams, joined events and own events starting in [startUtc, endUtc), with announced changes, in time order. */
@@ -122,23 +134,75 @@ public class Schedule {
     }
 
     /**
+     * Everything the Timetable shows in [startUtc, endUtc): {@link #itemsBetween}, and the Periods the student added
+     * from Mailbox that run on one of its days. Periods are never busy, so clash checks use itemsBetween alone.
+     */
+    @Transactional(readOnly = true)
+    public List<Item> timetableBetween(Integer userId, LocalDateTime startUtc, LocalDateTime endUtc) {
+        List<Item> items = new ArrayList<>(addedPeriods(userId, startUtc, endUtc));
+        items.addAll(itemsBetween(userId, startUtc, endUtc));
+        return items;
+    }
+
+    /** What the Timetable shows on one Vietnam day, its added Periods first. */
+    public List<Item> timetableOn(Integer userId, LocalDate day) {
+        return timetableBetween(userId, VietnamTime.dayStart(day), VietnamTime.dayStart(day.plusDays(1)));
+    }
+
+    /**
      * The event sessions the student joined from Mailbox, starting in [startUtc, endUtc)
      * (docs/superpowers/specs/2026-09-28-mailbox-events-design.md, section 4.7). Class changes never apply to them.
+     * One with a check-in starts there and says so in its title, and one that ends the next day runs past midnight
+     * (2026-10-07-mail-event-kinds-design.md, 6.5).
      */
     private List<Item> joinedEvents(Integer userId, LocalDateTime startUtc, LocalDateTime endUtc) {
         List<Item> events = new ArrayList<>();
         for (SchoolMailJoined row : joined.findByUserIdAndDayBetweenOrderByDayAscStartAsc(userId,
                 VietnamTime.date(startUtc), VietnamTime.date(endUtc))) {
-            LocalDateTime startAt = VietnamTime.utc(row.getDay(), row.getStart());
-            LocalDateTime endAt = row.getEnd() != null ? VietnamTime.utc(row.getDay(), row.getEnd())
-                    : startAt.plus(JOINED_WITHOUT_END);
+            LocalTime checkIn = row.getCheckIn() != null && row.getCheckIn().isBefore(row.getStart())
+                    ? row.getCheckIn() : null;
+            LocalDateTime startAt = VietnamTime.utc(row.getDay(), checkIn != null ? checkIn : row.getStart());
+            LocalDateTime endAt = row.getEnd() == null
+                    ? VietnamTime.utc(row.getDay(), row.getStart()).plus(JOINED_WITHOUT_END)
+                    : VietnamTime.utc(row.isEndsNextDay() ? row.getDay().plusDays(1) : row.getDay(), row.getEnd());
+            String title = checkIn != null ? row.getTitle() + " · check-in " + MailTexts.clock(checkIn) : row.getTitle();
             if (!startAt.isBefore(startUtc) && startAt.isBefore(endUtc)) {
-                events.add(new Item("event", startAt, endAt, null, row.getTitle(), row.getPlace(),
+                events.add(new Item("event", startAt, endAt, null, title, row.getPlace(),
                         row.isTrainingPoints() ? "★ Training points" : "Event", null, Source.email(row.getMailKey()),
                         false, null));
             }
         }
         return events;
+    }
+
+    /**
+     * The Periods the student added from Mailbox that run on a day of [startUtc, endUtc), each once, as all-day items
+     * titled with their label, the email's subject and their hours ("Opening · Ngày hội · 09:00–17:00 each day"). Those
+     * of a card the student marked Done are hidden (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md, 6.5).
+     */
+    private List<Item> addedPeriods(Integer userId, LocalDateTime startUtc, LocalDateTime endUtc) {
+        List<SchoolMailAddedPeriod> rows = addedPeriods.findOverlapping(userId, VietnamTime.date(startUtc),
+                VietnamTime.date(endUtc.minusNanos(1)));
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+        Set<String> done = mailDone.keys(userId);
+        Set<String> seen = new HashSet<>();
+        List<Item> items = new ArrayList<>();
+        for (SchoolMailAddedPeriod row : rows) {
+            Period period = new Period(row.getFirstDay(), row.getLastDay(), row.getMode(), row.getFromTime(),
+                    row.getToTime(), row.isDetailsLater(), row.getLabel());
+            if (done.contains(row.getMailKey()) || !seen.add(row.getMailKey() + " " + period.id())) {
+                continue;
+            }
+            String label = MailTexts.label(period.label());
+            String hours = MailTexts.periodHours(period);
+            String title = (label != null ? label + " · " : "") + row.getTitle() + (hours != null ? " · " + hours : "");
+            items.add(new Item(PERIOD, VietnamTime.dayStart(row.getFirstDay()),
+                    VietnamTime.dayStart(row.getLastDay().plusDays(1)), null, title, null, "Period", null,
+                    Source.email(row.getMailKey()), true, null));
+        }
+        return items;
     }
 
     /** The days of the student's own events starting in [startUtc, endUtc) (docs/superpowers/specs/2026-09-30-my-events-design.md, 4.4). */
@@ -156,11 +220,6 @@ public class Schedule {
             }
         }
         return items;
-    }
-
-    /** The items of one Vietnam day. */
-    public List<Item> itemsOn(Integer userId, LocalDate day) {
-        return itemsBetween(userId, VietnamTime.dayStart(day), VietnamTime.dayStart(day.plusDays(1)));
     }
 
     /** Blackboard deadlines in [startUtc, endUtc), soonest first, with their course. */
