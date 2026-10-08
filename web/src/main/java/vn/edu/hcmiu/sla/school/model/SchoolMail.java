@@ -70,7 +70,16 @@ public class SchoolMail {
     private String blackboardTitle;
 
     @Column(name = "register_by")
-    private LocalDate registerBy; // the registration deadline (Vietnam date), or null
+    private LocalDate registerBy; // the latest register deadline (Vietnam date), or null; from older agents too
+
+    @Column(nullable = false)
+    private boolean meeting; // a meeting or class activity the student may need to join
+
+    @Column(nullable = false)
+    private boolean registered; // the email confirms the student is registered
+
+    @Column(length = 10)
+    private String invitation; // "request" or "cancelled": an Outlook meeting request or its cancellation
 
     @OneToMany(mappedBy = "mail", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SchoolMailChange> changes = new ArrayList<>();
@@ -78,6 +87,14 @@ public class SchoolMail {
     @OneToMany(mappedBy = "mail", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("day, start")
     private List<SchoolMailSession> sessions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "mail", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("firstDay, lastDay")
+    private List<SchoolMailPeriod> periods = new ArrayList<>();
+
+    @OneToMany(mappedBy = "mail", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("day, time")
+    private List<SchoolMailDeadline> deadlines = new ArrayList<>();
 
     protected SchoolMail() {
     }
@@ -164,11 +181,38 @@ public class SchoolMail {
         this.registerBy = registerBy;
     }
 
+    public boolean isMeeting() {
+        return meeting;
+    }
+
+    public boolean isRegistered() {
+        return registered;
+    }
+
+    public String getInvitation() {
+        return invitation;
+    }
+
+    /** The flags the laptop set: a meeting or class activity, a registration confirmed, an Outlook invitation. */
+    public void setFlags(boolean meeting, boolean registered, String invitation) {
+        this.meeting = meeting;
+        this.registered = registered;
+        this.invitation = invitation;
+    }
+
     public List<SchoolMailChange> getChanges() {
         return changes;
     }
 
     public List<SchoolMailSession> getSessions() {
         return sessions;
+    }
+
+    public List<SchoolMailPeriod> getPeriods() {
+        return periods;
+    }
+
+    public List<SchoolMailDeadline> getDeadlines() {
+        return deadlines;
     }
 }

@@ -34,6 +34,10 @@ import vn.edu.hcmiu.sla.school.model.SchoolMail;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChange;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChangeRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChoiceRepository;
+import vn.edu.hcmiu.sla.school.model.SchoolMailDeadline;
+import vn.edu.hcmiu.sla.school.model.SchoolMailDeadlineRepository;
+import vn.edu.hcmiu.sla.school.model.SchoolMailPeriod;
+import vn.edu.hcmiu.sla.school.model.SchoolMailPeriodRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailSession;
 import vn.edu.hcmiu.sla.school.model.SchoolMailSessionRepository;
@@ -59,7 +63,9 @@ import vn.edu.hcmiu.sla.school.sync.SyncContract.Exams;
 import vn.edu.hcmiu.sla.school.sync.SyncContract.FinishRun;
 import vn.edu.hcmiu.sla.school.sync.SyncContract.Iupay;
 import vn.edu.hcmiu.sla.school.sync.SyncContract.MailClassChange;
+import vn.edu.hcmiu.sla.school.sync.SyncContract.MailDeadline;
 import vn.edu.hcmiu.sla.school.sync.SyncContract.MailItem;
+import vn.edu.hcmiu.sla.school.sync.SyncContract.MailPeriod;
 import vn.edu.hcmiu.sla.school.sync.SyncContract.MailSession;
 import vn.edu.hcmiu.sla.school.sync.SyncContract.Outlook;
 import vn.edu.hcmiu.sla.school.sync.SyncContract.Section;
@@ -87,6 +93,8 @@ public class Ingest {
     private final SchoolMailRepository mails;
     private final SchoolMailChangeRepository mailChanges;
     private final SchoolMailSessionRepository mailSessions;
+    private final SchoolMailPeriodRepository mailPeriods;
+    private final SchoolMailDeadlineRepository mailDeadlines;
     private final SchoolMailChoiceRepository mailChoices;
     private final SchoolMailStatusRepository mailStatus;
     private final SchoolTuitionBillRepository tuitionBills;
@@ -97,7 +105,8 @@ public class Ingest {
             SchoolBbCourseRepository bbCourses, SchoolBbAnnouncementRepository bbAnnouncements,
             SchoolBbAssignmentRepository bbAssignments, SchoolBbMaterialRepository bbMaterials,
             SchoolMailRepository mails, SchoolMailChangeRepository mailChanges,
-            SchoolMailSessionRepository mailSessions, SchoolMailChoiceRepository mailChoices,
+            SchoolMailSessionRepository mailSessions, SchoolMailPeriodRepository mailPeriods,
+            SchoolMailDeadlineRepository mailDeadlines, SchoolMailChoiceRepository mailChoices,
             SchoolMailStatusRepository mailStatus, SchoolTuitionBillRepository tuitionBills,
             SchoolTuitionStatusRepository tuitionStatus) {
         this.runs = runs;
@@ -112,6 +121,8 @@ public class Ingest {
         this.mails = mails;
         this.mailChanges = mailChanges;
         this.mailSessions = mailSessions;
+        this.mailPeriods = mailPeriods;
+        this.mailDeadlines = mailDeadlines;
         this.mailChoices = mailChoices;
         this.mailStatus = mailStatus;
         this.tuitionBills = tuitionBills;
@@ -266,11 +277,14 @@ public class Ingest {
 
     /**
      * Replaces the user's mail with this upload, keeping the student's Done and Move to… choices for the emails
-     * still there. An email sent twice with the same key is kept once (the first).
+     * still there, and the sessions they joined and Periods they added. An email sent twice with the same key is
+     * kept once (the first).
      */
     private List<Change> saveOutlook(Integer userId, Outlook data, LocalDateTime now) {
         mailChanges.deleteAllOfUser(userId);
         mailSessions.deleteAllOfUser(userId);
+        mailPeriods.deleteAllOfUser(userId);
+        mailDeadlines.deleteAllOfUser(userId);
         mails.deleteAllOfUser(userId);
         Set<String> keys = new LinkedHashSet<>();
         for (MailItem item : data.emails()) {
@@ -281,12 +295,21 @@ public class Ingest {
                     toUtc(item.receivedAt()), item.senderName(), item.senderAddress(), item.subject(), item.categories(),
                     item.fromLecturer(), item.dates(), item.sorted(), item.blackboardTitle());
             mail.setRegisterBy(item.registerBy());
+            mail.setFlags(item.meeting(), item.registered(), item.invitation());
             for (MailClassChange c : item.classChanges()) {
                 mail.getChanges().add(new SchoolMailChange(mail, c.courseCode(), c.kind(), c.day(), c.start(), c.end(),
                         c.room()));
             }
             for (MailSession s : item.sessions()) {
-                mail.getSessions().add(new SchoolMailSession(mail, s.day(), s.start(), s.end()));
+                mail.getSessions().add(new SchoolMailSession(mail, s.day(), s.start(), s.end(), s.endIsApproximate(),
+                        s.endsNextDay(), s.checkIn(), s.linkOpens(), s.mode(), s.relative(), s.label()));
+            }
+            for (MailPeriod p : item.periods()) {
+                mail.getPeriods().add(new SchoolMailPeriod(mail, p.firstDay(), p.lastDay(), p.mode(), p.fromTime(),
+                        p.toTime(), p.detailsLater(), p.label()));
+            }
+            for (MailDeadline d : item.deadlines()) {
+                mail.getDeadlines().add(new SchoolMailDeadline(mail, d.kind(), d.day(), d.time(), d.mode()));
             }
             mails.save(mail);
         }
