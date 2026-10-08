@@ -7,14 +7,15 @@ field for text."""
 
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 
 from pydantic import ValidationError
 from sla_contract.schema import MailClassChange, MailDeadline, MailItem, MailPeriod, MailSession
 
+from sla_agent import mail_words
 from sla_agent.class_changes import dates_in, fold, read_announcement
-from sla_agent.mail_times import Found, clean, read_times
+from sla_agent.mail_times import MAX_PERIODS, MAX_SESSIONS, Found, FoundPeriod, FoundSession, clean, read_times
 from sla_agent.mail_words import Words
 
 log = logging.getLogger(__name__)
@@ -50,8 +51,22 @@ TEAMS_ADDED_WORDS = ("được thêm", "đã thêm", "added you")
 
 
 @dataclass(frozen=True)
+class Invitation:
+    """An Outlook meeting request or its cancellation (spec 2026-10-07-mail-event-kinds-design.md §5). kind: "request"
+    or "cancelled". times: a request's own time, or a recurring one's next occurrences, as (start, end) aware pairs
+    from Outlook; None when Outlook couldn't give them. all_day: an all-day meeting. location: where, as written; it
+    stays on the laptop, like the text."""
+
+    kind: str
+    times: tuple | None = ()
+    all_day: bool = False
+    location: str = ""
+
+
+@dataclass(frozen=True)
 class Email:
-    """One email as Outlook gives it to the agent. `text` stays on the laptop."""
+    """One email as Outlook gives it to the agent. `text` stays on the laptop. invitation: set for a meeting request or
+    cancellation."""
 
     key: str
     entry_id: str
@@ -61,6 +76,7 @@ class Email:
     sender_address: str
     subject: str
     text: str
+    invitation: Invitation | None = None
 
 
 @dataclass(frozen=True)
@@ -221,6 +237,43 @@ def times_of(email, arrived):
         return Found()
 
 
+def _invitation_mode(email):
+    """An invitation's mode from its location and text: online or in person when only one of them is named."""
+    where = (email.invitation.location or "") + "\n" + clean(email.subject, email.text)
+    online, in_person = mail_words.ONLINE.search(where), mail_words.IN_PERSON.search(where)
+    return "online" if online and not in_person else "in_person" if in_person and not online else None
+
+
+def with_invitation(email, found):
+    """Found with a meeting's times from Outlook instead of its text (spec §5): each occurrence is a session in
+    Vietnam time, and an all-day meeting or one longer than a day a Period. A session the text gives at the same day
+    and start lends its check-in, link, mode and label; else the mode comes from the location and text. A cancellation
+    has no sessions or Periods. The text still gives the deadlines and the flags."""
+    invitation = email.invitation
+    if invitation.kind == "cancelled":
+        return replace(found, sessions=(), periods=())
+    if invitation.times is None:  # Outlook couldn't give them: the text's, as for any email
+        return found
+    text = {(s.day, s.start): s for s in found.sessions}
+    mode = _invitation_mode(email)
+    sessions, periods = [], []
+    for start, end in invitation.times:
+        start = (start.astimezone(timezone.utc) + VIETNAM_OFFSET).replace(tzinfo=None)
+        end = (end.astimezone(timezone.utc) + VIETNAM_OFFSET).replace(tzinfo=None)
+        if invitation.all_day:
+            periods.append(FoundPeriod(start.date(), max(start, end - timedelta(minutes=1)).date(), "all_day"))
+        elif end - start > timedelta(days=1):
+            periods.append(FoundPeriod(start.date(), end.date(), "one_window", start.time(), end.time()))
+        else:
+            same = text.get((start.date(), start.time()))
+            finish = end.time() if end > start else None
+            sessions.append(FoundSession(
+                start.date(), start.time(), finish, ends_next_day=finish is not None and end.date() > start.date(),
+                check_in=same.check_in if same else None, link_opens=same.link_opens if same else None,
+                mode=(same.mode if same else None) or mode, label=same.label if same else None))
+    return replace(found, sessions=tuple(sessions[:MAX_SESSIONS]), periods=tuple(periods[:MAX_PERIODS]))
+
+
 def upload_session(session):
     """One FoundSession as the upload holds it (spec 2026-10-07-mail-event-kinds-design.md §3.1), with its check-in and
     link time apart from its start (from stage 2; mailbox-events addendum A.1 moved the start). What the format
@@ -275,6 +328,8 @@ def sort_email(email, context):
         arrived = (email.received_at.astimezone(timezone.utc) + VIETNAM_OFFSET).date()
         code = course_of(email, context) if lecturer else None
         found = times_of(email, arrived)
+        if email.invitation:
+            found = with_invitation(email, found)
         changes = class_changes(email, code) if code else []
         return MailItem(
             **known,
@@ -286,9 +341,10 @@ def sort_email(email, context):
             deadlines=upload_deadlines(found),
             register_by=found.register_by,
             # An email announcing a class change is not a meeting: its classes already reach the Timetable
-            # (Blackboard's "Please join the meeting on time" for an online class; spec §2).
-            meeting=found.meeting and not changes,
+            # (Blackboard's "Please join the meeting on time" for an online class; spec §2). An invitation is one.
+            meeting=(found.meeting or email.invitation is not None) and not changes,
             registered=found.registered,
+            invitation=email.invitation.kind if email.invitation else None,
             blackboard_title=blackboard_title(email),
             class_changes=changes,
         )

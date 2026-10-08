@@ -2,8 +2,10 @@
 
 Read only: this module reads item properties and, to show an email to the student, calls Display().
 It never sends, deletes, moves, copies or saves anything, and never marks mail as read; a test
-checks its source for those names. It also never answers Outlook's security prompts: if Outlook
-blocks the read, or doesn't answer within TIME_LIMIT, the Outlook part fails with a message.
+checks its source for those names. A meeting request's times are read from its appointment, which
+GetAssociatedAppointment(False) gives without adding it to the calendar. It also never answers Outlook's
+security prompts: if Outlook blocks the read, or doesn't answer within TIME_LIMIT, the Outlook part fails
+with a message.
 
 Outlook closes by itself when the agent lets go of it and no Outlook window is open (checked
 2026-09-28), so the agent never closes it and can't close a window the student opened.
@@ -22,12 +24,19 @@ from sla_contract.schema import Outlook
 
 from sla_agent import mail_rules
 from sla_agent.errors import EmailNotFound, OutlookBlocked, OutlookNotSetUp
-from sla_agent.mail_rules import Email
+from sla_agent.mail_rules import Email, Invitation
+from sla_agent.mail_times import MAX_SESSIONS
 
 log = logging.getLogger(__name__)
 
 OL_FOLDER_INBOX = 6
-OL_MAIL = 43  # olMail: emails only, not meeting requests or delivery reports
+OL_MAIL = 43  # olMail
+OL_MEETING_REQUEST = 53  # olMeetingRequest
+OL_MEETING_CANCELLATION = 54  # olMeetingCancellation
+# What is read from the Inbox (spec 2026-10-07-mail-event-kinds-design.md §5): emails, meeting requests and their
+# cancellations. Replies to invitations (olMeetingResponse…), delivery reports and the rest are skipped.
+READ_CLASSES = (OL_MAIL, OL_MEETING_REQUEST, OL_MEETING_CANCELLATION)
+RECURRENCE_DAYS = 120  # how far ahead a recurring meeting's next occurrences are looked for
 CONNECTED_MODES = (500, 600, 700, 800)  # olCachedConnectedHeaders/Drizzle/Full, olOnline
 PR_DELIVERY_TIME = "http://schemas.microsoft.com/mapi/proptag/0x0E060040"  # UTC; ReceivedTime is local
 PR_SENDER_SMTP = "http://schemas.microsoft.com/mapi/proptag/0x5D01001F"
@@ -194,15 +203,69 @@ def _key(item):
     return hashlib.sha256((message_id or item.EntryID).encode("utf-8")).hexdigest()
 
 
-def _email(item):
+def _utc(moment):
+    """A time Outlook gives in UTC (an appointment's StartUTC and EndUTC), as aware UTC."""
+    return _plain(moment).replace(tzinfo=timezone.utc)
+
+
+def _occurrences(appointment, today):
+    """[(start, end)] as aware UTC: a meeting's own time, or a recurring meeting's next occurrences from `today` (a
+    Vietnam date) on, at most MAX_SESSIONS. Outlook is asked for the occurrence on each day ahead, at the pattern's
+    time of day (laptop time); it knows which were moved or skipped, and has none on the other days."""
+    if not appointment.IsRecurring:
+        return [(_utc(appointment.StartUTC), _utc(appointment.EndUTC))]
+    pattern = appointment.GetRecurrencePattern()
+    clock = _plain(pattern.StartTime).time()
+    found = []
+    for n in range(-1, RECURRENCE_DAYS):  # from the day before: the laptop's day may be behind Vietnam's
+        try:
+            occurrence = pattern.GetOccurrence(datetime.combine(today + timedelta(days=n), clock))
+        except Exception as error:
+            if _refused(error):
+                raise
+            continue  # no occurrence that day
+        start = _utc(occurrence.StartUTC)
+        if (start + VIETNAM_OFFSET).date() >= today:
+            found.append((start, _utc(occurrence.EndUTC)))
+        if len(found) >= MAX_SESSIONS:
+            break
+    return found
+
+
+def _invitation(item, today):
+    """A meeting request's Invitation, with its times as Outlook gives them (None when it can't), or a cancellation's;
+    None for an email."""
+    if item.Class == OL_MEETING_CANCELLATION:
+        return Invitation("cancelled")
+    if item.Class != OL_MEETING_REQUEST:
+        return None
+    try:
+        appointment = item.GetAssociatedAppointment(False)  # False: never added to the calendar
+        return Invitation("request", tuple(_occurrences(appointment, today)), bool(appointment.AllDayEvent),
+                          appointment.Location or "")
+    except Exception as error:
+        if _refused(error):
+            raise
+        log.warning("Couldn't read a meeting request's times (%s); its text gives them", error.__class__.__name__)
+        return Invitation("request", None)
+
+
+def _email(item, today):
     return Email(key=_key(item), entry_id=item.EntryID.upper(), thread_id=item.ConversationID or None,
                  received_at=_received(item), sender_name=item.SenderName or "",
-                 sender_address=_sender_address(item), subject=item.Subject or "", text=item.Body or "")
+                 sender_address=_sender_address(item), subject=item.Subject or "", text=item.Body or "",
+                 invitation=_invitation(item, today))
 
 
-def read_emails(inbox, since):
-    """(emails, skipped): the Inbox's emails received from `since` (a Vietnam date) on, newest first.
-    An email that can't be read is skipped; Outlook refusing access raises OutlookBlocked."""
+def _vietnam_today():
+    return (datetime.now(timezone.utc) + VIETNAM_OFFSET).date()
+
+
+def read_emails(inbox, since, today=None):
+    """(emails, skipped): the Inbox's emails, meeting requests and cancellations received from `since` (a Vietnam
+    date) on, newest first; a recurring meeting's occurrences count from `today` (Vietnam; default the real one). An
+    item that can't be read is skipped; Outlook refusing access raises OutlookBlocked."""
+    today = today or _vietnam_today()
     start = datetime.combine(since, time(), tzinfo=timezone.utc) - VIETNAM_OFFSET
     items = inbox.Items
     items.Sort("[ReceivedTime]", True)
@@ -210,8 +273,8 @@ def read_emails(inbox, since):
     item = items.GetFirst()
     while item is not None:
         try:
-            if item.Class == OL_MAIL:
-                email = _email(item)
+            if item.Class in READ_CLASSES:
+                email = _email(item, today)
                 if email.received_at < start:
                     break
                 emails.append(email)
@@ -246,14 +309,16 @@ def with_time_limit(work, limit=TIME_LIMIT):
     return result["value"]
 
 
-def read_outlook(address, since, context, *, open_outlook=open_outlook, sleep=clock.sleep, limit=TIME_LIMIT):
-    """The Outlook part of a sync: every Inbox email from `since` on, sorted on this laptop. No text leaves."""
+def read_outlook(address, since, context, *, open_outlook=open_outlook, sleep=clock.sleep, limit=TIME_LIMIT,
+                 today=None):
+    """The Outlook part of a sync: every Inbox email (and meeting request or cancellation) from `since` on, sorted on
+    this laptop. No text leaves."""
 
     def work():
         try:
             namespace, inbox = inbox_of(open_outlook(), address)
             connected = wait_until_connected(namespace, sleep)
-            emails, skipped = read_emails(inbox, since)
+            emails, skipped = read_emails(inbox, since, today)
         except (OutlookNotSetUp, OutlookBlocked):
             raise
         except Exception as error:
@@ -267,7 +332,7 @@ def read_outlook(address, since, context, *, open_outlook=open_outlook, sleep=cl
         log.warning("Skipped %d emails Outlook couldn't read", skipped)
         if not emails:  # not an empty Inbox: uploaded, it would empty the student's Mailbox
             raise OutlookBlocked(UNREADABLE.format(skipped))
-    items =[mail_rules.sort_email(email, context) for email in emails[:MAX_EMAILS]]
+    items = [mail_rules.sort_email(email, context) for email in emails[:MAX_EMAILS]]
     return Outlook(since=since, connected=connected, emails=items)
 
 
@@ -284,7 +349,7 @@ def newest_received(address, *, running=running_outlook, limit=QUICK_LIMIT):
         items.Sort("[ReceivedTime]", True)
         item = items.GetFirst()
         while item is not None:
-            if item.Class == OL_MAIL:
+            if item.Class in READ_CLASSES:
                 return _received(item)
             item = items.GetNext()
         return None

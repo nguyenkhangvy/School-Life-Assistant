@@ -14,7 +14,7 @@ from agent.tests.outlook_fakes import (
     ComError,
     FakeAccount,
     FakeMail,
-    FakeMeeting,
+    FakeMeetingReply,
     FakeOutlook,
     at,
 )
@@ -55,7 +55,7 @@ def test_reads_the_chosen_accounts_inbox_emails_from_the_semester_start():
     mine = FakeAccount(ME, [
         FakeMail("Workshop ngày 29/09/2026", at(24), "Tích lũy điểm rèn luyện.", "oss@hcmiu.edu.vn", "P.CTSV [OSS]",
                  entry_id="00A1"),
-        FakeMeeting("Meeting", at(23), entry_id="00A2"),
+        FakeMeetingReply("Meeting", at(23), entry_id="00A2"),
         FakeMail("First day in Vietnam", datetime(2026, 7, 31, 17, 30, tzinfo=timezone.utc), entry_id="00A3"),
         FakeMail("Last day of July in Vietnam", datetime(2026, 7, 31, 16, 59, tzinfo=timezone.utc), entry_id="00A4"),
     ])
@@ -236,7 +236,7 @@ ADDRESS = "ititiu99001@student.hcmiu.edu.vn"
 
 
 def test_the_quick_check_gives_the_newest_emails_time_from_an_open_outlook():
-    outlook = FakeOutlook(FakeAccount(ADDRESS, [FakeMail("Old", at(20)), FakeMeeting("Meeting", at(29)),
+    outlook = FakeOutlook(FakeAccount(ADDRESS, [FakeMail("Old", at(20)), FakeMeetingReply("Meeting", at(29)),
                                                  FakeMail("New", at(28))]))
 
     assert newest_received(ADDRESS, running=lambda: outlook) == at(28)
