@@ -99,18 +99,15 @@ class MigrationTest {
     @Test
     void aMailSettingsRowWithoutAutoDoneHasItOn() throws Exception {
         // No row means auto-Done is on; a row written without the column means the same.
-        DataSource fresh = new DriverManagerDataSource(
-                "jdbc:h2:mem:fresh-" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1", "sa", "");
-        migrate(fresh, "classpath:db/migration");
-
-        try (Connection connection = fresh.getConnection(); Statement sql = connection.createStatement()) {
-            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
-                    + " VALUES (1, 'an@example.com', 'An', 'x', '2026-09-29 08:00:00')");
+        SingleConnectionDataSource fresh = freshWithTwoAccounts();
+        try (Statement sql = fresh.getConnection().createStatement()) {
             sql.execute("INSERT INTO school_mail_settings (user_id) VALUES (1)");
             try (ResultSet row = sql.executeQuery("SELECT auto_done FROM school_mail_settings WHERE user_id = 1")) {
                 assertThat(row.next()).isTrue();
                 assertThat(row.getBoolean("auto_done")).isTrue();
             }
+        } finally {
+            fresh.destroy();
         }
     }
 
@@ -121,6 +118,37 @@ class MigrationTest {
         String baseline = new ClassPathResource("db/migration/V1__baseline.sql").getContentAsString(StandardCharsets.UTF_8);
 
         assertThat(baseline).doesNotContain("CONSTRAINT");
+    }
+
+    @Test
+    void accountsMadeBeforeRolesBecomeActiveStudents() throws Exception {
+        // The live site's accounts were made before module 0: each becomes an active Student, last changed when made.
+        // One connection for everything, so H2 keeps the role CHECK (see freshWithTwoAccounts).
+        SingleConnectionDataSource live = new SingleConnectionDataSource(
+                "jdbc:h2:mem:live-" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE", "sa", "", true);
+        try {
+            ScriptUtils.executeSqlScript(live.getConnection(), new ClassPathResource("db/migration/V1__baseline.sql"));
+            try (Statement sql = live.getConnection().createStatement()) {
+                sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
+                        + " VALUES (1, 'an@example.com', 'An', 'x', '2026-09-01 08:00:00')");
+            }
+
+            migrate(live, "classpath:db/migration");
+
+            try (Statement sql = live.getConnection().createStatement();
+                 ResultSet row = sql.executeQuery("SELECT role, created_at, updated_at, updated_by, deactivated_at,"
+                         + " last_login_at, must_change_password FROM users WHERE id = 1")) {
+                assertThat(row.next()).isTrue();
+                assertThat(row.getString("role")).isEqualTo("student");
+                assertThat(row.getTimestamp("updated_at")).isEqualTo(row.getTimestamp("created_at"));
+                assertThat(row.getObject("updated_by")).isNull();
+                assertThat(row.getTimestamp("deactivated_at")).isNull();
+                assertThat(row.getTimestamp("last_login_at")).isNull();
+                assertThat(row.getBoolean("must_change_password")).isFalse();
+            }
+        } finally {
+            live.destroy();
+        }
     }
 
     /**
@@ -134,10 +162,10 @@ class MigrationTest {
                 "jdbc:h2:mem:fresh-" + UUID.randomUUID() + ";MODE=MySQL;DATABASE_TO_LOWER=TRUE", "sa", "", true);
         migrate(fresh, "classpath:db/migration");
         try (Connection connection = fresh.getConnection(); Statement sql = connection.createStatement()) {
-            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
-                    + " VALUES (1, 'an@example.com', 'An', 'x', '2026-10-06 08:00:00')");
-            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at)"
-                    + " VALUES (2, 'binh@example.com', 'Binh', 'x', '2026-10-06 08:00:00')");
+            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at, updated_at)"
+                    + " VALUES (1, 'an@example.com', 'An', 'x', '2026-10-06 08:00:00', '2026-10-06 08:00:00')");
+            sql.execute("INSERT INTO users (id, email, display_name, password_hash, created_at, updated_at)"
+                    + " VALUES (2, 'binh@example.com', 'Binh', 'x', '2026-10-06 08:00:00', '2026-10-06 08:00:00')");
         }
         return fresh;
     }

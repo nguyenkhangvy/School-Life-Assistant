@@ -21,8 +21,9 @@ public interface SocialFriendshipRepository extends JpaRepository<SocialFriendsh
     @Query("select f from SocialFriendship f where f.userLowId = :userId or f.userHighId = :userId")
     List<SocialFriendship> findAllOf(Integer userId);
 
-    /** Requests sent to this student that they haven't answered. */
-    @Query("select count(f) from SocialFriendship f where f.status = 'pending' and f.requestedById <> :userId "
-            + "and (f.userLowId = :userId or f.userHighId = :userId)")
+    /** Requests sent to this student that they haven't answered, from active Students only (site roles spec, 5.2). */
+    @Query("select count(f) from SocialFriendship f, User u where u.id = f.requestedById and f.status = 'pending'"
+            + " and f.requestedById <> :userId and (f.userLowId = :userId or f.userHighId = :userId)"
+            + " and u.role = 'student' and u.deactivatedAt is null")
     long countRequestsFor(Integer userId);
 }

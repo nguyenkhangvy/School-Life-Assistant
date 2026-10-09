@@ -8,7 +8,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,32 +23,72 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
+import vn.edu.hcmiu.sla.auth.Role;
+import vn.edu.hcmiu.sla.auth.User;
+import vn.edu.hcmiu.sla.auth.UserRepository;
 
 class LayoutTest {
 
-    static final AppUser AN = new AppUser(1, "an@example.com", "An", "x");
+    static final LocalDateTime SEPT_1 = LocalDateTime.of(2026, 9, 1, 0, 0);
+
+    /** A saved account named An: every page re-reads the logged-in account (AccountCheck), so it must be a real row. */
+    static AppUser account(UserRepository users, Role role) {
+        User user = users.save(new User("layout-" + UUID.randomUUID() + "@example.com", "An", "x", SEPT_1));
+        user.changeRole(role, null, SEPT_1);
+        return AppUser.of(user);
+    }
 
     /** The real site, with whichever modules exist: nothing here depends on which ones (see NavigationTest). */
     @Nested
     @SpringBootTest
     @AutoConfigureMockMvc
+    @Transactional
     class Pages {
 
         @Autowired
         MockMvc mvc;
 
+        @Autowired
+        UserRepository users;
+
         @Test
         void theDashboardGreetsYouWithOneCardPerModule() throws Exception {
-            String page = mvc.perform(get("/").with(user(AN)))
+            String page = mvc.perform(get("/").with(user(account(users, Role.STUDENT))))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString("Hi, An")))
                     .andExpect(content().string(containsString("href=\"/css/style.css\"")))
                     .andReturn().getResponse().getContentAsString();
 
             assertThat(page.split("class=\"card module-card", -1)).hasSize(4); // School, Groups, Friends
+        }
+
+        @Test
+        void staffSeeTheirOwnPagesComingSoonAndNoStudentModules() throws Exception {
+            String auditor = mvc.perform(get("/").with(user(account(users, Role.AUDITOR))))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            assertThat(auditor)
+                    .contains("<span class=\"nav-soon\" title=\"Coming soon\">Audit log</span>")
+                    .contains("<span class=\"nav-soon\" title=\"Coming soon\">Statistics</span>")
+                    .doesNotContain(">School<").doesNotContain(">Friends<");
+            assertThat(auditor.split("class=\"card module-card", -1)).hasSize(3); // Audit log, Statistics
+
+            String admin = mvc.perform(get("/").with(user(account(users, Role.ADMIN))))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            assertThat(admin).contains("<span class=\"nav-soon\" title=\"Coming soon\">Users</span>");
+            assertThat(admin.split("class=\"card module-card", -1)).hasSize(4); // Users, Audit log, Statistics
+        }
+
+        @Test
+        void theMenuEndsWithProfileAndLogOutForEveryRole() throws Exception {
+            for (Role role : Role.values()) {
+                mvc.perform(get("/").with(user(account(users, role))))
+                        .andExpect(content().string(containsString("<a href=\"/account\">Profile</a>")))
+                        .andExpect(content().string(containsString("Log out")));
+            }
         }
 
         @Test
@@ -65,6 +107,7 @@ class LayoutTest {
     @Nested
     @SpringBootTest
     @AutoConfigureMockMvc
+    @Transactional
     @Import(WithSchool.SchoolNav.class)
     class WithSchool {
 
@@ -79,9 +122,12 @@ class LayoutTest {
         @Autowired
         MockMvc mvc;
 
+        @Autowired
+        UserRepository users;
+
         @Test
         void aModuleThatRegistersItselfGetsALinkAndACard() throws Exception {
-            mvc.perform(get("/").with(user(AN)))
+            mvc.perform(get("/").with(user(account(users, Role.STUDENT))))
                     .andExpect(content().string(containsString("<a href=\"/school\">School</a>")))
                     .andExpect(content().string(containsString("<a class=\"card module-card\" href=\"/school\">")));
         }
@@ -90,6 +136,7 @@ class LayoutTest {
     @Nested
     @SpringBootTest
     @AutoConfigureMockMvc
+    @Transactional
     @Import(WithACount.FriendsWithTwo.class)
     class WithACount {
 
@@ -111,9 +158,12 @@ class LayoutTest {
         @Autowired
         MockMvc mvc;
 
+        @Autowired
+        UserRepository users;
+
         @Test
         void aModulesCountComesAfterItsLabel() throws Exception {
-            mvc.perform(get("/").with(user(AN)))
+            mvc.perform(get("/").with(user(account(users, Role.STUDENT))))
                     .andExpect(content().string(containsString("<a href=\"/social/friends\" aria-label=\"Friends, 2 waiting for you\">Friends"
                             + "<span class=\"nav-count\" title=\"2 waiting for you\">2</span></a>")));
         }

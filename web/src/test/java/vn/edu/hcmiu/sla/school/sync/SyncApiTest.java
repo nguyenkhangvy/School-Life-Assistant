@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
+import vn.edu.hcmiu.sla.auth.Role;
 import vn.edu.hcmiu.sla.auth.User;
 import vn.edu.hcmiu.sla.auth.UserRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncDevice;
@@ -146,6 +147,35 @@ class SyncApiTest {
         theDevice().setRevokedAt(LocalDateTime.now(ZoneOffset.UTC));
 
         check(key).andExpect(status().isUnauthorized());
+    }
+
+    // ---- Accounts that aren't active Students (site roles spec, 4.6) ----------
+
+    static final LocalDateTime OCT_6 = LocalDateTime.of(2026, 10, 6, 7, 0);
+
+    User owner() {
+        return users.findByEmail("an@example.com").orElseThrow();
+    }
+
+    @Test
+    void aDeactivatedAccountsLaptopGets401UntilTheAccountIsBack() throws Exception {
+        owner().deactivate(null, OCT_6);
+
+        check(key).andExpect(status().isUnauthorized())
+                .andExpect(content().json("{\"error\": \"invalid_device_key\"}", JsonCompareMode.STRICT));
+        assertThat(theDevice().getRevokedAt()).isNull(); // not cancelled
+
+        owner().reactivate(null, OCT_6);
+        check(key).andExpect(status().isOk());
+    }
+
+    @Test
+    void aStaffAccountsLaptopGets401() throws Exception {
+        owner().changeRole(Role.AUDITOR, null, OCT_6);
+        check(key).andExpect(status().isUnauthorized());
+
+        owner().changeRole(Role.STUDENT, null, OCT_6);
+        check(key).andExpect(status().isOk());
     }
 
     @Test

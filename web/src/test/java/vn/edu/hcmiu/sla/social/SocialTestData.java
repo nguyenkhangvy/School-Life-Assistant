@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import jakarta.persistence.EntityManager;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
+import vn.edu.hcmiu.sla.auth.Role;
 import vn.edu.hcmiu.sla.auth.User;
 import vn.edu.hcmiu.sla.social.model.SocialFriendship;
 
@@ -38,6 +39,23 @@ public final class SocialTestData {
         db.persist(request);
         db.flush();
         return request;
+    }
+
+    /** That account deactivated, as an Admin would do it (site roles spec, 5.2). */
+    public void deactivate(AppUser person) {
+        db.find(User.class, person.id()).deactivate(null, SEPT_1);
+        db.flush();
+    }
+
+    public void reactivate(AppUser person) {
+        db.find(User.class, person.id()).reactivate(null, SEPT_1);
+        db.flush();
+    }
+
+    /** That account given another role. */
+    public void giveRole(AppUser person, Role role) {
+        db.find(User.class, person.id()).changeRole(role, null, SEPT_1);
+        db.flush();
     }
 
     /** a and b are friends (a asked). */

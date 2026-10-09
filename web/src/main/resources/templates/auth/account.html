@@ -1,0 +1,43 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(~{::title}, ~{::main})}">
+<head>
+  <title>Profile · School-Life-Assistant</title>
+</head>
+<body>
+<main>
+  <section class="card narrow">
+    <h1>Profile</h1>
+    <dl class="facts">
+      <dt>Role</dt>
+      <dd th:text="${role}">Student</dd>
+      <dt>Member since</dt>
+      <dd th:text="${memberSince}">01/09/2026</dd>
+      <dt>Last login</dt>
+      <dd th:text="${lastLogin}">06/10/2026 14:05</dd>
+    </dl>
+  </section>
+  <section class="card narrow">
+    <h2>Name and email</h2>
+    <form method="post" th:action="@{/account}" th:object="${form}" novalidate>
+      <div class="field">
+        <label for="displayName">Display name</label>
+        <input id="displayName" type="text" th:field="*{displayName}" maxlength="100" autocomplete="nickname">
+        <p class="field-error" th:each="error : ${#fields.errors('displayName')}" th:text="${error}">This field is required.</p>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" th:field="*{email}" maxlength="255" autocomplete="email">
+        <p class="field-error" th:each="error : ${#fields.errors('email')}" th:text="${error}">Invalid email address.</p>
+      </div>
+      <div class="field">
+        <label for="currentPassword">Current password <span class="muted">(only to change your email)</span></label>
+        <input id="currentPassword" type="password" th:field="*{currentPassword}" autocomplete="current-password">
+        <p class="field-error" th:each="error : ${#fields.errors('currentPassword')}" th:text="${error}">Current password is incorrect.</p>
+      </div>
+      <button type="submit" class="button">Save</button>
+    </form>
+    <p><a th:href="@{/account/password}">Change your password</a></p>
+  </section>
+</main>
+</body>
+</html>

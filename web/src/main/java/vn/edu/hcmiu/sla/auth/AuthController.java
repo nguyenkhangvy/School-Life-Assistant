@@ -7,11 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -34,14 +30,14 @@ public class AuthController {
 
     private final UserRepository users;
     private final PasswordEncoder passwords;
-    private final SecurityContextRepository logins;
+    private final Sessions sessions;
     /** Where Spring Security keeps the page that asked for login: its default, the one login reads. */
     private final RequestCache asked = new HttpSessionRequestCache();
 
-    public AuthController(UserRepository users, PasswordEncoder passwords, SecurityContextRepository logins) {
+    public AuthController(UserRepository users, PasswordEncoder passwords, Sessions sessions) {
         this.users = users;
         this.passwords = passwords;
-        this.logins = logins;
+        this.sessions = sessions;
     }
 
     @GetMapping("/login")
@@ -67,20 +63,12 @@ public class AuthController {
         if (errors.hasErrors()) {
             return "auth/register";
         }
-        User user = users.save(new User(form.getEmail(), form.getDisplayName(),
-                passwords.encode(form.getPassword()), LocalDateTime.now(ZoneOffset.UTC)));
-        logIn(AppUser.of(user), request, response);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        User account = new User(form.getEmail(), form.getDisplayName(), passwords.encode(form.getPassword()), now);
+        account.loggedIn(now); // registering logs the new account in: its first login
+        User user = users.save(account);
+        sessions.logIn(AppUser.of(user), request, response);
         SavedRequest page = asked.getRequest(request, response);
         return "redirect:" + (page != null ? page.getRedirectUrl() : "/");
-    }
-
-    private void logIn(AppUser user, HttpServletRequest request, HttpServletResponse response) {
-        if (request.getSession(false) != null) {
-            request.changeSessionId(); // a new session id after login
-        }
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user, null, user.getAuthorities()));
-        SecurityContextHolder.setContext(context);
-        logins.saveContext(context, request, response);
     }
 }

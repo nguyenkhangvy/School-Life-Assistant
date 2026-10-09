@@ -14,12 +14,20 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import vn.edu.hcmiu.sla.auth.AppUser;
+import vn.edu.hcmiu.sla.auth.Role;
 
-/** Gives every page the menu: the modules in a fixed order, with a link for each one that exists, and its count. */
+/**
+ * Gives every page the menu: the logged-in role's modules in a fixed order, with a link for each one that exists, and
+ * its count.
+ */
 @ControllerAdvice
 public class Navigation {
 
-    static final List<String> MODULES = List.of("School", "Groups", "Friends");
+    /** Each role's menu (docs/superpowers/specs/2026-10-06-site-roles-design.md, 4.3). */
+    static final Map<Role, List<String>> MODULES = Map.of(
+            Role.STUDENT, List.of("School", "Groups", "Friends"),
+            Role.AUDITOR, List.of("Audit log", "Statistics"),
+            Role.ADMIN, List.of("Users", "Audit log", "Statistics"));
     private static final Logger LOG = LoggerFactory.getLogger(Navigation.class);
 
     /**
@@ -53,13 +61,16 @@ public class Navigation {
         this.counts = counts.stream().collect(Collectors.toMap(NavCount::label, count -> count, (a, b) -> a));
     }
 
-    /** user is null on the login and register pages. */
+    /** user is null on the login and register pages, which show no menu. */
     @ModelAttribute("navItems")
     public List<NavItem> navItems(@AuthenticationPrincipal AppUser user) {
-        return MODULES.stream().map(label -> {
+        if (user == null) {
+            return List.of();
+        }
+        return MODULES.get(user.role()).stream().map(label -> {
             String path = paths.get(label);
             NavCount count = counts.get(label);
-            IntSupplier counter = user == null || path == null || count == null ? null : () -> count.of(user.id());
+            IntSupplier counter = path == null || count == null ? null : () -> count.of(user.id());
             return new NavItem(label, path, counter);
         }).toList();
     }

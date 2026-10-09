@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -255,6 +256,18 @@ class FriendsPageTest {
         press("/social/friends/999999/add").andExpect(status().isNotFound());
         press("/social/friends/" + an.id() + "/add").andExpect(status().isNotFound());
         press("/social/friends/999999/remove").andExpect(status().isNotFound());
+    }
+
+    @Test
+    void someoneDeactivatedIsNotFoundAndNotCounted() throws Exception {
+        AppUser lan = data.person("Lan");
+        data.request(lan, an, NOW);
+        data.deactivate(lan);
+
+        mvc.perform(get("/social/friends").with(user(an)))
+                .andExpect(model().attribute("forYou", List.of()));
+        assertThat(page("/social/friends")).doesNotContain("nav-count");
+        press("/social/friends/" + lan.id() + "/accept").andExpect(status().isNotFound());
     }
 
     @Test
