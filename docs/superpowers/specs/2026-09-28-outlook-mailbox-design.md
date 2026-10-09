@@ -180,6 +180,8 @@ Outlook problems never pause EduSoft or Blackboard, and never pause Outlook itse
 
 All matching ignores letter case and Vietnamese accents ("KHẢO SÁT" matches "khao sat"). Words match as whole words. The word lists live in one Python file.
 
+**Changed later (2026-10-06):** words written with accents match only with their own accents, wherever the tone mark sits: "hoá đơn" matches "hóa đơn", but "học bóng" (basketball) is not "học bổng" and "thử mới" (try the new) is not "thư mời". Words written without accents still match. Accents typed as separate characters count the same as composed ones.
+
 ### 5.1 Who is a lecturer
 
 An email is **from a lecturer** when any of these holds, unless it is an automatic Microsoft notice (below):
@@ -197,11 +199,11 @@ Every rule needs an IU staff address (`hcmiu.edu.vn` or a sub-domain, not `stude
 | Category | An email gets it when… |
 |---|---|
 | **Class** | it is from a lecturer; or from `bb@hcmiu.edu.vn`; or it is a Teams "added you to a group" notice |
-| **School task** | the subject has: khảo sát, survey, tạm trú, cư trú, sinh hoạt công dân, bảo hiểm y tế, BHYT, bắt buộc |
+| **School task** | the sender is an IU office or staff address (`hcmiu.edu.vn` or a sub-domain, not `student.hcmiu.edu.vn`), and the subject has: khảo sát, survey, tạm trú, cư trú, sinh hoạt công dân, bảo hiểm y tế, BHYT, bắt buộc ("không bắt buộc" doesn't count) |
 | **Money** | the subject has: học bổng, scholarship, hóa đơn, invoice, học phí, tuition, thanh toán, payment, lệ phí |
 | **Event** | the subject has: thư mời, workshop, talkshow, chuyên đề, hội thảo, seminar, webinar, cuộc thi, contest, casting, hội thao, khai mạc, bế mạc, ngày hội, tuần lễ, đăng ký tham gia, đăng ký tham dự |
 | **Training points** | the subject **or the text** says "điểm rèn luyện" |
-| **Your requests & account** | the subject starts with "[Ticket:"; or has password, mật khẩu |
+| **Your requests & account** | the subject starts with "[Ticket:", also after "RE:", "FW:" or "Fwd:"; or has password, mật khẩu |
 | **System notice** | a Teams "added you to a group" notice; or the sender is at `sharepointonline.com` or `microsoft.com` |
 | **Promotion** | the subject or the text has: ưu đãi, khuyến mãi, giảm giá, voucher, discount |
 

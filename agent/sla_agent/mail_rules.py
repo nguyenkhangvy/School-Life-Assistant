@@ -1,18 +1,22 @@
-"""Sorting one email on the laptop: who sent it, its categories, its dates, and the class changes it
+"""Sorting one email on the laptop: who sent it, its categories, its dates, its times, and the class changes it
 announces. Pure functions. The rules are in docs/superpowers/specs/2026-09-28-outlook-mailbox-design.md,
-section 5.
+section 5; the times are read by mail_times (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md).
 
 The email's text is only read here, in memory. What leaves this module is a MailItem, which has no
 field for text."""
 
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 
-from sla_contract.schema import MailClassChange, MailItem, MailSession
+from pydantic import ValidationError
+from sla_contract.schema import MailClassChange, MailDeadline, MailItem, MailPeriod, MailSession
 
-from sla_agent.class_changes import dates_in, fold, read_announcement, register_by_in, sessions_in
+from sla_agent import mail_words
+from sla_agent.class_changes import dates_in, fold, read_announcement
+from sla_agent.mail_times import MAX_PERIODS, MAX_SESSIONS, Found, FoundPeriod, FoundSession, clean, read_times
+from sla_agent.mail_words import Words
 
 log = logging.getLogger(__name__)
 
@@ -30,9 +34,11 @@ MAX_CATEGORIES = 2
 MAX_DATES = 30
 MAX_CLASS_CHANGES = 10
 
-# Words are written as they are read; they are compared without accents or letter case.
-SCHOOL_TASK_WORDS = ("khảo sát", "survey", "tạm trú", "cư trú", "sinh hoạt công dân", "bảo hiểm y tế", "BHYT",
-                     "bắt buộc")
+# Words are written as they are read; they are compared without letter case, and with accents only when the email
+# writes them (see mail_words.Words).
+SCHOOL_TASK_WORDS = ("khảo sát", "survey", "tạm trú", "cư trú", "sinh hoạt công dân", "bảo hiểm y tế", "BHYT")
+REQUIRED_WORDS = ("bắt buộc",)  # a school task too, but not right after NOT: "không bắt buộc" is optional
+NOT = "không"
 MONEY_WORDS = ("học bổng", "scholarship", "hóa đơn", "invoice", "học phí", "tuition", "thanh toán", "payment",
                "lệ phí")
 EVENT_WORDS = ("thư mời", "workshop", "talkshow", "chuyên đề", "hội thảo", "seminar", "webinar", "cuộc thi",
@@ -45,8 +51,22 @@ TEAMS_ADDED_WORDS = ("được thêm", "đã thêm", "added you")
 
 
 @dataclass(frozen=True)
+class Invitation:
+    """An Outlook meeting request or its cancellation (spec 2026-10-07-mail-event-kinds-design.md §5). kind: "request"
+    or "cancelled". times: a request's own time, or a recurring one's next occurrences, as (start, end) aware pairs
+    from Outlook; None when Outlook couldn't give them. all_day: an all-day meeting. location: where, as written; it
+    stays on the laptop, like the text."""
+
+    kind: str
+    times: tuple | None = ()
+    all_day: bool = False
+    location: str = ""
+
+
+@dataclass(frozen=True)
 class Email:
-    """One email as Outlook gives it to the agent. `text` stays on the laptop."""
+    """One email as Outlook gives it to the agent. `text` stays on the laptop. invitation: set for a meeting request or
+    cancellation."""
 
     key: str
     entry_id: str
@@ -56,6 +76,7 @@ class Email:
     sender_address: str
     subject: str
     text: str
+    invitation: Invitation | None = None
 
 
 @dataclass(frozen=True)
@@ -66,19 +87,15 @@ class Context:
     bb_courses: tuple = ()  # (Blackboard course name, course code)
 
 
-def _phrase(words):
-    """A pattern matching any of `words` as whole words, on folded text."""
-    parts = [r"\s+".join(re.escape(part) for part in fold(word).split()) for word in words]
-    return re.compile(r"\b(?:" + "|".join(parts) + r")\b")
-
-
-SCHOOL_TASK = _phrase(SCHOOL_TASK_WORDS)
-MONEY = _phrase(MONEY_WORDS)
-EVENT = _phrase(EVENT_WORDS)
-ACCOUNT = _phrase(ACCOUNT_WORDS)
-PROMOTION = _phrase(PROMOTION_WORDS)
-TRAINING = _phrase([TRAINING_POINTS])
-TEAMS_ADDED = _phrase(TEAMS_ADDED_WORDS)
+SCHOOL_TASK = Words(SCHOOL_TASK_WORDS)
+REQUIRED = Words(REQUIRED_WORDS, unless_after=NOT)
+MONEY = Words(MONEY_WORDS)
+EVENT = Words(EVENT_WORDS)
+ACCOUNT = Words(ACCOUNT_WORDS)
+PROMOTION = Words(PROMOTION_WORDS)
+TRAINING = Words([TRAINING_POINTS])
+TEAMS_ADDED = Words(TEAMS_ADDED_WORDS)
+TICKET = re.compile(r"\s*(?:(?:re|fw|fwd)\s*:\s*)*\[ticket:")  # on folded text; replies and forwards too
 
 
 def _domain(address):
@@ -117,8 +134,7 @@ def is_microsoft_notice(email):
     domain = _domain(email.sender_address)
     if any(domain == d or domain.endswith("." + d) for d in MICROSOFT_DOMAINS):
         return True
-    subject = fold(email.subject)
-    return "microsoft teams" in subject and bool(TEAMS_ADDED.search(subject))
+    return "microsoft teams" in fold(email.subject) and TEAMS_ADDED.search(email.subject)
 
 
 def blackboard_lecturer(email):
@@ -157,12 +173,12 @@ def is_from_lecturer(email, context):
 
 def categories(email, from_lecturer):
     """Spec 5.2 and 5.3: at most two categories, in ORDER."""
-    subject = fold(email.subject)
-    both = subject + "\n" + fold(email.text)
+    subject = email.subject
+    both = subject + "\n" + email.text
     found = set()
     if from_lecturer or email.sender_address.lower() == BLACKBOARD_SENDER:
         found.add("class")
-    if SCHOOL_TASK.search(subject):
+    if _is_iu_staff_address(email.sender_address) and (SCHOOL_TASK.search(subject) or REQUIRED.search(subject)):
         found.add("school_task")
     if MONEY.search(subject):
         found.add("money")
@@ -170,7 +186,7 @@ def categories(email, from_lecturer):
         found.add("event")
     if TRAINING.search(both):
         found.add("training_points")
-    if subject.startswith("[ticket:") or ACCOUNT.search(subject):
+    if TICKET.match(fold(subject)) or ACCOUNT.search(subject):
         found.add("requests_account")
     if is_microsoft_notice(email):
         found.update(("system_notice", "class") if TEAMS_ADDED.search(subject) else ("system_notice",))
@@ -210,27 +226,96 @@ def class_changes(email, code):
             for a in found][:MAX_CLASS_CHANGES]
 
 
-def sessions_of(email, arrived):
-    """The times the email's event or school task takes place (mailbox-events 3.2), found in every email so they
-    are ready when the student moves one to Event. Only the text is read: a time in the subject is often a summary
-    that repeats (or rounds) the text's. [] when the finder fails on it."""
+def times_of(email, arrived):
+    """The email's sessions, Periods, deadlines and flags (mail_times), read in every email so they are ready when
+    the student moves one to Event. An empty Found when the reader fails on it."""
     try:
-        return [MailSession(day=s.day, start=s.start, end=s.end) for s in sessions_in(email.text, arrived)]
+        return read_times(email.subject, email.text, arrived)
     except Exception as error:  # the message could quote the email
         log.warning("Couldn't read the times in an email (%s); it is uploaded without them",
                     error.__class__.__name__)
-        return []
+        return Found()
 
 
-def register_by_of(email, arrived):
-    """The email's registration deadline (mailbox-events addendum A.2), found in every email; None when there is
-    none or the reader fails on it."""
-    try:
-        return register_by_in(email.subject + "\n" + email.text, arrived)
-    except Exception as error:  # the message could quote the email
-        log.warning("Couldn't read the registration deadline in an email (%s); it is uploaded without one",
-                    error.__class__.__name__)
-        return None
+def _invitation_mode(email):
+    """An invitation's mode from its location and text: online or in person when only one of them is named."""
+    where = (email.invitation.location or "") + "\n" + clean(email.subject, email.text)
+    online, in_person = mail_words.ONLINE.search(where), mail_words.IN_PERSON.search(where)
+    return "online" if online and not in_person else "in_person" if in_person and not online else None
+
+
+def with_invitation(email, found):
+    """Found with a meeting's times from Outlook instead of its text (spec §5): each occurrence is a session in
+    Vietnam time, and an all-day meeting or one longer than a day a Period. A session the text gives at the same day
+    and start lends its check-in, link, mode and label; else the mode comes from the location and text. A cancellation
+    has no sessions or Periods. The text still gives the deadlines and the flags."""
+    invitation = email.invitation
+    if invitation.kind == "cancelled":
+        return replace(found, sessions=(), periods=())
+    if invitation.times is None:  # Outlook couldn't give them: the text's, as for any email
+        return found
+    text = {(s.day, s.start): s for s in found.sessions}
+    mode = _invitation_mode(email)
+    sessions, periods = [], []
+    for start, end in invitation.times:
+        start = (start.astimezone(timezone.utc) + VIETNAM_OFFSET).replace(tzinfo=None)
+        end = (end.astimezone(timezone.utc) + VIETNAM_OFFSET).replace(tzinfo=None)
+        if invitation.all_day:
+            periods.append(FoundPeriod(start.date(), max(start, end - timedelta(minutes=1)).date(), "all_day"))
+        elif end - start > timedelta(days=1):
+            periods.append(FoundPeriod(start.date(), end.date(), "one_window", start.time(), end.time()))
+        else:
+            same = text.get((start.date(), start.time()))
+            finish = end.time() if end > start else None
+            sessions.append(FoundSession(
+                start.date(), start.time(), finish, ends_next_day=finish is not None and end.date() > start.date(),
+                check_in=same.check_in if same else None, link_opens=same.link_opens if same else None,
+                mode=(same.mode if same else None) or mode, label=same.label if same else None))
+    return replace(found, sessions=tuple(sessions[:MAX_SESSIONS]), periods=tuple(periods[:MAX_PERIODS]))
+
+
+def upload_session(session):
+    """One FoundSession as the upload holds it (spec 2026-10-07-mail-event-kinds-design.md §3.1), with its check-in and
+    link time apart from its start (from stage 2; mailbox-events addendum A.1 moved the start). What the format
+    can't hold is left out of it: an end not after the start (without the next day), a check-in or link after it."""
+    end = session.end
+    if end is not None and not session.ends_next_day and end <= session.start:
+        end = None
+    return MailSession(
+        day=session.day, start=session.start, end=end, end_is_approximate=session.end_is_approximate and end is not None,
+        ends_next_day=session.ends_next_day and end is not None,
+        check_in=session.check_in if session.check_in and session.check_in <= session.start else None,
+        link_opens=session.link_opens if session.link_opens and session.link_opens <= session.start else None,
+        mode=session.mode, relative=session.relative, label=session.label)
+
+
+def upload_sessions(found):
+    """The sessions as the upload holds them: each day and start once, in time order."""
+    kept = {}
+    for session in found.sessions:
+        kept.setdefault((session.day, session.start), upload_session(session))
+    return [kept[key] for key in sorted(kept)]
+
+
+def _each(make, items):
+    """make(item) for each item the format can hold; one it can't (a Period whose times don't fit its mode) is left
+    out, not the whole email."""
+    kept = []
+    for item in items:
+        try:
+            kept.append(make(item))
+        except ValidationError:
+            log.debug("Left out a time the upload format can't hold")
+    return kept
+
+
+def upload_periods(found):
+    return _each(lambda p: MailPeriod(first_day=p.first_day, last_day=p.last_day, mode=p.mode, from_time=p.from_time,
+                                      to_time=p.to_time, details_later=p.details_later, label=p.label), found.periods)
+
+
+def upload_deadlines(found):
+    return _each(lambda d: MailDeadline(kind=d.kind, day=d.day, time=d.at, mode=d.mode), found.deadlines)
 
 
 def sort_email(email, context):
@@ -242,15 +327,26 @@ def sort_email(email, context):
         lecturer = is_from_lecturer(email, context)
         arrived = (email.received_at.astimezone(timezone.utc) + VIETNAM_OFFSET).date()
         code = course_of(email, context) if lecturer else None
+        found = times_of(email, arrived)
+        if email.invitation:
+            found = with_invitation(email, found)
+        changes = class_changes(email, code) if code else []
         return MailItem(
             **known,
             categories=categories(email, lecturer),
             from_lecturer=lecturer,
-            dates=dates_in(email.subject + "\n" + email.text, arrived)[:MAX_DATES],
-            sessions=sessions_of(email, arrived),
-            register_by=register_by_of(email, arrived),
+            dates=dates_in(email.subject + "\n" + clean(email.subject, email.text), arrived)[:MAX_DATES],
+            sessions=upload_sessions(found),
+            periods=upload_periods(found),
+            deadlines=upload_deadlines(found),
+            register_by=found.register_by,
+            # An email announcing a class change is not a meeting: its classes already reach the Timetable
+            # (Blackboard's "Please join the meeting on time" for an online class; spec §2). An invitation is one.
+            meeting=(found.meeting or email.invitation is not None) and not changes,
+            registered=found.registered,
+            invitation=email.invitation.kind if email.invitation else None,
             blackboard_title=blackboard_title(email),
-            class_changes=class_changes(email, code) if code else [],
+            class_changes=changes,
         )
     except Exception as error:  # one email must never stop the others; the message could quote the email
         log.warning("Couldn't sort an email (%s); it is uploaded unsorted", error.__class__.__name__)

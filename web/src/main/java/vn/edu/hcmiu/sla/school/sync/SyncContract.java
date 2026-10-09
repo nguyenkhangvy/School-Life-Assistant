@@ -222,13 +222,100 @@ public final class SyncContract {
             @Chars(max = 50) String room) {
     }
 
-    /** One time an event or school task takes place, as the laptop found it in the email. Vietnam time. */
-    public record MailSession(@NotNull LocalDate day, @NotNull LocalTime start, LocalTime end) {
+    // Codes from fixed lists, never the email's words (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md,
+    // 3.2).
+    public static final String MAIL_LABELS =
+            "round_[1-5]|preliminary|qualifying|semifinal|final|opening|closing|shift_[1-5]";
+    public static final String MAIL_RELATIVE_DAYS = "today|tomorrow|day_after_tomorrow|this_week|next_week|weekday";
+    public static final String MAIL_MODES = "online|in_person";
+    public static final String PERIOD_MODES = "all_day|daily_window|one_window";
+    public static final String DEADLINE_KINDS = "opens|register|confirm|due";
+
+    /**
+     * One time an event or school task takes place, as the laptop found it in the email. Vietnam time. checkIn: when
+     * to be there by; linkOpens: when an online event's link becomes available; endsNextDay: the end is on the next
+     * day, and may be earlier than the start; relative: the day came from a word such as "ngày mai".
+     */
+    public record MailSession(
+            @NotNull LocalDate day,
+            @NotNull LocalTime start,
+            LocalTime end,
+            Boolean endIsApproximate,
+            Boolean endsNextDay,
+            LocalTime checkIn,
+            LocalTime linkOpens,
+            @Pattern(regexp = MAIL_MODES) String mode,
+            @Pattern(regexp = MAIL_RELATIVE_DAYS) String relative,
+            @Pattern(regexp = MAIL_LABELS) String label) {
+
+        public MailSession {
+            endIsApproximate = endIsApproximate != null && endIsApproximate;
+            endsNextDay = endsNextDay != null && endsNextDay;
+        }
+
+        @AssertTrue(message = "end_is_approximate and ends_next_day need an end")
+        boolean isEndGivenWhenMarked() {
+            return end != null || !(endIsApproximate || endsNextDay);
+        }
 
         @AssertTrue(message = "end must be after start")
         boolean isEndAfterStart() {
-            return end == null || start == null || end.isAfter(start);
+            return end == null || start == null || endsNextDay || end.isAfter(start);
         }
+
+        @AssertTrue(message = "check_in and link_opens can't be after start")
+        boolean isCheckInAndLinkNotAfterStart() {
+            return start == null || ((checkIn == null || !checkIn.isAfter(start))
+                    && (linkOpens == null || !linkOpens.isAfter(start)));
+        }
+    }
+
+    /**
+     * A range of days in which the student may come or do something at any time. Vietnam time. all_day: days only;
+     * daily_window: fromTime to toTime each day; one_window: from fromTime on firstDay to toTime on lastDay.
+     */
+    public record MailPeriod(
+            @NotNull LocalDate firstDay,
+            @NotNull LocalDate lastDay,
+            @NotNull @Pattern(regexp = PERIOD_MODES) String mode,
+            LocalTime fromTime,
+            LocalTime toTime,
+            Boolean detailsLater,
+            @Pattern(regexp = MAIL_LABELS) String label) {
+
+        public MailPeriod {
+            detailsLater = detailsLater != null && detailsLater;
+        }
+
+        @AssertTrue(message = "last_day can't be before first_day")
+        boolean isLastDayNotBeforeFirst() {
+            return firstDay == null || lastDay == null || !lastDay.isBefore(firstDay);
+        }
+
+        @AssertTrue(message = "an all_day Period has no times; the others have from_time and to_time, in order")
+        boolean isTimesMatchingMode() {
+            if (mode == null || firstDay == null || lastDay == null) {
+                return true;
+            }
+            if (mode.equals("all_day")) {
+                return fromTime == null && toTime == null;
+            }
+            if (fromTime == null || toTime == null) {
+                return false;
+            }
+            return !(mode.equals("daily_window") || firstDay.equals(lastDay)) || toTime.isAfter(fromTime);
+        }
+    }
+
+    /**
+     * A deadline: information only, never event time. opens: registration opens; register: it closes; confirm:
+     * confirming a place closes; due: something must be handed in or paid. Vietnam time.
+     */
+    public record MailDeadline(
+            @NotNull @Pattern(regexp = DEADLINE_KINDS) String kind,
+            @NotNull LocalDate day,
+            LocalTime time,
+            @Pattern(regexp = MAIL_MODES) String mode) {
     }
 
     /** What the website may know about one email: never its text. */
@@ -244,7 +331,12 @@ public final class SyncContract {
             Boolean fromLecturer,
             @Size(max = 30) List<@NotNull LocalDate> dates,
             @Size(max = 10) List<@Valid MailSession> sessions,
+            @Size(max = 5) List<@Valid MailPeriod> periods,
+            @Size(max = 5) List<@Valid MailDeadline> deadlines,
             LocalDate registerBy,
+            Boolean meeting,
+            Boolean registered,
+            @Pattern(regexp = "request|cancelled") String invitation,
             Boolean sorted,
             @Chars(max = 255) String blackboardTitle,
             @Size(max = 10) List<@Valid MailClassChange> classChanges) {
@@ -257,6 +349,10 @@ public final class SyncContract {
             fromLecturer = fromLecturer != null && fromLecturer;
             dates = dates == null ? List.of() : dates;
             sessions = sessions == null ? List.of() : sessions;
+            periods = periods == null ? List.of() : periods;
+            deadlines = deadlines == null ? List.of() : deadlines;
+            meeting = meeting != null && meeting;
+            registered = registered != null && registered;
             sorted = sorted == null || sorted;
             classChanges = classChanges == null ? List.of() : classChanges;
         }

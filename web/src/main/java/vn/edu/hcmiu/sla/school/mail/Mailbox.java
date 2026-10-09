@@ -10,22 +10,24 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import vn.edu.hcmiu.sla.school.VietnamTime;
 import vn.edu.hcmiu.sla.school.model.SchoolMail;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChoice;
 
 /**
  * What the Mailbox tab shows: emails grouped into cards, cards in boxes, in the order of
  * docs/superpowers/specs/2026-09-28-outlook-mailbox-design.md, section 6.3, with the sessions, Past and opening
- * rules of 2026-09-28-mailbox-events-design.md, section 4. Pure functions.
+ * rules of 2026-09-28-mailbox-events-design.md, section 4, and the Periods, deadlines, tags and flags of
+ * 2026-10-07-mail-event-kinds-design.md, section 6.2. Pure functions; times are Vietnam wall-clock times.
  */
 public final class Mailbox {
 
@@ -54,50 +56,172 @@ public final class Mailbox {
         return Collections.unmodifiableMap(names);
     }
 
-    /** One time an event takes place, as the laptop found it. Vietnam time; end may be empty. */
-    public record Session(LocalDate day, LocalTime start, LocalTime end) {
+    /**
+     * One time an event takes place, as the laptop found it. Vietnam time; end may be empty, and is on the next day
+     * when endsNextDay. checkIn: when to be there by, from which the session is busy; linkOpens: when an online
+     * event's link opens. mode (online, in_person), relative (the word its day came from) and label are codes from the
+     * upload format's lists.
+     */
+    public record Session(LocalDate day, LocalTime start, LocalTime end, boolean endIsApproximate, boolean endsNextDay,
+            LocalTime checkIn, LocalTime linkOpens, String mode, String relative, String label) {
 
         static final Comparator<Session> ORDER = Comparator.comparing(Session::day).thenComparing(Session::start);
+
+        /** A day, a start and maybe an end, and nothing else known. */
+        public Session(LocalDate day, LocalTime start, LocalTime end) {
+            this(day, start, end, false, false, null, null, null, null, null);
+        }
 
         public LocalDateTime startAt() {
             return day.atTime(start);
         }
 
-        /** The end, or an hour after the start when the email gave none. */
+        /** When the student must be there: the check-in, or else the start. The session is busy from then. */
+        public LocalDateTime busyFrom() {
+            return checkIn != null && checkIn.isBefore(start) ? day.atTime(checkIn) : startAt();
+        }
+
+        /** The end (on the next day when it ends then), or an hour after the start when the email gave none. */
         public LocalDateTime endAt() {
-            return end != null ? day.atTime(end) : startAt().plus(SESSION_WITHOUT_END);
+            if (end == null) {
+                return startAt().plus(SESSION_WITHOUT_END);
+            }
+            return (endsNextDay ? day.plusDays(1) : day).atTime(end);
+        }
+    }
+
+    /**
+     * A range of days in which the student may come or do something at any time: mode all_day (no times),
+     * daily_window (fromTime–toTime each day) or one_window (from fromTime on the first day to toTime on the last).
+     * detailsLater: the student's own time comes later. Never busy.
+     */
+    public record Period(LocalDate firstDay, LocalDate lastDay, String mode, LocalTime fromTime, LocalTime toTime,
+            boolean detailsLater, String label) {
+
+        static final Comparator<Period> ORDER = Comparator.comparing(Period::firstDay).thenComparing(Period::lastDay)
+                .thenComparing(Period::fromTime, Comparator.nullsFirst(Comparator.naturalOrder()));
+
+        public boolean allDay() {
+            return "all_day".equals(mode);
+        }
+
+        /** When it ends: at toTime on its last day, or at the end of that day when it has no times. */
+        public LocalDateTime endAt() {
+            return toTime != null ? lastDay.atTime(toTime) : lastDay.plusDays(1).atStartOfDay();
+        }
+
+        /** How forms name it: "2026-11-02/2026-11-05/daily_window/09:00", or "…/all_day/-" without a time. */
+        public String id() {
+            return firstDay + "/" + lastDay + "/" + mode + "/" + (fromTime != null ? MailTexts.clock(fromTime) : "-");
+        }
+
+        /** The same Period (its days, mode and start): an added copy of a found one. */
+        boolean same(Period other) {
+            return id().equals(other.id());
+        }
+    }
+
+    /**
+     * A deadline the laptop found: kind opens (registration opens), register (it closes), confirm or due, with its
+     * day, maybe a time and a mode (online, in_person). Information only, never event time.
+     */
+    public record Deadline(String kind, LocalDate day, LocalTime time, String mode) {
+
+        static final Comparator<Deadline> ORDER = Comparator.comparing(Deadline::at).thenComparing(Deadline::kind)
+                .thenComparing(Deadline::mode, Comparator.nullsFirst(Comparator.naturalOrder()));
+
+        /** When it takes effect: at its time; else an opening at the start of its day, any other at the end. */
+        public LocalDateTime at() {
+            if (time != null) {
+                return day.atTime(time);
+            }
+            return "opens".equals(kind) ? day.atStartOfDay() : day.plusDays(1).atStartOfDay();
+        }
+
+        public boolean passed(LocalDateTime now) {
+            return !now.isBefore(at());
+        }
+
+        /** "Register by 12:00 Sat 10/10 · In person" (MailTexts). */
+        public String text() {
+            return MailTexts.deadline(this);
+        }
+    }
+
+    /** What the laptop found in the emails, by mail key. */
+    public record Found(Map<String, List<Session>> sessions, Map<String, List<Period>> periods,
+            Map<String, List<Deadline>> deadlines) {
+
+        public Found {
+            sessions = sessions == null ? Map.of() : sessions;
+            periods = periods == null ? Map.of() : periods;
+            deadlines = deadlines == null ? Map.of() : deadlines;
+        }
+    }
+
+    /** What the student did: the emails they joined a session of, and those they added a Period of. */
+    public record Mine(Set<String> joinedKeys, Set<String> addedKeys) {
+
+        public static final Mine NOTHING = new Mine(Set.of(), Set.of());
+    }
+
+    /** A part of a tag; passed: its time has passed, so it is struck out. */
+    public record Piece(String text, boolean passed) {
+    }
+
+    /**
+     * A tag on a card's row: kind (register, closed, confirm or due, for its look), its lead ("Register by 17:00 Mon
+     * 12/10", or "Register by:") and, when a deadline has a mode, one piece per mode.
+     */
+    public record Tag(String kind, String lead, List<Piece> pieces) {
+
+        static Tag of(String kind, String text) {
+            return new Tag(kind, text, List.of());
+        }
+
+        /** The whole tag as text: "Register by: In person 12:00 Sat 03/10 · Online 17:00 Mon 12/10". */
+        public String text() {
+            return pieces.isEmpty() ? lead
+                    : lead + " " + pieces.stream().map(Piece::text).collect(Collectors.joining(" · "));
         }
     }
 
     /**
      * One card: a thread, or the same email sent more than once. key, entryId, sender, subject and time come
-     * from its newest email; keys are all its emails' keys. sessions: an event or school task's sessions that
-     * haven't ended (none for other cards). nextDate: the day of the first of them, or else the earliest date
-     * from today on. over: every session has ended, or (without sessions) every date is over. past: it is over, or
-     * (an event) its registration closed and the student joined none of its sessions. suggested: the student
-     * moved it to Event or School task and the rules gave it neither, so its sessions are only suggestions.
-     * registerBy: the latest registration deadline of its emails, or null; closed: that day is before today.
-     * joined: the student joined a session of one of its emails.
+     * from its newest email; keys are all its emails' keys. eventLike: an event or school task, or a lecturer's
+     * meeting or class activity with a time (Class with the meeting flag and a session); only those show sessions and
+     * Periods, have Join… and stay in their box when opened while ahead. sessions and periods: an event-like card's
+     * that haven't ended (none for other cards). nextDate: the day of the first of them (today for a running Period),
+     * or else the earliest date from today on. over: every session and Period has ended, or (without them) every date
+     * is over. past: it is over, or (an event) its registration closed and the student joined and added nothing and
+     * isn't registered. suggested: the student moved it to Event or School task and the rules gave it neither, so its
+     * sessions are only suggestions. deadlines: its emails' deadlines, soonest first; registerBy: the latest register
+     * day of them, or null; closed: its registration has closed. tags: what its deadlines say on its row. joined and
+     * added: the student joined a session, or added a Period, of one of its emails. registered: an email confirms the
+     * student is registered. cancelled: its newest email cancels an Outlook meeting.
      */
     public record Card(String key, List<String> keys, String entryId, String senderName, String subject,
             LocalDateTime receivedAt, List<String> categories, boolean fromLecturer, boolean moved,
-            List<LocalDate> dates, List<Session> sessions, LocalDate nextDate, boolean over, boolean past,
-            boolean sorted,
-            boolean opened, boolean done, int messages, int copies, boolean suggested, LocalDate registerBy,
-            boolean closed, boolean joined) {
+            List<LocalDate> dates, boolean eventLike, List<Session> sessions, List<Period> periods,
+            LocalDate nextDate, boolean over, boolean past, boolean sorted, boolean opened, boolean done, int messages,
+            int copies, boolean suggested, List<Deadline> deadlines, LocalDate registerBy, boolean closed,
+            List<Tag> tags, boolean joined, boolean added, boolean registered, boolean cancelled) {
 
         public boolean trainingPoints() {
             return categories.contains("training_points");
         }
 
-        /** An event or school task: it has sessions and Join…, and stays in its box when opened while ahead. */
-        public boolean eventLike() {
-            return Mailbox.eventLike(categories);
+        /**
+         * Join… and Leave are open to it: an event-like card (unless its meeting was cancelled), or a card the
+         * student joined or added something of, even after moving it away.
+         */
+        public boolean joinable() {
+            return (eventLike && !cancelled) || joined || added;
         }
 
-        /** Join… and Leave are open to it: an event or school task, or a card moved away after joining. */
-        public boolean joinable() {
-            return eventLike() || joined;
+        /** Its row offers Add: it has exactly one Period and no sessions, and wasn't cancelled. */
+        public boolean addable() {
+            return !cancelled && sessions.isEmpty() && periods.size() == 1;
         }
 
         /**
@@ -105,7 +229,7 @@ public final class Mailbox {
          * Past only because its registration closed (Past and Done stay apart).
          */
         public boolean doneWhenOpened() {
-            return !(eventLike() && (nextDate != null || (past && !over)));
+            return !(eventLike && (nextDate != null || (past && !over)));
         }
 
         LocalDate lastDate() {
@@ -200,8 +324,111 @@ public final class Mailbox {
         return kept.values().stream().sorted(Session.ORDER).toList();
     }
 
-    private static Card card(Group group, Map<String, SchoolMailChoice> choices, Map<String, List<Session>> sessions,
-            Set<String> joinedKeys, LocalDateTime now) {
+    /** A card's emails' Periods, each once (the newest email's wins), soonest first. */
+    private static List<Period> periodsOf(List<SchoolMail> mails, Map<String, List<Period>> periods) {
+        Map<String, Period> kept = new LinkedHashMap<>();
+        for (SchoolMail mail : mails) {
+            for (Period p : periods.getOrDefault(mail.getMailKey(), List.of())) {
+                kept.putIfAbsent(p.id(), p);
+            }
+        }
+        return kept.values().stream().sorted(Period.ORDER).toList();
+    }
+
+    /**
+     * A card's emails' deadlines, each once, soonest first. An email an older agent read has only its registration
+     * deadline's day (A.2), which counts as a register deadline.
+     */
+    private static List<Deadline> deadlinesOf(List<SchoolMail> mails, Map<String, List<Deadline>> deadlines) {
+        Set<Deadline> kept = new LinkedHashSet<>();
+        for (SchoolMail mail : mails) {
+            List<Deadline> found = deadlines.getOrDefault(mail.getMailKey(), List.of());
+            if (found.isEmpty() && mail.getRegisterBy() != null) {
+                found = List.of(new Deadline("register", mail.getRegisterBy(), null, null));
+            }
+            kept.addAll(found);
+        }
+        return kept.stream().sorted(Deadline.ORDER).toList();
+    }
+
+    /** For each mode, the deadline of this kind that `pick` prefers among the card's. */
+    private static List<Deadline> eachMode(List<Deadline> deadlines, String kind, Comparator<Deadline> pick) {
+        Map<String, Deadline> kept = new LinkedHashMap<>();
+        for (Deadline d : deadlines) {
+            if (d.kind().equals(kind)) {
+                kept.merge(String.valueOf(d.mode()), d, (a, b) -> pick.compare(b, a) > 0 ? b : a);
+            }
+        }
+        return kept.values().stream().sorted(Deadline.ORDER).toList();
+    }
+
+    private static final Comparator<Deadline> LATEST = Comparator.comparing(Deadline::at);
+
+    /** A card's registration: before its earliest opening, open, or closed after its last register deadline. */
+    enum Registration { NONE, NOT_OPEN, OPEN, CLOSED }
+
+    /**
+     * Its registration from its opens and register deadlines (spec 6.2). For each kind and mode the latest counts, so
+     * a reminder can extend it (A.3).
+     */
+    static Registration registration(List<Deadline> deadlines, LocalDateTime now) {
+        List<Deadline> opens = eachMode(deadlines, "opens", LATEST);
+        List<Deadline> register = eachMode(deadlines, "register", LATEST);
+        if (opens.isEmpty() && register.isEmpty()) {
+            return Registration.NONE;
+        }
+        if (!register.isEmpty() && register.get(register.size() - 1).passed(now)) {
+            return Registration.CLOSED;
+        }
+        if (!opens.isEmpty() && !opens.get(0).passed(now)) {
+            return Registration.NOT_OPEN;
+        }
+        return Registration.OPEN;
+    }
+
+    /** One tag for these deadlines of one kind: "Register by 17:00 Mon 12/10", or by mode, a passed one struck out. */
+    private static Tag deadlineTag(String kind, String lead, List<Deadline> deadlines, LocalDateTime now) {
+        if (deadlines.stream().allMatch(d -> d.mode() == null) && deadlines.size() == 1) {
+            return Tag.of(kind, lead + " " + MailTexts.when(deadlines.get(0)));
+        }
+        return new Tag(kind, lead + ":", deadlines.stream().map(d -> new Piece(
+                (d.mode() != null ? MailTexts.mode(d.mode()) + " " : "") + MailTexts.when(d), d.passed(now))).toList());
+    }
+
+    /**
+     * The tags of a card's deadlines (spec 6.2): its registration unless registered ("Registration opens Thu 08/10,
+     * closes Mon 12/10", "Register by …" while open and not Past, "Registration closed" in Past), then "Confirm by …"
+     * and "Due …" while their time hasn't passed, the soonest of each mode.
+     */
+    static List<Tag> tags(List<Deadline> deadlines, Registration registration, boolean registered, boolean past,
+            LocalDateTime now) {
+        List<Tag> tags = new ArrayList<>();
+        if (!registered) {
+            List<Deadline> register = eachMode(deadlines, "register", LATEST);
+            if (registration == Registration.NOT_OPEN && !past) {
+                Deadline opens = eachMode(deadlines, "opens", LATEST).get(0);
+                tags.add(Tag.of("register", "Registration opens " + VietnamTime.dayLabel(opens.day())
+                        + (register.isEmpty() ? "" : ", closes "
+                                + VietnamTime.dayLabel(register.get(register.size() - 1).day()))));
+            } else if (registration == Registration.OPEN && !past) {
+                tags.add(register.isEmpty() ? Tag.of("register", "Registration open")
+                        : deadlineTag("register", "Register by", register, now));
+            } else if (registration == Registration.CLOSED && past) {
+                tags.add(Tag.of("closed", "Registration closed"));
+            }
+        }
+        for (String[] kind : new String[][] {{"confirm", "Confirm by"}, {"due", "Due"}}) {
+            List<Deadline> ahead = eachMode(deadlines.stream().filter(d -> !d.passed(now)).toList(), kind[0],
+                    LATEST.reversed());
+            if (!ahead.isEmpty()) {
+                tags.add(deadlineTag(kind[0], kind[1], ahead, now));
+            }
+        }
+        return tags;
+    }
+
+    private static Card card(Group group, Map<String, SchoolMailChoice> choices, Found found, Mine mine,
+            LocalDateTime now) {
         List<SchoolMail> mails = group.mails();
         SchoolMail newest = mails.get(0);
         SchoolMailChoice moved = mails.stream().map(m -> choices.get(m.getMailKey()))
@@ -213,21 +440,37 @@ public final class Mailbox {
                 : newest.isFromLecturer();
         TreeSet<LocalDate> dates = new TreeSet<>();
         mails.forEach(m -> dates.addAll(m.getDates()));
-        List<Session> all = eventLike(categories) ? sessionsOf(mails, sessions) : List.of();
+        List<Session> all = sessionsOf(mails, found.sessions());
+        boolean meeting = mails.stream().anyMatch(SchoolMail::isMeeting);
+        boolean eventLike = eventLike(categories) || (categories.contains("class") && meeting && !all.isEmpty());
+        if (!eventLike) {
+            all = List.of();
+        }
+        List<Period> periods = eventLike ? periodsOf(mails, found.periods()) : List.of();
         List<Session> ahead = all.stream().filter(s -> s.endAt().isAfter(now)).toList();
-        LocalDate next = all.isEmpty() ? dates.ceiling(now.toLocalDate()) : ahead.isEmpty() ? null : ahead.get(0).day();
-        LocalDate registerBy = mails.stream().map(SchoolMail::getRegisterBy).filter(Objects::nonNull)
+        List<Period> periodsAhead = periods.stream().filter(p -> p.endAt().isAfter(now)).toList();
+        LocalDate today = now.toLocalDate();
+        boolean timed = !all.isEmpty() || !periods.isEmpty();
+        LocalDate next = !timed ? dates.ceiling(today) : Stream.concat(ahead.stream().map(Session::day),
+                periodsAhead.stream().map(p -> p.firstDay().isAfter(today) ? p.firstDay() : today))
+                .min(Comparator.naturalOrder()).orElse(null);
+        List<Deadline> deadlines = deadlinesOf(mails, found.deadlines());
+        LocalDate registerBy = deadlines.stream().filter(d -> d.kind().equals("register")).map(Deadline::day)
                 .max(Comparator.naturalOrder()).orElse(null);
-        boolean closed = registerBy != null && registerBy.isBefore(now.toLocalDate());
-        boolean joined = mails.stream().anyMatch(m -> joinedKeys.contains(m.getMailKey()));
-        boolean over = all.isEmpty() ? !dates.isEmpty() && next == null : ahead.isEmpty();
-        boolean past = over || (categories.contains("event") && closed && !joined);
+        Registration registration = registration(deadlines, now);
+        boolean closed = registration == Registration.CLOSED;
+        boolean joined = mails.stream().anyMatch(m -> mine.joinedKeys().contains(m.getMailKey()));
+        boolean added = mails.stream().anyMatch(m -> mine.addedKeys().contains(m.getMailKey()));
+        boolean registered = mails.stream().anyMatch(SchoolMail::isRegistered);
+        boolean over = !timed ? !dates.isEmpty() && next == null : ahead.isEmpty() && periodsAhead.isEmpty();
+        boolean past = over || (categories.contains("event") && closed && !joined && !added && !registered);
         return new Card(newest.getMailKey(), mails.stream().map(SchoolMail::getMailKey).toList(), newest.getEntryId(),
                 newest.getSenderName(), newest.getSubject(), newest.getReceivedAt(), categories, fromLecturer,
-                moved != null, List.copyOf(dates), ahead, next, over, past, newest.isSorted(),
+                moved != null, List.copyOf(dates), eventLike, ahead, periodsAhead, next, over, past, newest.isSorted(),
                 newestChoice != null && newestChoice.isOpened(), newestChoice != null && newestChoice.isDone(),
-                mails.size(), group.copies(), eventLike(categories) && !eventLike(newest.getCategories()), registerBy,
-                closed, joined);
+                mails.size(), group.copies(), eventLike(categories) && !eventLike(newest.getCategories()), deadlines,
+                registerBy, closed, tags(deadlines, registration, registered, past, now), joined, added, registered,
+                "cancelled".equals(newest.getInvitation()));
     }
 
     private static final Comparator<Card> NEWEST_FIRST = Comparator.comparing(Card::receivedAt).reversed();
@@ -248,25 +491,31 @@ public final class Mailbox {
         return "other";
     }
 
-    /** The whole tab, for a student who joined no events. */
+    /** The whole tab, for a student who joined no events, from emails with sessions only. */
     public static View build(List<SchoolMail> mails, Map<String, SchoolMailChoice> choices,
             Map<String, List<Session>> sessions, LocalDateTime now) {
         return build(mails, choices, sessions, Set.of(), now);
     }
 
-    /**
-     * The whole tab. mails: newest first; choices and sessions by mail key; joinedKeys: the emails with a joined
-     * session; now in Vietnam (wall clock).
-     */
+    /** The whole tab, from emails with sessions only; joinedKeys: the emails with a joined session. */
     public static View build(List<SchoolMail> mails, Map<String, SchoolMailChoice> choices,
             Map<String, List<Session>> sessions, Set<String> joinedKeys, LocalDateTime now) {
+        return build(mails, choices, new Found(sessions, Map.of(), Map.of()), new Mine(joinedKeys, Set.of()), now);
+    }
+
+    /**
+     * The whole tab. mails: newest first; choices by mail key; found: what the laptop found, by mail key; mine: the
+     * emails the student joined or added something of; now in Vietnam (wall clock).
+     */
+    public static View build(List<SchoolMail> mails, Map<String, SchoolMailChoice> choices, Found found, Mine mine,
+            LocalDateTime now) {
         Map<String, List<Card>> byBox = new LinkedHashMap<>();
         for (String box : List.of("lecturers", "tasks", "money", "events", "other")) {
             byBox.put(box, new ArrayList<>());
         }
         List<Card> done = new ArrayList<>();
         for (Group group : groups(mails)) {
-            Card card = card(group, choices, sessions, joinedKeys, now);
+            Card card = card(group, choices, found, mine, now);
             (card.done() ? done : byBox.get(boxOf(card))).add(card);
         }
         done.sort(NEWEST_FIRST);

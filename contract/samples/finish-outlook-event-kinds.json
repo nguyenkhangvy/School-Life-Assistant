@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "outlook": {
+    "status": "ok",
+    "data": {
+      "since": "2026-08-01",
+      "connected": true,
+      "emails": [
+        {
+          "key": "0a7c6f1d2e3b4a5968778695a4b3c2d1e0f1a2b3c4d5e6f708192a3b4c5d6e7f",
+          "entry_id": "00000000A1B2C3D4E5F6071829304A5B6C7D8E9F0700C1D2E3F4A5B6C7D8E9F0A1B2C3E1",
+          "thread_id": "9F3E2D1C0B9A8F7E6D5C4B3A29180706",
+          "received_at": "2026-10-07T02:00:00+00:00",
+          "sender_name": "Đoàn Thanh niên - Hội Sinh viên",
+          "sender_address": "doanhoi@hcmiu.edu.vn",
+          "subject": "[THƯ MỜI] Cuộc thi Ý tưởng khởi nghiệp IU 2026",
+          "categories": ["event", "training_points"],
+          "dates": ["2026-10-08", "2026-10-10", "2026-10-12", "2026-10-20", "2026-10-26", "2026-10-30"],
+          "sessions": [
+            {"day": "2026-10-20", "start": "13:30:00", "end": "15:30:00", "end_is_approximate": true,
+             "check_in": "13:00:00", "mode": "in_person", "label": "round_1"},
+            {"day": "2026-12-31", "start": "22:00:00", "end": "00:30:00", "ends_next_day": true,
+             "link_opens": "21:45:00", "mode": "online", "label": "final"},
+            {"day": "2026-10-09", "start": "14:00:00", "relative": "weekday"}
+          ],
+          "periods": [
+            {"first_day": "2026-10-26", "last_day": "2026-10-30", "mode": "all_day", "details_later": true},
+            {"first_day": "2026-11-02", "last_day": "2026-11-05", "mode": "daily_window", "from_time": "09:00:00",
+             "to_time": "17:00:00", "label": "opening"},
+            {"first_day": "2026-11-28", "last_day": "2026-11-29", "mode": "one_window", "from_time": "09:00:00",
+             "to_time": "16:00:00"}
+          ],
+          "deadlines": [
+            {"kind": "opens", "day": "2026-10-08", "time": "08:00:00"},
+            {"kind": "register", "day": "2026-10-10", "time": "12:00:00", "mode": "in_person"},
+            {"kind": "register", "day": "2026-10-12", "time": "17:00:00", "mode": "online"},
+            {"kind": "confirm", "day": "2026-10-15"},
+            {"kind": "due", "day": "2026-10-18", "time": "23:59:00"}
+          ],
+          "register_by": "2026-10-12",
+          "registered": true
+        },
+        {
+          "key": "1b8d7e2f3a4c5b6a79889706b5c4d3e2f1a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4",
+          "entry_id": "00000000A1B2C3D4E5F6071829304A5B6C7D8E9F0700C1D2E3F4A5B6C7D8E9F0A1B2C3E2",
+          "thread_id": "AF4E3D2C1B0A9F8E7D6C5B4A3928170A",
+          "received_at": "2026-10-07T03:00:00+00:00",
+          "sender_name": "Tran Van An",
+          "sender_address": "tvan@hcmiu.edu.vn",
+          "subject": "Họp nhóm đồ án",
+          "categories": ["class"],
+          "from_lecturer": true,
+          "sessions": [
+            {"day": "2026-10-14", "start": "09:00:00", "end": "10:00:00", "mode": "online"}
+          ],
+          "meeting": true,
+          "invitation": "request"
+        },
+        {
+          "key": "2c9e8f3a4b5d6c7b8a99a817c6d5e4f3a2b1c0d1e2f3a4b5c6d7e8f9a0b1c2d3",
+          "entry_id": "00000000A1B2C3D4E5F6071829304A5B6C7D8E9F0700C1D2E3F4A5B6C7D8E9F0A1B2C3E3",
+          "thread_id": "AF4E3D2C1B0A9F8E7D6C5B4A3928170A",
+          "received_at": "2026-10-08T01:00:00+00:00",
+          "sender_name": "Tran Van An",
+          "sender_address": "tvan@hcmiu.edu.vn",
+          "subject": "Đã hủy: Họp nhóm đồ án",
+          "categories": ["class"],
+          "from_lecturer": true,
+          "meeting": true,
+          "invitation": "cancelled"
+        }
+      ]
+    }
+  }
+}

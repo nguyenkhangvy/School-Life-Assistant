@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from sla_agent.outlook_reader import PR_DELIVERY_TIME, PR_MESSAGE_ID, PR_SENDER_SMTP
 
 NOT_FOUND = -2147221233  # MAPI_E_NOT_FOUND: the property isn't there
+OCCURRENCE_NOT_FOUND = -2147352567  # DISP_E_EXCEPTION: GetOccurrence found no occurrence that day
 E_ABORT = -2147467260  # what Outlook answers when its security prompt is refused
 
 
@@ -54,8 +55,58 @@ class FakeMail:
         self.displayed += 1
 
 
-class FakeMeeting(FakeMail):
+class FakeMeetingReply(FakeMail):
+    Class = 56  # olMeetingResponsePositive: "Accepted: …", skipped
+
+
+class FakeCancellation(FakeMail):
+    Class = 54  # olMeetingCancellation
+
+
+def utc_label(moment):
+    """A time as pywin32 gives it: the wall time, labelled UTC whatever it is."""
+    return moment.replace(tzinfo=timezone.utc)
+
+
+class FakeAppointment:
+    """A meeting's appointment. start and end are aware UTC (Outlook's StartUTC and EndUTC); pattern: a FakePattern for
+    a recurring meeting."""
+
+    def __init__(self, start, end, all_day=False, location="", pattern=None):
+        self.StartUTC, self.EndUTC = utc_label(start), utc_label(end)
+        self.AllDayEvent, self.Location, self.IsRecurring, self.pattern = all_day, location, pattern is not None, pattern
+
+    def GetRecurrencePattern(self):
+        return self.pattern
+
+
+class FakePattern:
+    """A recurrence: its time of day on the laptop, and its occurrences by the day Outlook files them under (a moved
+    one is still filed under its first day)."""
+
+    def __init__(self, clock, occurrences):
+        self.StartTime = utc_label(datetime(1899, 12, 30, clock.hour, clock.minute))
+        self.occurrences, self.asked = occurrences, []
+
+    def GetOccurrence(self, moment):
+        self.asked.append(moment)
+        if moment.time() != self.StartTime.time() or moment.date() not in self.occurrences:
+            raise ComError(OCCURRENCE_NOT_FOUND)
+        return self.occurrences[moment.date()]
+
+
+class FakeMeetingRequest(FakeMail):
     Class = 53  # olMeetingRequest
+
+    def __init__(self, subject, received, appointment, body="", **fields):
+        super().__init__(subject, received, body, **fields)
+        self.appointment = appointment
+
+    def GetAssociatedAppointment(self, add_to_calendar):
+        assert add_to_calendar is False  # reading it never adds it to the calendar
+        if isinstance(self.appointment, Exception):
+            raise self.appointment
+        return self.appointment
 
 
 class FakeItems:

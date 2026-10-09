@@ -1,13 +1,16 @@
 """The sorting rules on anonymized copies of the student's real Inbox: agent/tests/fixtures/mail-samples.json,
-made by agent/tools/anonymize_mail.py. Each `expected` result, sessions included, was checked by the student."""
+made by agent/tools/anonymize_mail.py. Each `expected` result, sessions included, was checked by the student; so
+was `found`, everything the mail time reader finds (spec 2026-10-07-mail-event-kinds-design.md §8.1)."""
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
+from agent.tools.mail_times_score import as_case_fields
 from sla_agent.mail_rules import Context, Email, sort_email
+from sla_agent.mail_times import read_times
 
 SAMPLES = json.loads((Path(__file__).parent / "fixtures" / "mail-samples.json").read_text(encoding="utf-8"))
 CONTEXT = Context(courses=tuple(tuple(c) for c in SAMPLES["context"]["courses"]),
@@ -26,11 +29,11 @@ def test_each_email_sorts_as_the_student_checked(sample):
     assert {
         "categories": item.categories, "from_lecturer": item.from_lecturer,
         "dates": [d.isoformat() for d in item.dates],
-        "sessions": [s.model_dump(mode="json", exclude_none=True) for s in item.sessions],
+        "sessions": [s.model_dump(mode="json", exclude_defaults=True) for s in item.sessions],
         "register_by": item.register_by and item.register_by.isoformat(),
         "blackboard_title": item.blackboard_title,
         "class_changes": [c.model_dump(mode="json", exclude_none=True) for c in item.class_changes],
-    } == sample["expected"]
+    } == {key: value for key, value in sample["expected"].items() if key != "found"}
 
 
 def test_the_samples_cover_every_box():
@@ -40,3 +43,13 @@ def test_the_samples_cover_every_box():
                           "system_notice", "promotion"}
     assert any(sample["expected"]["class_changes"] for sample in SAMPLES["emails"])
     assert any(sample["expected"]["sessions"] for sample in SAMPLES["emails"])
+
+
+@pytest.mark.parametrize("sample", SAMPLES["emails"],
+                         ids=[f"{n:02d} {s['subject'][:40]}" for n, s in enumerate(SAMPLES["emails"])])
+def test_each_email_reads_as_the_student_checked(sample):
+    arrived = (datetime.fromisoformat(sample["received_at"]).astimezone(timezone.utc) + timedelta(hours=7)).date()
+
+    found = read_times(sample["subject"], sample["text"], arrived)
+
+    assert as_case_fields(found) == sample["expected"]["found"]

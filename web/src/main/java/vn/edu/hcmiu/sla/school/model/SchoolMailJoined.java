@@ -12,8 +12,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * An event session the student joined from Mailbox. Day and times are Vietnam time; end may be empty. The
- * email's subject is copied in as the title, so it stays in the Timetable even when the email is gone.
+ * An event session the student joined from Mailbox. Day and times are Vietnam time; end may be empty, and is on the
+ * next day when endsNextDay. The email's subject is copied in as the title, and the session's check-in, mode and end
+ * with it, so it stays in the Timetable as it was even when the email is gone.
  */
 @Entity
 @Table(name = "school_mail_joined")
@@ -53,6 +54,18 @@ public class SchoolMailJoined {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt; // UTC
 
+    @Column(name = "check_in")
+    private LocalTime checkIn;
+
+    @Column(length = 10)
+    private String mode;
+
+    @Column(name = "end_is_approximate", nullable = false)
+    private boolean endIsApproximate;
+
+    @Column(name = "ends_next_day", nullable = false)
+    private boolean endsNextDay;
+
     protected SchoolMailJoined() {
     }
 
@@ -70,9 +83,19 @@ public class SchoolMailJoined {
         this.createdAt = createdAt;
     }
 
+    /** The found session's check-in, mode and end details, kept with the joined copy. Returns this row. */
+    public SchoolMailJoined keeping(LocalTime checkIn, String mode, boolean endIsApproximate, boolean endsNextDay) {
+        this.checkIn = checkIn;
+        this.mode = mode;
+        this.endIsApproximate = endIsApproximate;
+        this.endsNextDay = endsNextDay;
+        return this;
+    }
+
     /** A new, unsaved row with the same values, to save again after a try that failed. */
     public SchoolMailJoined copy() {
-        return new SchoolMailJoined(userId, mailKey, day, start, end, title, place, trainingPoints, byHand, createdAt);
+        return new SchoolMailJoined(userId, mailKey, day, start, end, title, place, trainingPoints, byHand, createdAt)
+                .keeping(checkIn, mode, endIsApproximate, endsNextDay);
     }
 
     public Integer getId() {
@@ -117,5 +140,21 @@ public class SchoolMailJoined {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalTime getCheckIn() {
+        return checkIn;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public boolean isEndIsApproximate() {
+        return endIsApproximate;
+    }
+
+    public boolean isEndsNextDay() {
+        return endsNextDay;
     }
 }

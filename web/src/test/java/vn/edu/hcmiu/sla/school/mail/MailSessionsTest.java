@@ -167,4 +167,23 @@ class MailSessionsTest {
 
         assertThat(mailSessions.lines(an.id(), invoice, NOW_IN_VIETNAM)).isEmpty();
     }
+
+    @Test
+    void anotherJoinedEventIsBusyFromItsCheckIn() {
+        // Talkshow B: check-in 16:30, programme 17:00-18:00 on Tue 29/09.
+        db.persist(new SchoolMailJoined(an.id(), OTHER, TUE, LocalTime.of(17, 0), LocalTime.of(18, 0), "Talkshow B",
+                null, false, false, NOW).keeping(LocalTime.of(16, 30), null, false, false));
+        db.flush();
+
+        assertThat(marks(event(at(TUE, "16:00", "16:45")))).containsExactly("⚠ Conflict: Talkshow B");
+    }
+
+    @Test
+    void anAddedPeriodIsNeverBusy() {
+        db.persist(new vn.edu.hcmiu.sla.school.model.SchoolMailAddedPeriod(an.id(), OTHER, TUE, TUE, "one_window",
+                LocalTime.of(8, 0), LocalTime.of(20, 0), false, null, "Ngày hội", NOW));
+        db.flush();
+
+        assertThat(marks(event(at(TUE, "16:00", "16:45")))).containsExactly("✓ No conflict");
+    }
 }

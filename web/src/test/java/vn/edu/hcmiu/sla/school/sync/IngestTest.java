@@ -50,9 +50,13 @@ import vn.edu.hcmiu.sla.school.model.SchoolMail;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChange;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChangeRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChoice;
+import vn.edu.hcmiu.sla.school.model.SchoolMailAddedPeriod;
+import vn.edu.hcmiu.sla.school.model.SchoolMailAddedPeriodRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailChoiceRepository;
+import vn.edu.hcmiu.sla.school.model.SchoolMailDeadlineRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailJoined;
 import vn.edu.hcmiu.sla.school.model.SchoolMailJoinedRepository;
+import vn.edu.hcmiu.sla.school.model.SchoolMailPeriodRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailSessionRepository;
 import vn.edu.hcmiu.sla.school.model.SchoolMailStatus;
@@ -125,7 +129,16 @@ class IngestTest {
     SchoolMailSessionRepository mailSessions;
 
     @Autowired
+    SchoolMailPeriodRepository mailPeriods;
+
+    @Autowired
+    SchoolMailDeadlineRepository mailDeadlines;
+
+    @Autowired
     SchoolMailJoinedRepository mailJoined;
+
+    @Autowired
+    SchoolMailAddedPeriodRepository addedPeriods;
 
     @Autowired
     SchoolMailChoiceRepository mailChoices;
@@ -556,6 +569,58 @@ class IngestTest {
         assertThat(mailJoined.findAll()).extracting(SchoolMailJoined::getMailKey).containsExactly(KEY_2);
     }
 
+    // ---- Sessions, Periods, deadlines and flags (spec 2026-10-07-mail-event-kinds-design.md, 6.1) --------------
+
+    static final String CONTEST = "0a7c6f1d2e3b4a5968778695a4b3c2d1e0f1a2b3c4d5e6f708192a3b4c5d6e7f";
+
+    static Map<String, Object> eventKindsPayload() {
+        return at(Payloads.sample("finish-outlook-event-kinds.json"), "outlook", "data");
+    }
+
+    @Test
+    void everythingTheLaptopFoundInAnEmailIsSaved() {
+        assertThat(syncOutlook(userId, ok(eventKindsPayload()))).isEqualTo("success");
+
+        assertThat(mailSessions.findOfUser(userId)).filteredOn(s -> s.getMail().getMailKey().equals(CONTEST))
+                .extracting(s -> s.getDay() + " " + s.getStart() + "-" + s.getEnd() + " ~" + s.isEndIsApproximate()
+                        + " +" + s.isEndsNextDay() + " in " + s.getCheckIn() + " link " + s.getLinkOpens() + " "
+                        + s.getMode() + " " + s.getRelativeDay() + " " + s.getLabel())
+                .containsExactly(
+                        "2026-10-09 14:00-null ~false +false in null link null null weekday null",
+                        "2026-10-20 13:30-15:30 ~true +false in 13:00 link null in_person null round_1",
+                        "2026-12-31 22:00-00:30 ~false +true in null link 21:45 online null final");
+        assertThat(mailPeriods.findOfUser(userId)).extracting(p -> p.getFirstDay() + "→" + p.getLastDay() + " "
+                + p.getMode() + " " + p.getFromTime() + "-" + p.getToTime() + " " + p.isDetailsLater() + " "
+                + p.getLabel())
+                .containsExactly("2026-10-26→2026-10-30 all_day null-null true null",
+                        "2026-11-02→2026-11-05 daily_window 09:00-17:00 false opening",
+                        "2026-11-28→2026-11-29 one_window 09:00-16:00 false null");
+        assertThat(mailDeadlines.findOfUser(userId)).extracting(d -> d.getKind() + " " + d.getDay() + " "
+                + d.getTime() + " " + d.getMode())
+                .containsExactly("opens 2026-10-08 08:00 null", "register 2026-10-10 12:00 in_person",
+                        "register 2026-10-12 17:00 online", "confirm 2026-10-15 null null",
+                        "due 2026-10-18 23:59 null");
+        List<SchoolMail> saved = mails.findByUserIdOrderByReceivedAtDescIdDesc(userId);
+        assertThat(saved).extracting(m -> m.isMeeting() + " " + m.isRegistered() + " " + m.getInvitation())
+                .containsExactly("true false cancelled", "true false request", "false true null");
+    }
+
+    @Test
+    void aNewSyncReplacesPeriodsAndDeadlinesAndKeepsAddedPeriods() {
+        syncOutlook(userId, ok(eventKindsPayload()));
+        addedPeriods.save(new SchoolMailAddedPeriod(userId, CONTEST, LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 5),
+                "daily_window", LocalTime.of(9, 0), LocalTime.of(17, 0), false, "opening", "Cuộc thi",
+                LocalDateTime.of(2026, 10, 7, 3, 0)));
+        Map<String, Object> data = eventKindsPayload();
+        list(data, "emails").remove(0);
+
+        syncOutlook(userId, ok(data));
+
+        assertThat(mailPeriods.findOfUser(userId)).isEmpty();
+        assertThat(mailDeadlines.findOfUser(userId)).isEmpty();
+        assertThat(addedPeriods.findAll()).extracting(SchoolMailAddedPeriod::getMailKey).containsExactly(CONTEST);
+    }
+
     @Test
     void anotherUsersMailIsLeftAlone() {
         Integer other = makeUser("binh@example.com");
@@ -567,5 +632,17 @@ class IngestTest {
         assertThat(mails.findByUserIdOrderByReceivedAtDescIdDesc(other)).hasSize(3);
         assertThat(mailSessions.findOfUser(other)).hasSize(2);
         assertThat(mailChoices.findByUserId(other)).hasSize(1);
+    }
+
+    @Test
+    void anotherUsersPeriodsAndDeadlinesAreLeftAlone() {
+        Integer other = makeUser("binh@example.com");
+        syncOutlook(other, ok(eventKindsPayload()));
+
+        syncOutlook(userId, ok(outlookPayload()));
+
+        assertThat(mailPeriods.findOfUser(other)).hasSize(3);
+        assertThat(mailDeadlines.findOfUser(other)).hasSize(5);
+        assertThat(mailPeriods.findOfUser(userId)).isEmpty();
     }
 }

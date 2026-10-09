@@ -57,7 +57,7 @@ public class CalendarController {
         }
 
         List<Map<String, Object>> events = new ArrayList<>();
-        List<Item> items = schedule.itemsBetween(user.id(), VietnamTime.dayStart(from), VietnamTime.dayStart(to));
+        List<Item> items = schedule.timetableBetween(user.id(), VietnamTime.dayStart(from), VietnamTime.dayStart(to));
         Set<Item> clashing = Collections.newSetFromMap(new IdentityHashMap<>());
         MyEventConflicts.clashes(items).forEach(clash -> clashing.add(clash.occurrence()));
         for (Item item : items) {
@@ -86,7 +86,10 @@ public class CalendarController {
         return event(item, false);
     }
 
-    /** clash: an own event's day that overlaps something else, shown with ⚠ and a red border. */
+    /**
+     * clash: an own event's day that overlaps something else, shown with ⚠ and a red border. An added Period is a bar
+     * over its days in the All-day row, and never clashes.
+     */
     static Map<String, Object> event(Item item, boolean clash) {
         String title = item.label() != null ? item.label() + ": " + item.title() : item.title();
         String css = "event-" + item.kind();
@@ -100,7 +103,8 @@ public class CalendarController {
         props.put("room", item.room());
 
         Map<String, Object> event = new LinkedHashMap<>();
-        event.put("title", item.allDay() ? "Make-up class: " + item.title() + " (" + noTime(item) + ")" : title);
+        event.put("title", item.allDay() && item.kind().equals("class")
+                ? "Make-up class: " + item.title() + " (" + noTime(item) + ")" : title);
         event.put("start", VietnamTime.wallClock(item.startAt()));
         event.put("classNames", List.of(css));
         event.put("extendedProps", props);
@@ -111,6 +115,9 @@ public class CalendarController {
         if (item.allDay()) {
             event.put("start", VietnamTime.date(item.startAt()).toString());
             event.put("allDay", true);
+            if (item.endAt() != null) {
+                event.put("end", VietnamTime.date(item.endAt()).toString()); // the day after the last, as FullCalendar wants
+            }
         } else if (item.endAt() != null) {
             event.put("end", VietnamTime.wallClock(item.endAt()));
         }

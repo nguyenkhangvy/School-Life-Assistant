@@ -66,15 +66,16 @@
             <span class="mail-subject" th:text="${event.title}" th:title="${event.title}">Hội thao IU</span>
           </span>
           <span class="mail-extra"></span>
-          <span class="mail-when" th:text="|Next: ${@schoolFormat.dayLabel(event.lines[0].session.day)}|">Next: Fri
+          <span class="mail-when" th:text="|Next: ${@schoolFormat.dayLabel(event.next(today))}|">Next: Fri
             02/10</span>
           <span class="mail-actions">
             <form class="inline" method="post" th:action="@{/school/mailbox/{key}/leave(key=${event.key})}"><button
                 type="submit" class="done-button">Leave</button></form>
           </span>
-          <span class="mail-sessions"><th:block th:each="line, i : ${event.lines}"><span class="session"><th:block
-              th:text="${line.when}">Fri 02/10 from 18:00</th:block> <span class="mark mark-joined">Joined</span></span><th:block
-              th:unless="${i.last}"> · </th:block></th:block></span>
+          <span class="mail-sessions"><span class="session" th:each="line : ${event.lines}"><th:block
+              th:text="${line.when}">Fri 02/10 from 18:00</th:block> <span class="mark mark-joined">Joined</span></span><span
+              class="session period" th:each="line : ${event.periods}"><th:block th:text="${line.text}">Period · Mon
+              02/11 → Thu 05/11 · 09:00–17:00 each day</th:block> <span class="mark mark-joined">Added ✓</span></span></span>
         </li>
       </ul>
     </section>
@@ -95,7 +96,9 @@
 
 <!--/* One row (Mailbox.Card). showNext: Events and School tasks show the next date instead of the time received.
      Clicking the subject or "Web ↗" opens the email; mailbox.js then tells the site (data-opened). The subject's
-     sla-mail: link only works on the laptop, so outside Windows only "Web ↗" tells the site. */-->
+     sla-mail: link only works on the laptop, so outside Windows only "Web ↗" tells the site. Under the row, one line
+     holds its deadline tags, sessions and Periods (docs/superpowers/specs/2026-10-07-mail-event-kinds-design.md, 6.2):
+     a cancelled meeting's sessions are struck out, and a card with one Period and no sessions offers Add there. */-->
 <li th:fragment="row(card, showNext)" th:id="|mail-${card.key}|"
     th:class="|mail-row${card.opened ? ' is-opened' : ''}${card.done ? ' is-done' : ''}|">
   <span class="mail-labels">
@@ -115,9 +118,8 @@
     <span class="tag" th:if="${card.copies > 1}" th:text="|sent ${card.copies}×|">sent 2×</span>
     <span class="tag" th:if="${card.copies <= 1 and card.messages > 1}" th:text="|${card.messages} messages|">3
       messages</span>
-    <span class="tag tag-register" th:if="${card.eventLike and card.registerBy != null and !card.closed and !card.past}"
-          th:text="|Register by ${@schoolFormat.dayLabel(card.registerBy)}|">Register by Tue 22/09</span>
-    <span class="tag" th:if="${card.eventLike and card.closed and card.past}">Registration closed</span>
+    <span class="tag tag-registered" th:if="${card.registered}">Registered ✓</span>
+    <span class="tag tag-cancelled" th:if="${card.cancelled}">Cancelled</span>
   </span>
   <span class="mail-when" th:text="${showNext and card.nextDate != null
       ? 'Next: ' + @schoolFormat.dayLabel(card.nextDate) : @schoolFormat.when(card.receivedAt)}">Next: Tue 29/09</span>
@@ -132,12 +134,30 @@
         class="muted">Done ✓</span> <button type="submit" class="done-button">Undo</button></form>
   </span>
   <!--/* th:if runs before th:with on one element, so the sessions are looked up on a block around it. */-->
-  <th:block th:with="found=${lines == null ? null : lines.get(card.key)}"><span class="mail-sessions"
-      th:if="${found != null and !found.isEmpty()}"><th:block th:each="line, i : ${found}"><span
-      class="session"><th:block th:text="${line.when}">Tue 29/09 13:00–14:00</th:block>
-    <span th:if="${line.joined}" class="mark mark-joined">Joined</span><span th:unless="${line.joined}"
+  <th:block th:with="found=${lines == null ? null : lines.get(card.key)},
+      foundPeriods=${periods == null ? null : periods.get(card.key)}"><span class="mail-sessions"
+      th:if="${!card.tags.isEmpty() or (found != null and !found.isEmpty())
+          or (foundPeriods != null and !foundPeriods.isEmpty())}"><span th:each="tag : ${card.tags}"
+      th:class="|tag tag-${tag.kind}|"><th:block th:text="${tag.lead}">Register by:</th:block><th:block
+      th:each="piece, i : ${tag.pieces}"><th:block th:text="${i.first ? ' ' : ' · '}"> </th:block><s
+      th:if="${piece.passed}" th:text="${piece.text}">In person 12:00 Sat 03/10</s><th:block th:unless="${piece.passed}"
+      th:text="${piece.text}">Online 17:00 Mon 12/10</th:block></th:block></span><th:block th:if="${found != null}"><span
+      class="session" th:each="line : ${found}"><th:block th:if="${card.cancelled and !line.joined}"><s
+      th:text="${line.when}">Tue 29/09 13:00–14:00</s></th:block><th:block th:unless="${card.cancelled and !line.joined}"
+      th:text="${line.when}">Tue 29/09 13:00–14:00</th:block>
+    <span th:if="${line.joined}" class="mark mark-joined">Joined</span><span
+        th:unless="${line.joined or card.cancelled}"
         th:class="${line.mark.conflict ? 'mark mark-conflict' : 'mark mark-free'}" th:text="${line.mark.text}">✓ No
-      conflict</span></span><th:block th:unless="${i.last}"> · </th:block></th:block></span></th:block>
+      conflict</span></span></th:block><th:block th:if="${foundPeriods != null}"><span class="session period"
+      th:each="line : ${foundPeriods}"><th:block th:if="${card.cancelled and !line.added}"><s
+      th:text="${line.text}">Period · Mon 26/10 → Fri 30/10 · all day</s></th:block><th:block
+      th:unless="${card.cancelled and !line.added}" th:text="${line.text}">Period · Mon 26/10 → Fri 30/10 · all
+      day</th:block><th:block th:if="${line.added}"> <span class="mark mark-joined">Added ✓</span> · <form class="inline"
+      method="post" th:action="@{/school/mailbox/{key}/remove-period(key=${card.key})}"><input type="hidden"
+      name="period" th:value="${line.id}"><button type="submit" class="link-button">Remove</button></form></th:block><form class="inline"
+      th:if="${!line.added and card.addable}" method="post"
+      th:action="@{/school/mailbox/{key}/add-period(key=${card.key})}"> <button type="submit"
+      class="done-button add-button">Add</button></form></span></th:block></span></th:block>
 </li>
 
 </body>

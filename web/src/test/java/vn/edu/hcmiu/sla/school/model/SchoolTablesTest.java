@@ -1,6 +1,7 @@
 package vn.edu.hcmiu.sla.school.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -187,5 +188,67 @@ class SchoolTablesTest {
                 .containsExactly(true, true);
         settings.save(new SchoolMailSettings(userId, false));
         assertThat(settings.autoDone(userId)).isFalse();
+    }
+
+    @Test
+    void anEmailKeepsItsPeriodsDeadlinesFlagsAndEachSessionsDetails() {
+        SchoolMail mail = new SchoolMail(userId, "a".repeat(64), "00AB", null, SEPT_28, "Đoàn Hội", "doanhoi@hcmiu.edu.vn",
+                "Cuộc thi", List.of("event"), false, List.of(), true, null);
+        mail.setFlags(true, true, "cancelled");
+        mail.getSessions().add(new SchoolMailSession(mail, LocalDate.of(2026, 12, 31), LocalTime.of(22, 0),
+                LocalTime.of(0, 30), true, true, LocalTime.of(21, 30), LocalTime.of(21, 45), "online", "tomorrow",
+                "final"));
+        mail.getPeriods().add(new SchoolMailPeriod(mail, LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 5),
+                "daily_window", LocalTime.of(9, 0), LocalTime.of(17, 0), true, "opening"));
+        mail.getDeadlines().add(new SchoolMailDeadline(mail, "register", LocalDate.of(2026, 10, 12), LocalTime.of(17, 0),
+                "in_person"));
+        mail.getDeadlines().add(new SchoolMailDeadline(mail, "opens", LocalDate.of(2026, 10, 8), null, null));
+        db.persist(mail);
+
+        SchoolMail again = reloaded(mail, mail.getId());
+
+        assertThat(List.of(again.isMeeting(), again.isRegistered(), again.getInvitation()))
+                .containsExactly(true, true, "cancelled");
+        SchoolMailSession session = again.getSessions().get(0);
+        assertThat(List.of(session.getEnd(), session.getCheckIn(), session.getLinkOpens()))
+                .containsExactly(LocalTime.of(0, 30), LocalTime.of(21, 30), LocalTime.of(21, 45));
+        assertThat(List.of(session.isEndIsApproximate(), session.isEndsNextDay(), session.getMode(),
+                session.getRelativeDay(), session.getLabel())).containsExactly(true, true, "online", "tomorrow", "final");
+        assertThat(again.getPeriods()).extracting(p -> p.getMode() + " " + p.getFromTime() + "-" + p.getToTime() + " "
+                + p.isDetailsLater() + " " + p.getLabel()).containsExactly("daily_window 09:00-17:00 true opening");
+        assertThat(again.getDeadlines()).extracting(d -> d.getKind() + " " + d.getDay() + " " + d.getTime() + " "
+                + d.getMode()).containsExactly("opens 2026-10-08 null null", "register 2026-10-12 17:00 in_person");
+    }
+
+    @Test
+    void aJoinedSessionKeepsItsCheckInModeAndEnd() {
+        SchoolMailJoined row = new SchoolMailJoined(userId, "a".repeat(64), LocalDate.of(2026, 12, 31),
+                LocalTime.of(22, 0), LocalTime.of(0, 30), "Countdown", null, false, false, SEPT_28)
+                .keeping(LocalTime.of(21, 30), "in_person", true, true);
+        db.persist(row);
+
+        SchoolMailJoined again = reloaded(row, row.getId());
+
+        assertThat(List.of(again.getCheckIn(), again.getMode(), again.isEndIsApproximate(), again.isEndsNextDay()))
+                .containsExactly(LocalTime.of(21, 30), "in_person", true, true);
+        assertThat(again.copy().getCheckIn()).isEqualTo(LocalTime.of(21, 30));
+    }
+
+    SchoolMailAddedPeriod added(String key, String mode, LocalTime from, LocalTime to) {
+        return new SchoolMailAddedPeriod(userId, key, LocalDate.of(2026, 9, 14), LocalDate.of(2026, 9, 20), mode, from,
+                to, false, null, "beFood", SEPT_28);
+    }
+
+    @Test
+    void anEmailsTwoDailyWindowsCanBothBeAddedButEachOnlyOnce() {
+        db.persist(added("a".repeat(64), "daily_window", LocalTime.of(8, 0), LocalTime.of(11, 30)));
+        db.persist(added("a".repeat(64), "daily_window", LocalTime.of(13, 0), LocalTime.of(16, 0)));
+        db.persist(added("b".repeat(64), "daily_window", LocalTime.of(8, 0), LocalTime.of(11, 30)));
+        db.flush();
+
+        // An id made by the table: the row is written at once.
+        assertThatThrownBy(() -> db.persist(added("a".repeat(64), "daily_window", LocalTime.of(8, 0),
+                LocalTime.of(11, 30)))).isInstanceOf(org.hibernate.exception.ConstraintViolationException.class)
+                .hasMessageContaining("uq_school_mail_added_periods");
     }
 }

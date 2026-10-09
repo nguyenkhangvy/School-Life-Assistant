@@ -118,8 +118,8 @@ public class SchoolController {
         model.addAttribute("systemLines", SyncStatus.systemLines(
                 runs.recentRuns(user.id()).stream().map(RunInfo::of).toList(), now));
         model.addAttribute("today", today);
-        model.addAttribute("todayItems", schedule.itemsOn(user.id(), today));
-        model.addAttribute("tomorrowItems", schedule.itemsOn(user.id(), today.plusDays(1)));
+        model.addAttribute("todayItems", schedule.timetableOn(user.id(), today));
+        model.addAttribute("tomorrowItems", schedule.timetableOn(user.id(), today.plusDays(1)));
         model.addAttribute("toSubmit", assignments.findToSubmit(user.id(), now.minusDays(OVERDUE_DAYS)));
         model.addAttribute("latestAnnouncements", announcements.findLatest(user.id(), Limit.of(3)));
         model.addAttribute("nextExam",

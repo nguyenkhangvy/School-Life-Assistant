@@ -116,7 +116,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-29",
+       "start": "09:00",
+       "end": "12:00",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -135,7 +155,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -154,7 +181,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -175,13 +209,34 @@
     "sessions": [
      {
       "day": "2026-09-29",
-      "start": "13:00:00",
-      "end": "16:30:00"
+      "start": "14:00:00",
+      "end": "16:30:00",
+      "check_in": "13:00:00"
      }
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-29",
+       "start": "14:00",
+       "end": "16:30",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": "13:00",
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -200,7 +255,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -221,7 +283,21 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [
+      {
+       "kind": "due",
+       "day": "2026-10-03",
+       "time": null,
+       "mode": null
+      }
+     ],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -249,7 +325,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-25",
+       "start": "08:30",
+       "end": "11:30",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -269,7 +365,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -296,7 +399,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-27",
+       "start": "09:00",
+       "end": "11:00",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -315,7 +438,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -342,7 +472,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-24",
+       "start": "14:30",
+       "end": null,
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -361,7 +511,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -380,7 +537,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -399,7 +563,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -427,7 +598,34 @@
     ],
     "register_by": "2026-09-22",
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-30",
+       "start": "09:45",
+       "end": null,
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [
+      {
+       "kind": "register",
+       "day": "2026-09-22",
+       "time": null,
+       "mode": null
+      }
+     ],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -455,7 +653,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-25",
+       "start": "08:30",
+       "end": "11:30",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -474,7 +692,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -493,7 +718,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -513,7 +745,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -541,7 +780,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-24",
+       "start": "08:00",
+       "end": "12:00",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -565,9 +824,29 @@
      "2026-11-15"
     ],
     "sessions": [],
-    "register_by": null,
+    "register_by": "2026-09-22",
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [
+      {
+       "kind": "opens",
+       "day": "2026-09-20",
+       "time": null,
+       "mode": null
+      },
+      {
+       "kind": "register",
+       "day": "2026-09-22",
+       "time": null,
+       "mode": null
+      }
+     ],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -586,7 +865,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -605,7 +891,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -629,9 +922,29 @@
      "2026-11-15"
     ],
     "sessions": [],
-    "register_by": null,
+    "register_by": "2026-09-22",
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [
+      {
+       "kind": "opens",
+       "day": "2026-09-20",
+       "time": null,
+       "mode": null
+      },
+      {
+       "kind": "register",
+       "day": "2026-09-22",
+       "time": null,
+       "mode": null
+      }
+     ],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -649,21 +962,45 @@
     "dates": [
      "2026-09-20"
     ],
-    "sessions": [
-     {
-      "day": "2026-09-20",
-      "start": "08:00:00",
-      "end": "11:30:00"
-     },
-     {
-      "day": "2026-09-20",
-      "start": "13:00:00",
-      "end": "16:00:00"
-     }
-    ],
+    "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [
+      {
+       "first_day": "2026-09-14",
+       "last_day": "2026-09-20",
+       "mode": "all_day",
+       "from_time": null,
+       "to_time": null,
+       "details_later": false,
+       "label": "final"
+      },
+      {
+       "first_day": "2026-09-17",
+       "last_day": "2026-09-20",
+       "mode": "daily_window",
+       "from_time": "08:00",
+       "to_time": "11:30",
+       "details_later": false,
+       "label": null
+      },
+      {
+       "first_day": "2026-09-17",
+       "last_day": "2026-09-20",
+       "mode": "daily_window",
+       "from_time": "13:00",
+       "to_time": "16:00",
+       "details_later": false,
+       "label": null
+      }
+     ],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -690,7 +1027,14 @@
       "kind": "online",
       "day": "2026-09-18"
      }
-    ]
+    ],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -716,7 +1060,51 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [
+      {
+       "first_day": "2026-09-04",
+       "last_day": "2026-10-05",
+       "mode": "all_day",
+       "from_time": null,
+       "to_time": null,
+       "details_later": false,
+       "label": null
+      },
+      {
+       "first_day": "2026-09-14",
+       "last_day": "2026-09-20",
+       "mode": "all_day",
+       "from_time": null,
+       "to_time": null,
+       "details_later": false,
+       "label": null
+      },
+      {
+       "first_day": "2026-09-21",
+       "last_day": "2026-09-27",
+       "mode": "all_day",
+       "from_time": null,
+       "to_time": null,
+       "details_later": false,
+       "label": null
+      },
+      {
+       "first_day": "2026-09-28",
+       "last_day": "2026-10-05",
+       "mode": "all_day",
+       "from_time": null,
+       "to_time": null,
+       "details_later": false,
+       "label": null
+      }
+     ],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -737,7 +1125,8 @@
     "sessions": [
      {
       "day": "2026-09-22",
-      "start": "08:00:00"
+      "start": "08:00:00",
+      "mode": "online"
      }
     ],
     "register_by": null,
@@ -748,7 +1137,27 @@
       "kind": "online",
       "day": "2026-09-22"
      }
-    ]
+    ],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-22",
+       "start": "08:00",
+       "end": null,
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": "online",
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -767,7 +1176,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -795,7 +1211,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-17",
+       "start": "08:00",
+       "end": "11:30",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -814,7 +1250,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -833,7 +1276,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -852,7 +1302,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -872,7 +1329,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -892,7 +1356,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -911,7 +1382,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -945,7 +1423,39 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-11",
+       "start": "11:00",
+       "end": "13:00",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      },
+      {
+       "day": "2026-09-12",
+       "start": "16:00",
+       "end": "17:30",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -964,7 +1474,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -983,7 +1500,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1010,7 +1534,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-09",
+       "start": "16:00",
+       "end": "17:00",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1029,7 +1573,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": "Exercises Physics 4",
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1051,7 +1602,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1078,7 +1636,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-12",
+       "start": "14:00",
+       "end": "16:00",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1106,7 +1684,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-11",
+       "start": "14:00",
+       "end": "17:00",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1129,7 +1727,24 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [
+      {
+       "first_day": "2026-09-07",
+       "last_day": "2026-09-12",
+       "mode": "all_day",
+       "from_time": null,
+       "to_time": null,
+       "details_later": false,
+       "label": null
+      }
+     ],
+     "deadlines": [],
+     "meeting": true,
+     "registered": false
+    }
    }
   },
   {
@@ -1157,7 +1772,27 @@
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-09-08",
+       "start": "14:00",
+       "end": "16:30",
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": null,
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1176,7 +1811,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": "Welcome to physics 4 class, group 01, semester 1, academic year 2026-2027",
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1195,7 +1837,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1217,12 +1866,33 @@
     "sessions": [
      {
       "day": "2026-08-31",
-      "start": "19:30:00"
+      "start": "19:30:00",
+      "mode": "online"
      }
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-08-31",
+       "start": "19:30",
+       "end": null,
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": "online",
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1244,7 +1914,24 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [
+      {
+       "first_day": "2026-08-13",
+       "last_day": "2026-08-26",
+       "mode": "all_day",
+       "from_time": null,
+       "to_time": null,
+       "details_later": false,
+       "label": null
+      }
+     ],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1263,7 +1950,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1285,12 +1979,33 @@
     "sessions": [
      {
       "day": "2026-08-25",
-      "start": "19:30:00"
+      "start": "19:30:00",
+      "mode": "online"
      }
     ],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [
+      {
+       "day": "2026-08-25",
+       "start": "19:30",
+       "end": null,
+       "end_is_approximate": false,
+       "ends_next_day": false,
+       "check_in": null,
+       "link_opens": null,
+       "mode": "online",
+       "relative": null,
+       "label": null
+      }
+     ],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1311,7 +2026,21 @@
     "sessions": [],
     "register_by": "2026-08-31",
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [
+      {
+       "kind": "register",
+       "day": "2026-08-31",
+       "time": null,
+       "mode": null
+      }
+     ],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1328,7 +2057,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1350,7 +2086,21 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [
+      {
+       "kind": "due",
+       "day": "2026-08-27",
+       "time": null,
+       "mode": null
+      }
+     ],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1369,7 +2119,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   },
   {
@@ -1388,7 +2145,14 @@
     "sessions": [],
     "register_by": null,
     "blackboard_title": null,
-    "class_changes": []
+    "class_changes": [],
+    "found": {
+     "sessions": [],
+     "periods": [],
+     "deadlines": [],
+     "meeting": false,
+     "registered": false
+    }
    }
   }
  ]

@@ -231,6 +231,93 @@ def test_bad_outlook_data_is_rejected(change):
         FinishRun.model_validate({"outlook": {"status": "ok", "data": data}})
 
 
+# Sessions, Periods, deadlines and flags (spec 2026-10-07-mail-event-kinds-design.md §3): codes, days, times and
+# yes/no only. contract/samples/finish-outlook-event-kinds.json has every field; the Java tests read it too.
+def event_kinds_payload():
+    return _sample("finish-outlook-event-kinds.json")["outlook"]["data"]
+
+
+def test_every_new_field_of_an_email_is_read():
+    contest, request, cancelled = FinishRun.model_validate(
+        {"outlook": {"status": "ok", "data": event_kinds_payload()}}).outlook.data.emails
+
+    first, last_night, weekday = contest.sessions
+    assert (first.check_in.isoformat(), first.end.isoformat(), first.end_is_approximate, first.mode, first.label) == (
+        "13:00:00", "15:30:00", True, "in_person", "round_1")
+    assert (last_night.end.isoformat(), last_night.ends_next_day, last_night.link_opens.isoformat()) == (
+        "00:30:00", True, "21:45:00")
+    assert (weekday.relative, weekday.end, weekday.check_in, weekday.mode, weekday.label) == (
+        "weekday", None, None, None, None)
+    assert [(p.mode, p.from_time and p.from_time.isoformat(), p.details_later, p.label) for p in contest.periods] == [
+        ("all_day", None, True, None), ("daily_window", "09:00:00", False, "opening"),
+        ("one_window", "09:00:00", False, None)]
+    assert [(d.kind, d.day.isoformat(), d.time and d.time.isoformat(), d.mode) for d in contest.deadlines] == [
+        ("opens", "2026-10-08", "08:00:00", None), ("register", "2026-10-10", "12:00:00", "in_person"),
+        ("register", "2026-10-12", "17:00:00", "online"), ("confirm", "2026-10-15", None, None),
+        ("due", "2026-10-18", "23:59:00", None)]
+    assert (contest.registered, contest.meeting, contest.invitation) == (True, False, None)
+    assert (request.meeting, request.invitation, cancelled.invitation, cancelled.sessions) == (
+        True, "request", "cancelled", [])
+
+
+def test_an_older_agents_email_has_none_of_the_new_fields():
+    email = FinishRun.model_validate({"outlook": {"status": "ok", "data": outlook_payload()}}).outlook.data.emails[1]
+
+    assert (email.periods, email.deadlines, email.meeting, email.registered, email.invitation) == (
+        [], [], False, False, None)
+    assert (email.sessions[0].check_in, email.sessions[0].ends_next_day, email.sessions[0].mode) == (None, False, None)
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda p: p["emails"][0]["sessions"][0].update(label="Vòng 1"),
+        lambda p: p["emails"][0]["sessions"][2].update(relative="yesterday"),
+        lambda p: p["emails"][0]["sessions"][0].update(mode="hybrid"),
+        lambda p: p["emails"][0]["periods"][0].update(label="semi_final"),
+        lambda p: p["emails"][0]["deadlines"][0].update(kind="closes"),
+        lambda p: p["emails"][0]["deadlines"][0].update(mode="offline"),
+        lambda p: p["emails"][0].update(invitation="accepted"),
+        lambda p: p["emails"][0]["sessions"][1].pop("ends_next_day"),
+        lambda p: p["emails"][0]["sessions"][2].update(end_is_approximate=True),
+        lambda p: p["emails"][0]["sessions"][2].update(ends_next_day=True),
+        lambda p: p["emails"][0]["sessions"][0].update(check_in="13:31:00"),
+        lambda p: p["emails"][0]["sessions"][1].update(link_opens="22:01:00"),
+        lambda p: p["emails"][0]["periods"][0].update(last_day="2026-10-25"),
+        lambda p: p["emails"][0]["periods"][0].update(from_time="09:00:00", to_time="17:00:00"),
+        lambda p: p["emails"][0]["periods"][1].pop("to_time"),
+        lambda p: p["emails"][0]["periods"][1].update(to_time="09:00:00"),
+        lambda p: p["emails"][0]["periods"][2].update(last_day="2026-11-28", to_time="08:00:00"),
+        lambda p: p["emails"][0]["periods"][2].pop("from_time"),
+        lambda p: p["emails"][0]["deadlines"][0].update(note="Đăng ký tại phòng A1.101"),
+        lambda p: p["emails"][0].update(periods=p["emails"][0]["periods"] * 2),
+        lambda p: p["emails"][0].update(deadlines=p["emails"][0]["deadlines"] + p["emails"][0]["deadlines"][:1]),
+        lambda p: p["emails"][0]["deadlines"][0].update(time="8h00"),
+    ],
+    ids=["unknown-label", "unknown-relative-day", "unknown-session-mode", "unknown-period-label",
+         "unknown-deadline-kind", "unknown-deadline-mode", "unknown-invitation", "end-before-start-without-next-day",
+         "approximate-without-end", "next-day-without-end", "check-in-after-start", "link-after-start",
+         "last-day-before-first", "all-day-with-times", "window-without-end-time", "daily-window-ends-at-start",
+         "one-day-window-ends-before-start", "one-window-without-start-time", "deadline-with-text", "six-periods",
+         "six-deadlines", "bad-deadline-time"],
+)
+def test_bad_event_kinds_are_rejected(change):
+    data = event_kinds_payload()
+    change(data)
+
+    with pytest.raises(ValidationError):
+        FinishRun.model_validate({"outlook": {"status": "ok", "data": data}})
+
+
+def test_a_window_over_several_days_may_end_earlier_in_the_day_than_it_starts():
+    data = event_kinds_payload()
+    data["emails"][0]["periods"][2].update(from_time="16:00:00", to_time="09:00:00")
+
+    period = FinishRun.model_validate({"outlook": {"status": "ok", "data": data}}).outlook.data.emails[0].periods[2]
+
+    assert (period.from_time.isoformat(), period.to_time.isoformat()) == ("16:00:00", "09:00:00")
+
+
 @pytest.mark.parametrize("code", ["outlook_not_set_up", "outlook_blocked"])
 def test_a_failed_outlook_part_says_why(code):
     finish = FinishRun.model_validate({

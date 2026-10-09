@@ -1,19 +1,31 @@
-"""The times an event takes place, found in an email's subject and text on the laptop (spec
-2026-09-28-mailbox-events-design.md, section 3.2). Only days and times ever leave the laptop."""
+"""The times an event takes place, as the upload holds them (spec 2026-10-07-mail-event-kinds-design.md §3.1): read by
+the mail time reader. These are the expectations the first reader had (mailbox-events 3.2); the new design changes
+some on purpose: a length now gives the end ("kéo dài 2h"), "8 giờ sáng" is read, and from stage 2 a check-in is sent
+apart from the start instead of moving it (mailbox-events addendum A.1, spec §11) and an end on the next day is kept.
+Only days, times and codes ever leave the laptop."""
 
 import unicodedata
 from datetime import date, time
 
 import pytest
 
-from sla_agent.class_changes import MAX_SESSIONS, Session, register_by_in, sessions_in
+from sla_agent.mail_rules import upload_sessions
+from sla_agent.mail_times import MAX_SESSIONS, read_times
 
 ARRIVED = date(2026, 9, 28)  # Mon, in Vietnam
 
 
-def found(text):
+def found(text, arrived=ARRIVED):
     return [(s.day.strftime("%d/%m"), s.start.strftime("%H:%M"), s.end and s.end.strftime("%H:%M"))
-            for s in sessions_in(text, ARRIVED)]
+            for s in upload_sessions(read_times("", text, arrived))]
+
+
+def check_ins(text, arrived=ARRIVED):
+    return [s.check_in and s.check_in.strftime("%H:%M") for s in upload_sessions(read_times("", text, arrived))]
+
+
+def register_by(text, arrived=ARRIVED):
+    return read_times("", text, arrived).register_by
 
 
 @pytest.mark.parametrize("written, start", [
@@ -100,15 +112,15 @@ def test_the_edges_of_a_day_are_not_event_times():
     assert found("Đêm nhạc ngày 30/9, 19h00 - 23h59") == [("30/09", "19:00", "23:59")]
 
 
-@pytest.mark.parametrize("text", [
-    "Thời gian: 14h00 ngày 30/9, kéo dài 2h",
-    "Workshop 14h ngày 30/9 (2h)",
-    "Ngày 30/9 lúc 14h. Thời lượng: 1h30",
-    "Ngày 30/9 lúc 14h, mỗi buổi trong vòng 2h",
-    "Talk on 30/9 at 14h, lasting 2h",
+@pytest.mark.parametrize("text, end", [
+    ("Thời gian: 14h00 ngày 30/9, kéo dài 2h", "16:00"),  # changed on purpose: a length gives the end
+    ("Workshop 14h ngày 30/9 (2h)", None),
+    ("Ngày 30/9 lúc 14h. Thời lượng: 1h30", "15:30"),
+    ("Ngày 30/9 lúc 14h, mỗi buổi trong vòng 2h", "16:00"),
+    ("Talk on 30/9 at 14h, lasting 2h", "16:00"),
 ])
-def test_a_length_is_not_a_time(text):
-    assert found(text) == [("30/09", "14:00", None)]
+def test_a_length_is_not_a_time(text, end):
+    assert found(text) == [("30/09", "14:00", end)]
 
 
 def test_small_hours_are_still_times_with_am_or_minutes():
@@ -117,11 +129,11 @@ def test_small_hours_are_still_times_with_am_or_minutes():
 
 
 @pytest.mark.parametrize("written, start", [
-    ("2h chiều", "14:00"), ("2h30 chiều", "14:30"), ("7h tối", "19:00"), ("8 giờ sáng", None), ("8h sáng", "08:00"),
+    ("2h chiều", "14:00"), ("2h30 chiều", "14:30"), ("7h tối", "19:00"), ("8 giờ sáng", "08:00"), ("8h sáng", "08:00"),
     ("5h sáng", "05:00"), ("1h trưa", "13:00"), ("11h trưa", "11:00"), ("12h trưa", "12:00"), ("14h chiều", "14:00"),
 ])
 def test_a_time_of_day_word_after_the_hour(written, start):
-    assert found(f"Ngày 30/9 lúc {written}") == ([("30/09", start, None)] if start else [])
+    assert found(f"Ngày 30/9 lúc {written}") == [("30/09", start, None)]
 
 
 def test_a_range_ending_in_the_afternoon():
@@ -140,11 +152,11 @@ def test_times_and_dates_in_links_are_ignored():
 def test_at_most_ten_sessions_in_time_order():
     days = ", ".join(f"{d}/10" for d in range(12, 0, -1))
 
-    sessions = sessions_in(f"Các buổi: {days}, lúc 18h", ARRIVED)
+    sessions = upload_sessions(read_times("", f"Các buổi: {days}, lúc 18h", ARRIVED))
 
     assert len(sessions) == MAX_SESSIONS
-    assert sessions[0] == Session(date(2026, 10, 1), time(18, 0))
-    assert sessions == sorted(sessions)
+    assert (sessions[0].day, sessions[0].start) == (date(2026, 10, 1), time(18, 0))
+    assert sessions == sorted(sessions, key=lambda s: (s.day, s.start))
 
 
 def test_english_invitations():
@@ -159,11 +171,11 @@ def test_vietnamese_typed_with_separate_accent_marks_reads_the_same():
 
 
 def test_nothing():
-    assert sessions_in("", ARRIVED) == []
-    assert sessions_in(None, ARRIVED) == []
+    assert found("") == []
+    assert found(None) == []
 
 
-# ---- check-in times (addendum A.1) --------------------------------------------------------------------------------
+# ---- check-in times (addendum A.1; from stage 2 sent apart from the start) ----------------------------------------
 
 BEAN_TO_BOLD = """Thông tin chi tiết chương trình:
 ⏰Thời gian chương trình: 14:00 - 16:30, ngày 29/09/2026.
@@ -172,18 +184,22 @@ BEAN_TO_BOLD = """Thông tin chi tiết chương trình:
 
 
 def test_a_check_in_time_joins_its_event():
-    assert found(BEAN_TO_BOLD) == [("29/09", "13:00", "16:30")]
+    assert found(BEAN_TO_BOLD) == [("29/09", "14:00", "16:30")]
+    assert check_ins(BEAN_TO_BOLD) == ["13:00"]
 
 
 @pytest.mark.parametrize("check_in", ["Check-in: 7h30", "CHECKIN lúc 7h30", "Sinh viên có mặt lúc 7h30 để điểm danh"])
 def test_every_way_of_writing_check_in(check_in):
-    assert found(f"Ngày 03/10/2026. {check_in}. Chương trình: 8h00 - 11h00") == [("03/10", "07:30", "11:00")]
+    text = f"Ngày 03/10/2026. {check_in}. Chương trình: 8h00 - 11h00"
+
+    assert (found(text), check_ins(text)) == ([("03/10", "08:00", "11:00")], ["07:30"])
 
 
 def test_a_check_in_joins_the_earliest_session_after_it_that_day():
     text = "Ngày 03/10: sáng 8h00 - 10h00, chiều 13h30 - 15h00. Check in: 13h00 - 13h20, ngày 03/10"
 
-    assert found(text) == [("03/10", "08:00", "10:00"), ("03/10", "13:00", "15:00")]
+    assert found(text) == [("03/10", "08:00", "10:00"), ("03/10", "13:30", "15:00")]
+    assert check_ins(text) == [None, "13:00"]
 
 
 @pytest.mark.parametrize("text", [
@@ -191,13 +207,21 @@ def test_a_check_in_joins_the_earliest_session_after_it_that_day():
     "Ngày 29/9: chương trình 14h00 - 16h30; điểm danh lúc 13h00",
 ])
 def test_a_check_in_in_the_same_sentence_as_the_programme_joins_it(text):
-    assert found(text) == [("29/09", "13:00", "16:30")]
+    assert (found(text), check_ins(text)) == ([("29/09", "14:00", "16:30")], ["13:00"])
 
 
 def test_a_check_in_without_a_later_session_stays_on_its_own():
     assert found("Check in: 13:00 - 13:45, ngày 29/09/2026") == [("29/09", "13:00", "13:45")]
     assert found("Chương trình 9h00 ngày 29/09. Check in 17h00 ngày 29/09") == [
         ("29/09", "09:00", None), ("29/09", "17:00", None)]
+
+
+def test_a_session_that_ends_the_next_day_is_uploaded_with_its_end():
+    sessions = upload_sessions(read_times("", "Sự kiện diễn ra từ 22:00 ngày 31/12/2026 đến 00:30 ngày 01/01/2027.",
+                                          ARRIVED))
+
+    assert [(s.day, s.start, s.end, s.ends_next_day) for s in sessions] == [
+        (date(2026, 12, 31), time(22, 0), time(0, 30), True)]
 
 
 # ---- the registration deadline (addendum A.2) ---------------------------------------------------------------------
@@ -209,8 +233,8 @@ Thông tin đăng ký Lễ Bế mạc HTSV như sau:
 
 
 def test_the_closing_ceremony_closes_registration_on_22_9_and_takes_place_on_30_9():
-    assert register_by_in(CLOSING, date(2026, 9, 20)) == date(2026, 9, 22)
-    assert sessions_in(CLOSING, date(2026, 9, 20)) == [Session(date(2026, 9, 30), time(9, 45))]
+    assert register_by(CLOSING, date(2026, 9, 20)) == date(2026, 9, 22)
+    assert found(CLOSING, date(2026, 9, 20)) == [("30/09", "09:45", None)]
 
 
 @pytest.mark.parametrize("text, deadline", [
@@ -223,7 +247,7 @@ def test_the_closing_ceremony_closes_registration_on_22_9_and_takes_place_on_30_
     ("Hạn đăng ký: 25.09.2026", date(2026, 9, 25)),
 ])
 def test_each_way_of_writing_a_registration_deadline(text, deadline):
-    assert register_by_in(text, ARRIVED) == deadline
+    assert register_by(text) == deadline
 
 
 @pytest.mark.parametrize("text", [
@@ -235,4 +259,4 @@ def test_each_way_of_writing_a_registration_deadline(text, deadline):
     None,
 ])
 def test_not_a_registration_deadline(text):
-    assert register_by_in(text, ARRIVED) is None
+    assert register_by(text) is None
