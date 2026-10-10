@@ -24,6 +24,9 @@ DAY_EDGES = (time(0, 0), time(23, 59))
 # Step 0 (§4.1): invisible characters go, and a no-break space is a space, so "13:00\u200b-\u200b16:30" stays a range.
 INVISIBLE = str.maketrans({"\u200b": None, "\u200c": None, "\u200d": None, "\ufeff": None, "\u00ad": None,
                            "\u00a0": " "})
+# A link is taken out of the text and this mark (a private-use character: no word, no number) stays in its place, so
+# a line that held a link is never a heading: "Link đăng ký: <link>" is a whole line, not the title of the next one.
+LINK_MARK = chr(0xE000)
 # On folded text.
 REPLY = re.compile(r"\s*(?:re|tl|tra loi)\s*:")
 QUOTE_FROM = re.compile(r"\s*(?:from|tu)\s*:(?!\s*\d)")  # "Từ: 14h00" is a time, not a header
@@ -104,9 +107,10 @@ def _before_quote(lines):
 
 
 def clean(subject, text):
-    """The text the times are read from: links removed; a reply without its quoted part (a forward keeps everything);
-    no signature (from a line "--" on) and no lines giving office hours."""
-    text = URL.sub(" ", unicodedata.normalize("NFC", text or "").translate(INVISIBLE)).replace("\r\n", "\n").replace("\r", "\n")
+    """The text the times are read from: each link replaced by LINK_MARK; a reply without its quoted part (a forward
+    keeps everything); no signature (from a line "--" on) and no lines giving office hours."""
+    text = URL.sub(f" {LINK_MARK} ", unicodedata.normalize("NFC", text or "").translate(INVISIBLE))
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
     lines = text.split("\n")
     if REPLY.match(fold(subject or "")):
         lines = _before_quote(lines)
@@ -123,12 +127,14 @@ def clean(subject, text):
 
 def _sentences(text):
     """The sentences of `text`, split as in Events §3.2. A heading line about registration or a deadline, with no
-    number in it ("THỜI GIAN ĐĂNG KÝ", then "Từ ngày 20/09 đến 22/09/2026."), is read together with the line after it."""
+    number or link in it ("THỜI GIAN ĐĂNG KÝ", then "Từ ngày 20/09 đến 22/09/2026."), is read together with the line
+    after it."""
     found = [s for s in SENTENCE_END.split(text) if s.strip()]
     merged, i = [], 0
     while i < len(found):
         line = found[i]
-        heading = (i + 1 < len(found) and not re.search(r"\d", line) and len(line.split()) <= MAX_HEADING_WORDS
+        heading = (i + 1 < len(found) and not re.search(r"\d", line) and LINK_MARK not in line
+                   and len(line.split()) <= MAX_HEADING_WORDS
                    and (words.REGISTRATION.spans(line) or words.CLOSING_STRONG.spans(line)))
         if heading:
             merged.append(line.strip().rstrip(":") + ": " + found[i + 1].strip())

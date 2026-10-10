@@ -6,7 +6,7 @@ from datetime import date, time
 
 import pytest
 
-from sla_agent.mail_times import _sentences, clean, read_times
+from sla_agent.mail_times import LINK_MARK, _sentences, clean, read_times
 
 # ---- step 0: cleaning (§4.1) -----------------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ def test_the_signature_and_office_hours_are_cut():
 def test_links_go_and_accents_typed_apart_are_joined():
     text = unicodedata.normalize("NFD", "Đăng ký: https://example.com/event-30-9-14h00 trước 30/9")
 
-    assert clean("", text) == "Đăng ký:   trước 30/9"
+    assert clean("", text) == f"Đăng ký:  {LINK_MARK}  trước 30/9"  # the link's dates and times are gone
 
 
 # ---- sentences and headings (§4.2) -----------------------------------------------------------------------------------
@@ -72,6 +72,19 @@ def test_a_registration_heading_is_read_with_the_line_after_it():
 ])
 def test_other_lines_stay_on_their_own(text):
     assert len(_sentences(text)) == 2
+
+
+@pytest.mark.parametrize("text, session", [
+    ("Link đăng ký: https://forms.gle/AbCdEf123\nThời gian: 14h00 - 16h30 ngày 20/10/2026\nĐịa điểm: Hội trường A2",
+     (date(2026, 10, 20), time(14, 0), time(16, 30))),
+    ("Đăng ký tại: https://forms.gle/x\nWorkshop diễn ra từ 8h00 đến 11h30 ngày 24/10/2026.",
+     (date(2026, 10, 24), time(8, 0), time(11, 30))),
+])
+def test_a_line_that_held_a_link_is_not_a_heading(text, session):
+    found = read_times("", text, date(2026, 10, 7))
+
+    assert [(s.day, s.start, s.end) for s in found.sessions] == [session]
+    assert found.deadlines == ()
 
 
 # ---- deadlines (§4.3, D) ---------------------------------------------------------------------------------------------
