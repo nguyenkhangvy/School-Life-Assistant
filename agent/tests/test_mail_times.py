@@ -363,6 +363,16 @@ def test_what_is_dropped(text, expected):
     assert sessions(text, arrived=date(2026, 9, 28)) == expected
 
 
+@pytest.mark.parametrize("text, expected", [
+    ("Workshop diễn ra lúc 14:00 ngày 15/10/2026, nếu không tham gia được vui lòng hủy đăng ký.",
+     [("15/10", "14:00", None, None, None)]),  # cancelling one's registration cancels no time
+    ("Workshop diễn ra từ 08:00 - 11:30 ngày 15/10/2026, nghỉ giải lao lúc 09:30.",
+     [("15/10", "08:00", "11:30", None, None)]),  # the break drops only its own part
+])
+def test_a_drop_word_drops_only_its_part(text, expected):
+    assert sessions(text, arrived=date(2026, 9, 28)) == expected
+
+
 @pytest.mark.parametrize("text, modes", [
     ("Workshop lúc 09:30 ngày 18/10/2026 trên Microsoft Teams.", ["online"]),
     ("Link Teams sẽ mở lúc 13:45 ngày 15/10.\nChương trình bắt đầu lúc 14:00 ngày 15/10.", ["online"]),

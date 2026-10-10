@@ -250,11 +250,16 @@ def _label(sentence, position):
 
 
 def _drop(sentence):
-    """N: a not-an-event or cancelled sentence gives nothing; a rescheduling keeps only what follows "sang"."""
-    if sentence.spans(words.NOT_AN_EVENT) or sentence.spans(words.CANCEL):
-        sentence.use(*sentence.days, *sentence.clocks, *sentence.ranges, *sentence.windows)
-        sentence.skip = True
-        return
+    """N: a not-an-event or cancel word drops the dates and times of its part ("…, nghỉ giải lao lúc 09:30" leaves
+    the event before it); a sentence with nothing left gives no day to the lines around it. A rescheduling keeps only
+    what follows "sang"."""
+    dropping = sentence.spans(words.NOT_AN_EVENT) + sentence.spans(words.CANCEL)
+    if dropping:
+        parts = {sentence.part(start) for start, _ in dropping}
+        items = sentence.days + sentence.clocks + sentence.ranges + sentence.windows
+        sentence.use(*[x for x in items if sentence.part(x.start) in parts])
+        if not sentence.free(items):
+            sentence.skip = True
     for start, end in sentence.spans(words.RESCHEDULE):
         pivot = next((p for p in sentence.spans(words.PIVOT) if p[0] >= end), None)
         if pivot:
