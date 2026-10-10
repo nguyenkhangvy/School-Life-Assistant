@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.AfterEach;
@@ -158,5 +159,15 @@ class LoginLimitPageTest {
                     .andExpect(content().string(not(containsString("Too many wrong passwords"))))
                     .andExpect(content().string(not(containsString("<b>x</b>"))));
         }
+    }
+
+    @Test
+    void aLoginAddressWithAnEncodedLetterWaitsToo() throws Exception { // final review: /auth/log%69n is /auth/login
+        wrong(5, "198.51.100.18");
+
+        mvc.perform(post(URI.create("/auth/log%69n")).with(csrf()).with(from("198.51.100.18"))
+                        .param("email", "an@example.com").param("password", RIGHT))
+                .andExpect(redirectedUrl("/auth/login?wait=15"));
+        assertThat(an.getLastLoginAt()).isNull();
     }
 }

@@ -8,6 +8,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import vn.edu.hcmiu.sla.core.Attempts;
@@ -20,6 +23,13 @@ import vn.edu.hcmiu.sla.core.ClientAddress;
  */
 public class LoginLimitFilter extends OncePerRequestFilter {
 
+    /**
+     * The same test as Spring Security's login, which decodes the address: /auth/log%69n is a login too, so it must
+     * wait here as well.
+     */
+    private static final RequestMatcher LOGIN = PathPatternRequestMatcher.withDefaults()
+            .matcher(HttpMethod.POST, "/auth/login");
+
     private final LoginLimits limits;
 
     public LoginLimitFilter(LoginLimits limits) {
@@ -28,8 +38,7 @@ public class LoginLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
-        return !("POST".equals(request.getMethod()) && path.equals("/auth/login"));
+        return !LOGIN.matches(request);
     }
 
     @Override
