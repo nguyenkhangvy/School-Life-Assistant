@@ -12,18 +12,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import vn.edu.hcmiu.sla.core.ClientAddress;
+
 /**
- * After a login: notes its time, then goes back to the page that asked for login, else home, as Spring Security's own
- * handler does.
+ * After a login: this email from this IP starts its count again (LoginLimits), the login's time is noted, then the
+ * browser goes back to the page that asked for login, else home, as Spring Security's own handler does.
  */
 @Component
 public class LoggedIn extends SavedRequestAwareAuthenticationSuccessHandler {
 
     private final Accounts accounts;
+    private final LoginLimits limits;
+    private final Sessions sessions;
     private final Clock clock;
 
-    public LoggedIn(Accounts accounts, Clock clock) {
+    public LoggedIn(Accounts accounts, LoginLimits limits, Sessions sessions, Clock clock) {
         this.accounts = accounts;
+        this.limits = limits;
+        this.sessions = sessions;
         this.clock = clock;
         setDefaultTargetUrl("/");
     }
@@ -32,7 +38,11 @@ public class LoggedIn extends SavedRequestAwareAuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
         if (authentication.getPrincipal() instanceof AppUser user) {
-            accounts.loggedIn(user.id(), LocalDateTime.now(clock));
+            limits.succeeded(user.email(), ClientAddress.of(request));
+            // The account as now saved: Spring may have just re-hashed its password (Accounts.rehash), and the session
+            // must hold the new hash, or AccountCheck would log this session out on its next click.
+            accounts.loggedIn(user.id(), LocalDateTime.now(clock))
+                    .ifPresent(saved -> sessions.refresh(AppUser.of(saved), request, response));
         }
         super.onAuthenticationSuccess(request, response, authentication);
     }

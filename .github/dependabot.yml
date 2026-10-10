@@ -1,0 +1,28 @@
+# Weekly update pull requests against main, the default branch (docs/superpowers/specs/2026-10-07-security-hardening-design.md, 6).
+# Dependabot's security alerts are switched on in GitHub's settings (README, "Security").
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /web
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /agent
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /web
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker-compose
+    directory: /deploy/server
+    schedule:
+      interval: weekly

@@ -44,14 +44,14 @@ class RegisterTest {
     }
 
     @Test
-    void registeringLogsYouInAndSavesAWerkzeugStylePassword() throws Exception {
+    void registeringLogsYouInAndSavesAnArgon2idPassword() throws Exception {
         MvcResult result = mvc.perform(register("  An@Example.COM ", " An ", "correct-horse-8", "correct-horse-8"))
                 .andExpect(redirectedUrl("/"))
                 .andReturn();
 
         User user = users.findByEmail("an@example.com").orElseThrow();
         assertThat(user.getDisplayName()).isEqualTo("An");
-        assertThat(user.getPasswordHash()).startsWith("scrypt:32768:8:1$");
+        assertThat(user.getPasswordHash()).startsWith("{argon2}$argon2id$v=19$m=19456,t=2,p=1$");
         MockHttpSession session = (MockHttpSession) result.getRequest().getSession(false);
         mvc.perform(get("/").session(session))
                 .andExpect(status().isOk())

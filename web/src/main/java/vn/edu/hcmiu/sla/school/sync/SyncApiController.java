@@ -1,6 +1,7 @@
 package vn.edu.hcmiu.sla.school.sync;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import vn.edu.hcmiu.sla.core.Attempts;
+import vn.edu.hcmiu.sla.core.ClientAddress;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncDevice;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncRun;
 import vn.edu.hcmiu.sla.school.model.SchoolSyncRunRepository;
@@ -35,21 +38,26 @@ import vn.edu.hcmiu.sla.school.sync.SyncContract.StartRun;
 @RequestMapping("/api/school/sync")
 public class SyncApiController {
 
+    static final int FAILED_TRADE_INS_PER_IP = 20;
+    static final Duration TRADE_IN_WINDOW = Duration.ofMinutes(15);
+
     private final SyncJson json;
     private final SyncRuns syncRuns;
     private final SchoolSyncRunRepository runs;
     private final Ingest ingest;
     private final ConnectCodes connectCodes;
     private final DeviceKeys deviceKeys;
+    private final Attempts attempts;
 
     public SyncApiController(SyncJson json, SyncRuns syncRuns, SchoolSyncRunRepository runs, Ingest ingest,
-            ConnectCodes connectCodes, DeviceKeys deviceKeys) {
+            ConnectCodes connectCodes, DeviceKeys deviceKeys, Attempts attempts) {
         this.json = json;
         this.syncRuns = syncRuns;
         this.runs = runs;
         this.ingest = ingest;
         this.connectCodes = connectCodes;
         this.deviceKeys = deviceKeys;
+        this.attempts = attempts;
     }
 
     private static LocalDateTime now() {
@@ -96,12 +104,19 @@ public class SyncApiController {
     /**
      * Connect's trade-in: the one-time code from the Connect page and the app's verifier, for a new device key and the
      * account's email. No device key is needed here (SyncApiConfig); anything wrong with the code is 400 invalid_code.
+     * After 20 of those from one network within 15 minutes, 429 too_many_attempts without looking at the code
+     * (security hardening spec, 3.5). A malformed body (422) isn't counted: it can't be a guess.
      */
     @PostMapping("/connect")
     ResponseEntity<Map<String, Object>> connect(HttpServletRequest request) throws IOException {
+        String network = "connect-ip:" + ClientAddress.of(request);
+        if (attempts.count(network, TRADE_IN_WINDOW) >= FAILED_TRADE_INS_PER_IP) {
+            return error(HttpStatus.TOO_MANY_REQUESTS, "too_many_attempts");
+        }
         ConnectRequest body = json.read(json.body(request), ConnectRequest.class);
         Optional<ConnectCodes.Pending> pending = connectCodes.redeem(body.code(), body.verifier());
         if (pending.isEmpty()) {
+            attempts.add(network);
             return error(HttpStatus.BAD_REQUEST, "invalid_code");
         }
         String key = deviceKeys.create(pending.get().userId(), pending.get().name(), now()).rawKey();

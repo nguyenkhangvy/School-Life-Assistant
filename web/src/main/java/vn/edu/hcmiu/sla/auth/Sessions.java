@@ -27,6 +27,14 @@ public class Sessions {
         if (request.getSession(false) != null) {
             request.changeSessionId(); // a new session id after login
         }
+        refresh(user, request, response);
+    }
+
+    /**
+     * Puts the account as now saved into this browser's session, keeping its session id: after a login whose password
+     * was just re-hashed (security hardening spec, 4), so AccountCheck doesn't take the new hash for a changed password.
+     */
+    public void refresh(AppUser user, HttpServletRequest request, HttpServletResponse response) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user, null, user.getAuthorities()));
         SecurityContextHolder.setContext(context);

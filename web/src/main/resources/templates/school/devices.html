@@ -21,14 +21,6 @@
         <button type="button" class="button" id="copy-key">Copy</button>
       </div>
     </section>
-    <script>
-      document.getElementById("copy-key").addEventListener("click", function () {
-        var key = document.getElementById("new-key").textContent;
-        navigator.clipboard.writeText(key).then(function () {
-          document.getElementById("copy-key").textContent = "Copied";
-        });
-      });
-    </script>
   </th:block>
 
   <section class="card">
@@ -68,13 +60,15 @@
             <button type="submit" class="link-button">Rename</button>
           </form>
           <form method="post" th:action="@{/school/devices/{id}/revoke(id=${device.id})}" class="inline-form"
-                onsubmit="return confirm('Cancel this device? It will stop syncing immediately.');">
+                data-confirm="Cancel this device? It will stop syncing immediately.">
             <button type="submit" class="link-button danger">Cancel device</button>
           </form>
         </div>
       </li>
     </ul>
   </section>
+  <script th:src="@{/js/devices.js}" defer></script>
+  <script th:src="@{/js/confirm.js}" defer></script>
 </main>
 </body>
 </html>

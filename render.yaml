@@ -16,9 +16,6 @@ services:
       # Asked for once when you create the site, so the password never goes into git.
       - key: DATABASE_URL
         sync: false
-      # Render's proxy handles https; this lets the site's redirects use https too.
-      - key: SERVER_FORWARD_HEADERS_STRATEGY
-        value: framework
       # The first Admin (README, "Accounts and roles"); it can stay empty.
       - key: SITE_ADMIN_EMAIL
         sync: false

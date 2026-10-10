@@ -219,6 +219,7 @@ class AccountPageTest {
 
         assertThat(here.getId()).isNotEqualTo(idBefore); // a new session id, so a copied cookie stops working
         assertThat(passwords.matches("new horse 123 ", an.getPasswordHash())).isTrue();
+        assertThat(an.getPasswordHash()).startsWith("{argon2}$argon2id$");
         assertThat(an.getUpdatedAt()).isEqualTo(NOW);
         mvc.perform(get("/").session(here)).andExpect(status().isOk());
         mvc.perform(get("/").session(elsewhere)).andExpect(redirectedUrl("/auth/login?changed"));

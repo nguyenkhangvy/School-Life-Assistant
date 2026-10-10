@@ -1,7 +1,9 @@
 package vn.edu.hcmiu.sla.auth;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +20,23 @@ public class Accounts {
         this.passwords = passwords;
     }
 
-    /** users.last_login_at, for the Users page (stage 2) and Profile. */
+    /** users.last_login_at, for the Users page (stage 2) and Profile; the account as now saved. */
     @Transactional
-    public void loggedIn(Integer userId, LocalDateTime now) {
-        users.findById(userId).ifPresent(user -> user.loggedIn(now));
+    public Optional<User> loggedIn(Integer userId, LocalDateTime now) {
+        Optional<User> user = users.findById(userId);
+        user.ifPresent(account -> account.loggedIn(now));
+        return user;
+    }
+
+    /**
+     * Spring calls this at login when the stored hash is an older kind than Argon2id (security hardening spec, 4): the
+     * same password, hashed anew. Not a change by anyone, so updated_at stays.
+     */
+    @Transactional
+    public UserDetails rehash(UserDetails account, String newHash) {
+        User user = users.findById(((AppUser) account).id()).orElseThrow();
+        user.rehash(newHash);
+        return AppUser.of(user);
     }
 
     /** A new display name and email, both already checked by the Profile page (spec 5.4). */

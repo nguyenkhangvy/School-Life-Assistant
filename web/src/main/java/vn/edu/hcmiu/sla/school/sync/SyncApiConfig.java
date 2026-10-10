@@ -9,6 +9,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import vn.edu.hcmiu.sla.core.SecurityConfig;
+
 /**
  * The sync API at /api/school/sync/** is for the laptop agent, not a browser: no login page, no session
  * and no CSRF token. Instead {@link AgentVersionInterceptor} turns away agents too old for the format, then
@@ -38,6 +40,7 @@ public class SyncApiConfig implements WebMvcConfigurer {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .requestCache(cache -> cache.disable());
+        SecurityConfig.securityHeaders(http);
         return http.build();
     }
 

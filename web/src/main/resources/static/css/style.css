@@ -478,3 +478,6 @@ h1, .module-card h2, .bb-item h3 { overflow-wrap: anywhere; }
 .person .muted { display: block; font-size: 0.9rem; }
 .person-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .friends-done { color: #2e8b57; font-weight: 600; }
+
+/* The register page's honeypot (security hardening spec, 3.4): off-screen, so only a bot fills it in. */
+.trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
