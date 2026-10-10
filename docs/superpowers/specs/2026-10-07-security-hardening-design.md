@@ -82,16 +82,16 @@ Every response (both filter chains) ─▶ CSP, Referrer-Policy, Permissions-Pol
 
 ### 3.2 The visitor's address
 
-`ClientAddress.of(request)` is `request.getRemoteAddr()`. On the server that is the visitor's address: Caddy sets `X-Forwarded-For`, `SERVER_FORWARD_HEADERS_STRATEGY=framework` makes the site read it, and only Caddy can reach the site. An IPv4 address is kept as it is. An IPv6 address becomes its first 64 bits (`2001:db8:1:2::/64`), so one device can't get around a limit by changing its IPv6 address.
+`ClientAddress.of(request)` is `request.getRemoteAddr()`. On the server that is the visitor's address: Caddy sets `X-Forwarded-For`, `server.forward-headers-strategy=native` in `application.properties` makes Tomcat read it from a proxy on an internal address only, and only Caddy can reach the site. Not `framework`: Spring's filter would also read a `Forwarded` header, which Caddy passes on as the visitor sent it (final review, 2026-10-10). An IPv4 address is kept as it is. An IPv6 address becomes its first 64 bits (`2001:db8:1:2::/64`), so one device can't get around a limit by changing its IPv6 address.
 
 ### 3.3 Login
 
 | Rule | Limit | Key |
 |---|---|---|
-| One email from one IP | 5 wrong passwords in 15 minutes | the email as login reads it (trimmed, lower-case) + IP |
+| One email from one IP | 5 wrong passwords in 15 minutes | the email as the database compares it (trimmed, lower-case, no accents, đ as d), as a SHA-256, + IP |
 | One IP, any emails | 100 wrong passwords in 15 minutes | IP |
 
-- **Before the password is checked:** `LoginLimitFilter` runs in front of Spring Security's login, for `POST /auth/login` only. If either rule has reached its limit, the password isn't checked and the browser goes to `/auth/login?wait=N`. N is the minutes until the blocking rule's count drops below its limit (`waitFor`), rounded up, at least 1; if both rules block, the longer wait. Two tries at the same moment can push a count past its limit; the wait then lasts until enough old tries have left the window.
+- **Before the password is checked:** `LoginLimitFilter` runs in front of Spring Security's login, for `POST /auth/login` only, matched as Spring Security matches it (so `/auth/log%69n` is a login too). If either rule has reached its limit, the password isn't checked and the browser goes to `/auth/login?wait=N`. N is the minutes until the blocking rule's count drops below its limit (`waitFor`), rounded up, at least 1; if both rules block, the longer wait. Two tries at the same moment can push a count past its limit; the wait then lasts until enough old tries have left the window.
 - **The login page:** "Too many wrong passwords. Try again in N minutes." ("1 minute" for N = 1.)
 - **Counted** (both keys): a wrong password or an unknown email, which Spring reports alike (`BadCredentialsException`). **Not counted:** the right password on a deactivated account; a blocked try.
 - **A successful login** clears the pair, not the IP count.
@@ -130,12 +130,13 @@ Every response of both filter chains (pages and the sync API) gets:
 **Content-Security-Policy:**
 
 ```
-default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' http://127.0.0.1:*
+default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' http://127.0.0.1:*
 ```
 
 - **Scripts:** the site's own files and FullCalendar's folder on jsDelivr, which `timetable.html` already pins with an integrity hash. Inline scripts are refused.
 - **`form-action … http://127.0.0.1:*`:** the Connect page's form ends with a redirect to the laptop app on the same computer (`http://127.0.0.1:<port>/callback`). Browsers check that redirect against `form-action`, so without this the laptop could never connect.
 - **`style-src 'unsafe-inline'`:** FullCalendar adds its own `<style>` element. Only styles get this exception.
+- **`font-src 'self' data:`:** that `<style>` draws the calendar's arrows with a font inside it (`data:`).
 
 **Referrer-Policy:** `same-origin`: links out (Outlook, IUPay, GitHub) don't say which page they came from.
 
@@ -177,7 +178,7 @@ The README gets a short **Security** section: what the site protects (limits, ho
 ## 8. Errors and security
 
 - **No hints about accounts:** an unknown email counts and blocks exactly like a wrong password, and a blocked try never checks the password. The wait message is the same whether or not the email has an account.
-- **The IP comes from Caddy only** (§3.2). A visitor can't choose their own address by sending an `X-Forwarded-For` header.
+- **The IP comes from Caddy only** (§3.2). A visitor can't choose their own address by sending an `X-Forwarded-For` or `Forwarded` header.
 - **Messages use `th:text`.** The honeypot field and its wrapper carry no user text.
 - **Restarts:** the counts live in memory and a restart, which happens only on deploy, clears them.
 
