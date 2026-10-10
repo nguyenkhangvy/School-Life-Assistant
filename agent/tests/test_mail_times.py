@@ -373,6 +373,22 @@ def test_a_drop_word_drops_only_its_part(text, expected):
     assert sessions(text, arrived=date(2026, 9, 28)) == expected
 
 
+@pytest.mark.parametrize("text, expected", [
+    ("Sinh viên đăng nhập hệ thống và nộp bài trước 23:59 ngày 20/10/2026.", [("due", "20/10", "23:59")]),
+    ("Sinh viên đăng nhập vào hệ thống để đăng ký học phần từ 8h00 ngày 12/10/2026 đến 17h00 ngày 16/10/2026.",
+     [("opens", "12/10", "08:00"), ("register", "16/10", "17:00")]),
+])
+def test_an_arrival_word_stops_at_a_deadline_or_registration_word(text, expected):
+    assert (sessions(text), deadlines(text)) == ([], expected)
+
+
+def test_the_edges_of_a_day_never_start_a_session():
+    assert sessions("Sinh viên đăng nhập hệ thống từ 00:00 ngày 15/10/2026.") == []
+    whole_day = "Vòng loại diễn ra từ 00g00 ngày 15/10/2026 đến 23g59 ngày 15/10/2026."
+    assert sessions(whole_day) == []
+    assert periods(whole_day) == [("all_day", "15/10", "15/10", None, None, False, "qualifying")]
+
+
 @pytest.mark.parametrize("text, modes", [
     ("Workshop lúc 09:30 ngày 18/10/2026 trên Microsoft Teams.", ["online"]),
     ("Link Teams sẽ mở lúc 13:45 ngày 15/10.\nChương trình bắt đầu lúc 14:00 ngày 15/10.", ["online"]),

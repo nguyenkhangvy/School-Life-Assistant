@@ -269,13 +269,20 @@ def _drop(sentence):
 
 def _arrivals(sentence):
     """Arrival words take their times first ("có mặt trước 13:45"), so their "trước" is never read as a deadline.
+    An arrival word takes the first time after it in its part, but not past a deadline or registration word
+    ("đăng nhập … nộp bài trước 23:59" is a deadline), not one inside a range or window, and never a day's edge.
     "Mở cửa từ" counts only with one time: with a range it gives open hours."""
     found = []
+    stops = [start for role in (words.DUE, words.REGISTRATION, words.CONFIRM, words.CLOSING_STRONG)
+             for start, _ in sentence.spans(role)]
+    inside = [(x.start, x.end) for x in sentence.free(sentence.ranges + sentence.windows)]
     for span in sentence.spans(words.ARRIVAL):
         part = sentence.part(span[0])
-        clock = next((c for c in sentence.free(sentence.clocks) if sentence.part(c.start) == part and c.start >= span[1]),
-                     None)
-        if clock is None or (fold(sentence.text[span[0]:span[1]]).startswith("mo cua") and clock.finish is not None):
+        clock = next((c for c in sentence.free(sentence.clocks) if sentence.part(c.start) == part and c.start >= span[1]
+                      and not any(a <= c.start and c.end <= b for a, b in inside)), None)
+        if clock is None or clock.begin in DAY_EDGES or any(span[1] <= stop < clock.start for stop in stops):
+            continue
+        if fold(sentence.text[span[0]:span[1]]).startswith("mo cua") and clock.finish is not None:
             continue
         sentence.use(clock)
         found.append(clock)
@@ -405,10 +412,10 @@ def _periods(sentences, i, details_later):
             mode, begin, finish = "all_day", None, None
         periods.append(FoundPeriod(first, last, mode, begin, finish, details_later, _label(sentence, position)))
 
-    for window in sentence.free(sentence.windows):  # P4
+    for window in sentence.free(sentence.windows):  # P4; a day's edge never starts a session
         sentence.use(window)
         length = datetime.combine(window.last, window.finish) - datetime.combine(window.first, window.begin)
-        if length > timedelta(hours=24) or period_words:
+        if length > timedelta(hours=24) or period_words or window.begin in DAY_EDGES:
             period(window.first, window.last, "one_window", window.start, window.begin, window.finish)
         else:
             sessions.append((FoundSession(window.first, window.begin, window.finish,
