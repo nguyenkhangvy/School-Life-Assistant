@@ -74,6 +74,14 @@ def test_other_lines_stay_on_their_own(text):
     assert len(_sentences(text)) == 2
 
 
+def test_a_no_break_space_in_the_subject_is_a_space():
+    found = read_times("Đăng ký từ\N{NO-BREAK SPACE}nay đến 20/10/2026", "Workshop lúc 14h00 ngày 25/10/2026.",
+                       date(2026, 10, 7))
+
+    assert (found.register_by, [(s.day, s.start) for s in found.sessions]) == (
+        date(2026, 10, 20), [(date(2026, 10, 25), time(14, 0))])
+
+
 def test_a_from_line_and_a_to_line_are_one_range():
     found = read_times("", "Lịch họp nhóm:\nTừ: 14h00\nĐến: 16h00\nNgày: 15/10/2026", date(2026, 10, 7))
 

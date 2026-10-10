@@ -267,8 +267,9 @@ def ranges_in(sentence, days, clocks, arrived):
             day_ranges.append(DayRange(d1.start, d2.end, d1.day, d2.day))
             used.update((i, i + 1))
     for i, d in enumerate(days):
-        if i not in used and FROM_NOW.search(fold(sentence[:d.start])):
-            day_ranges.append(DayRange(fold(sentence[:d.start]).rfind("tu nay"), d.end, arrived, d.day))
+        from_now = i not in used and FROM_NOW.search(words.fold_in_place(sentence[:d.start]))
+        if from_now:
+            day_ranges.append(DayRange(from_now.start(), d.end, arrived, d.day))
     return sorted(day_ranges, key=lambda r: r.start), windows
 
 

@@ -505,7 +505,7 @@ def _sessions(sentences, i, arrived, given):
                 approximate.add(id(joined))
         elif len(clocks) == 1 and not sentence.free(sentence.days):
             above = next((s for s in reversed(sentences[:i]) if s.sessions), None)
-            if above:
+            if above and after[0].begin > above.sessions[-1][0].start:  # an end is after its start (§3.1)
                 session, position = above.sessions[-1]
                 above.sessions[-1] = (replace(session, end=after[0].begin, end_is_approximate=estimated), position)
             sentence.use(after[0])
@@ -670,7 +670,7 @@ def _flag(text, role, unless=None):
 def read_times(subject, text, arrived):
     """Found: the sessions, Periods, deadlines and flags of one email that arrived on `arrived` (a Vietnam date)."""
     sentences = [_Sentence(s, arrived) for s in _sentences(clean(subject, text))]
-    subject = unicodedata.normalize("NFC", subject or "")
+    subject = unicodedata.normalize("NFC", subject or "").translate(INVISIBLE)
     heading = _Sentence(subject, arrived)
     modes = _Modes(any(s.spans(words.ONLINE) for s in sentences), any(s.spans(words.IN_PERSON) for s in sentences))
     details_later = any(_says_later(s) for s in sentences)

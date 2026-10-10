@@ -58,3 +58,26 @@ def test_no_part_of_a_mails_text_reaches_its_upload(case):
 
     words = set(re.findall(r"[^\W\d_]{5,}", fold(case["text"]))) - set(re.findall(r"\w+", fold(case["subject"])))
     assert words & set(re.findall(r"[^\W\d_]{5,}", upload)) == set()
+
+
+SAMPLES = json.loads((Path(__file__).parent / "fixtures" / "mail-samples.json").read_text(encoding="utf-8"))["emails"]
+ODD_ENDS = [
+    "Workshop bắt đầu lúc 13h30 ngày 10/10/2026 tại phòng A2.301.\nKết thúc lúc 4h30.",
+    "Chương trình diễn ra lúc 18h00 tối ngày 10/10/2026 tại hội trường A2.\nDự kiến kết thúc lúc 9h.",
+    "The webinar runs 10:00 AM - 2:00 PM EST on October 20, 2026.",
+    "Sự kiện diễn ra từ 22h00 ngày 31/12/2026 đến 02h00 ngày 01/01/2026.",
+    "Sự kiện diễn ra từ 14h00 ngày 15/10/2026 đến 11h00 ngày 15/10/2026.",
+]
+
+
+def test_every_session_ends_after_it_starts():
+    """Spec §3.1: an end is after its start unless the session ends the next day, in every case, every real sample
+    and some odd ends."""
+    mails = ([(c["subject"], c["text"], date.fromisoformat(c["arrived"])) for c in CASES]
+             + [(s["subject"], s["text"], datetime.fromisoformat(s["received_at"]).date()) for s in SAMPLES]
+             + [("", text, date(2026, 10, 7)) for text in ODD_ENDS])
+
+    wrong = [(subject[:40], s) for subject, text, arrived in mails for s in read_times(subject, text, arrived).sessions
+             if s.end is not None and not s.ends_next_day and s.end <= s.start]
+
+    assert wrong == []
