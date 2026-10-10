@@ -23,12 +23,12 @@ TIME = re.compile(
     re.IGNORECASE,
 )
 # A time zone written right after a time: "9:00 AM EST", "10:00 (GMT+8)".
-ZONE = re.compile(r"\s*\(?\s*(?:(?P<named>ICT|EST|EDT|PST|PDT|CET|CEST|JST|KST|SGT)\b|(?:GMT|UTC)\s*(?P<sign>[+\-−])?"
-                  r"\s*(?P<hours>\d{1,2})?(?::?(?P<minutes>\d{2}))?)\s*\)?")
+ZONE = re.compile(r"\s*(?:\(\s*)?(?:(?P<named>ICT|EST|EDT|PST|PDT|CET|CEST|JST|KST|SGT)\b|(?:GMT|UTC)"
+                  r"(?:\s*(?P<sign>[+\-−]))?\s*(?P<hours>\d{1,2})?(?::?(?P<minutes>\d{2}))?)\s*\)?")
 ZONE_HOURS = {"ICT": 7, "EST": -5, "EDT": -4, "PST": -8, "PDT": -7, "CET": 1, "CEST": 2, "JST": 9, "KST": 9, "SGT": 8}
 VIETNAM = timedelta(hours=7)
 # On folded text: what joins the two ends of a range, and what may sit between a time and its date.
-JOIN = re.compile(r"\s*,?\s*(?:den|toi|-|–|—|to|until|till)(?:\s*:)?\s+(?:het\s+)?(?:ngay\s+)?$|\s*[-–—]\s*$")
+JOIN = re.compile(r"\s*(?:,\s*)?(?:den|toi|-|–|—|to|until|till)(?:\s*:)?\s+(?:het\s+)?(?:ngay\s+)?$|\s*[-–—]\s*$")
 FILLER = re.compile(r"\s*[,(]?\s*(?:(?:ngay|vao|luc|vao luc|on|at|cung ngay)\s*)*[,)]?\s*$")
 FROM_NOW = re.compile(r"\btu\s+nay\s+(?:den|toi)\s+(?:het\s+)?(?:ngay\s+)?$")
 FILLER_MOST = 40  # FILLER never spans more letters: a longer gap is never folded (a line full of dates)
@@ -221,7 +221,8 @@ def clocks_in(sentence, taken):
         first, first_ampm, begin, offset, end = singles[i]
         finish = None
         i += 1
-        if i < len(singles) and JOIN.match(fold(sentence[end:singles[i][0].start()]) + " "):
+        if (i < len(singles) and singles[i][0].start() - end <= FILLER_MOST
+                and JOIN.match(fold(sentence[end:singles[i][0].start()]) + " ")):
             second, second_ampm, finish, offset2, end = singles[i]
             offset = offset or offset2
             i += 1
@@ -263,7 +264,8 @@ def ranges_in(sentence, days, clocks, arrived):
         if i in used or i + 1 in used:
             continue
         d1, d2 = days[i], days[i + 1]
-        if JOIN.match(_between(sentence, d1.end, d2.start) + " ") and d1.day <= d2.day:
+        if (d2.start - d1.end <= FILLER_MOST and JOIN.match(_between(sentence, d1.end, d2.start) + " ")
+                and d1.day <= d2.day):
             day_ranges.append(DayRange(d1.start, d2.end, d1.day, d2.day))
             used.update((i, i + 1))
     for i, d in enumerate(days):
@@ -284,7 +286,8 @@ def weekday_filter(sentence):
     """The weekday (0 = Monday) named after "các ngày", "các", "mỗi" or "every", else None: "các ngày thứ Bảy"."""
     filters = words.WEEKDAY_FILTER.spans(sentence)
     for start, _, day in words.WEEKDAYS.spans(sentence):
-        if any(end <= start and FILLER.fullmatch(fold(sentence[end:start])) for _, end in filters):
+        if any(end <= start and start - end <= FILLER_MOST and FILLER.fullmatch(fold(sentence[end:start]))
+               for _, end in filters):
             return day
     return None
 

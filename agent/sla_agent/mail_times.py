@@ -6,6 +6,7 @@ The rule names in the comments (D1, P4, S3 …) are the spec's, §4.3."""
 
 import re
 import unicodedata
+from bisect import bisect_right
 from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 
@@ -17,6 +18,9 @@ MAX_SESSIONS = 10
 MAX_PERIODS = 5
 MAX_DEADLINES = 5
 MAX_HEADING_WORDS = 8  # a heading line longer than this is a sentence of its own
+# A longer "sentence" (a table on one line; real ones stay under 400 letters) is read in pieces this long, so that one
+# email can't hold up a sync.
+MAX_SENTENCE = 1000
 # The edges of a day, not times an email sets: they never start a session, and a Period from one to the other is all
 # day ("từ 00g00 ngày 21/9 đến 23g59 ngày 27/9" opens and closes a contest round).
 DAY_EDGES = (time(0, 0), time(23, 59))
@@ -128,10 +132,22 @@ def clean(subject, text):
     return "\n".join(kept)
 
 
+def _pieces(sentence):
+    """`sentence` in pieces of at most MAX_SENTENCE letters, each cut after a comma or semicolon, else at a space."""
+    pieces = []
+    while len(sentence) > MAX_SENTENCE:
+        head = sentence[:MAX_SENTENCE]
+        cut = max(head.rfind(","), head.rfind(";")) + 1 or head.rfind(" ") + 1 or MAX_SENTENCE
+        pieces.append(sentence[:cut])
+        sentence = sentence[cut:]
+    return pieces + [sentence]
+
+
 def _sentences(text):
     """The sentences of `text`, split as in Events §3.2. A heading line about registration or a deadline, with no
     number or link in it ("THỜI GIAN ĐĂNG KÝ", then "Từ ngày 20/09 đến 22/09/2026."), is read together with the line
-    after it, and so is a "Từ:" line with a "Đến:" line after it."""
+    after it, and so is a "Từ:" line with a "Đến:" line after it. A sentence longer than MAX_SENTENCE is read in
+    pieces."""
     found = [s for s in SENTENCE_END.split(text) if s.strip()]
     merged, i = [], 0
     while i < len(found):
@@ -148,7 +164,7 @@ def _sentences(text):
         else:
             merged.append(line)
             i += 1
-    return merged
+    return [piece for sentence in merged for piece in _pieces(sentence)]
 
 
 # ---- step 1: one sentence's phrases, and what is used (§4.2) ---------------------------------------------------------
@@ -657,11 +673,15 @@ def _kept_sessions(sentences, sessions, arrived, modes):
 
 
 def _flag(text, role, unless=None):
-    """Whether `text` (NFC) has a word of `role` that is not inside a word of `unless`."""
-    spans = role.spans(text)
-    if unless is not None:
-        spans = [s for s in spans if not any(a <= s[0] and s[1] <= b for a, b in unless.spans(text))]
-    return bool(spans)
+    """Whether `text` (NFC) has a word of `role` that is not inside a word of `unless` (whose spans are in order and
+    never overlap, so the one that could hold a word is found by bisection)."""
+    inside = unless.spans(text) if unless is not None else []
+    starts = [start for start, _ in inside]
+    for start, end in role.spans(text):
+        k = bisect_right(starts, start) - 1
+        if k < 0 or inside[k][1] < end:
+            return True
+    return False
 
 
 # ---- the reader ------------------------------------------------------------------------------------------------------

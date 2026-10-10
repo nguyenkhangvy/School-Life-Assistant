@@ -46,6 +46,9 @@ def _pattern(words):
     return "|".join(r"\s+".join(re.escape(part) for part in word.split()) for word in folded)
 
 
+UNLESS_SPACES = 20  # the most spaces an `unless_after` word may stand from the word it cancels
+
+
 class Words:
     """Words to look for, as whole words, in any letter case. Written without accents they always count; written with
     accents, only with their own, wherever the tone mark sits ("học bóng" is not "học bổng", "hoá" is "hóa").
@@ -59,13 +62,17 @@ class Words:
         if isinstance(unless_after, str):
             unless_after = (unless_after,)
         self.unless_after = unless_after and re.compile(r"\b(?:" + _pattern(unless_after) + r")\s+$")
+        # How far back an `unless_after` word can start: its length and some spaces. Looking no further keeps a line
+        # with thousands of matches fast.
+        self.reach = max((len(fold(word)) for word in unless_after), default=0) + UNLESS_SPACES
 
     def spans(self, text):
         """(start, end) of every match in `text`, which must be NFC, in order."""
         folded, places = _folded(text)
         found = []
         for match in self.pattern.finditer(folded):
-            if self.unless_after and self.unless_after.search(folded, 0, match.start()):
+            if self.unless_after and self.unless_after.search(folded, max(0, match.start() - self.reach),
+                                                              match.start()):
                 continue
             start, end = places[match.start()], places[match.end() - 1] + 1
             written = tuple(_accents(word) for word in text[start:end].split())

@@ -3,6 +3,7 @@
 
 import unicodedata
 from datetime import date, time
+from time import perf_counter
 
 import pytest
 
@@ -471,3 +472,31 @@ def test_a_time_zone_that_moves_the_end_past_midnight_ends_the_next_day():
 def test_invisible_spaces_keep_a_range_whole(space):
     [session] = read_times("", f"Thời gian: 13:00{space}-{space}16:30 ngày 15/10/2026", ARRIVED).sessions
     assert (session.start, session.end) == (time(13, 0), time(16, 30))
+
+
+# ---- speed: every email is read at each sync -------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("text", [
+    "Họp lúc 14h00" + " " * 20000 + "x",  # a time zone is looked for after the time
+    "14h00" + " " * 20000 + "16h00 ngày 15/10/2026.",  # two times far apart are not a range
+    "15/10/2026" + " " * 20000 + "16/10/2026",  # nor two dates
+    "Các" + " " * 1500 + "x thứ Bảy lúc 9h ngày 17/10/2026.",  # nor a filter word far from its weekday
+    "đăng ký " * 10000,  # "đã" is looked for only right before each word
+    "họp " * 10000,
+    ", ".join(f"ngày {d % 28 + 1:02d}/{d % 12 + 1:02d}/2026 lúc 14h00" for d in range(2000)),  # a table on one line
+    "Workshop 13:00 - 16:00 ngày 15/10/2026; " * 1500,
+], ids=["spaces-after-a-time", "times-far-apart", "dates-far-apart", "filter-far-from-a-weekday",
+        "registration-words", "meeting-words", "dates-and-times-on-one-line", "events-on-one-line"])
+def test_long_odd_lines_are_read_quickly(text):
+    started = perf_counter()
+
+    read_times("Thông báo", text, date(2026, 10, 7))
+
+    assert perf_counter() - started < 2
+
+
+def test_a_very_long_line_is_read_in_pieces():
+    found = read_times("", "Workshop 13:00 - 16:00 ngày 15/10/2026; " * 1500, date(2026, 10, 7))
+
+    assert [(s.day, s.start, s.end) for s in found.sessions] == [(date(2026, 10, 15), time(13, 0), time(16, 0))]
