@@ -49,8 +49,8 @@ public class SecurityConfig {
     /** The Content-Security-Policy (security hardening spec, 5). */
     static final String CONTENT_SECURITY_POLICY = "default-src 'self'; "
             + "script-src 'self' https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/; "
-            + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; "
-            + "base-uri 'self'; frame-ancestors 'none'; form-action 'self' http://127.0.0.1:*";
+            + "style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; "
+            + "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' http://127.0.0.1:*";
     static final String PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
 
     @Bean
@@ -85,7 +85,8 @@ public class SecurityConfig {
      * What both filter chains add (security hardening spec, 5): Content-Security-Policy, Referrer-Policy and
      * Permissions-Policy, on top of Spring Security's HSTS, nosniff, X-Frame-Options and no-store. Scripts come only
      * from the site and FullCalendar's folder on jsDelivr; form-action allows the redirect to the laptop app on this
-     * computer that ends the Connect page; FullCalendar adds its own <style>, hence 'unsafe-inline' for styles only.
+     * computer that ends the Connect page; FullCalendar adds its own <style>, hence 'unsafe-inline' for styles only, and
+     * draws its arrows with a data: font.
      */
     public static void securityHeaders(HttpSecurity http) throws Exception {
         http.headers(headers -> headers

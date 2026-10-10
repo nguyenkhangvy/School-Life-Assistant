@@ -29,8 +29,8 @@ import org.springframework.test.web.servlet.ResultActions;
 class SecurityHeadersTest {
 
     static final String CSP = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/; "
-            + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; "
-            + "base-uri 'self'; frame-ancestors 'none'; form-action 'self' http://127.0.0.1:*";
+            + "style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; "
+            + "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' http://127.0.0.1:*";
 
     static final Map<String, String> HEADERS = Map.of(
             "Content-Security-Policy", CSP,
