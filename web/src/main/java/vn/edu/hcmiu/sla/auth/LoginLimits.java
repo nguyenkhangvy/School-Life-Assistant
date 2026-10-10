@@ -1,6 +1,11 @@
 package vn.edu.hcmiu.sla.auth;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.Normalizer;
 import java.time.Duration;
+import java.util.HexFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +57,27 @@ public class LoginLimits {
         attempts.clear(pairKey(email, ip));
     }
 
+    /**
+     * The email as the database compares it, then its SHA-256: MySQL's collation (utf8mb4_0900_ai_ci) finds one account
+     * for "an@", "AN@" and "án@", so they are one pair here too, and an email of any size keeps a short key in memory.
+     */
     private static String pairKey(String email, String ip) {
-        return "login-pair:" + AppUserDetailsService.normalizeEmail(email) + "|" + ip;
+        return "login-pair:" + sha256(sameAccount(email)) + "|" + ip;
+    }
+
+    /** Lower case, no spaces around it, no accents, and đ as d. */
+    private static String sameAccount(String email) {
+        String plain = Normalizer.normalize(AppUserDetailsService.normalizeEmail(email), Normalizer.Form.NFD);
+        return plain.replaceAll("\\p{M}", "").replace('đ', 'd');
+    }
+
+    private static String sha256(String text) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException error) {
+            throw new IllegalStateException(error);
+        }
     }
 
     private static String ipKey(String ip) {

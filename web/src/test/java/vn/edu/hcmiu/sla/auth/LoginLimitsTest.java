@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +51,34 @@ class LoginLimitsTest {
         failed("an@example.com", 5);
 
         assertThat(limits.waitFor(" AN@Example.com ", IP)).isEqualTo(Duration.ofMinutes(15));
+    }
+
+    @Test
+    void accentsInTheEmailAreTheSameAccount() { // final review: MySQL's collation finds "an@" for "án@"
+        failed("án@example.com", 2);
+        failed("ạn@example.com", 2);
+        failed("Ân@example.com", 1);
+        limits.failed("đức@example.com", IP);
+
+        assertThat(limits.waitFor("an@example.com", IP)).isEqualTo(Duration.ofMinutes(15));
+        assertThat(limits.waitFor("duc@example.com", IP)).isZero();
+        assertThat(limits.waitFor("đức@example.com", IP)).isZero(); // one try, not five
+    }
+
+    @Test
+    void aHugeEmailKeepsOnlyAShortKey() { // final review: keys stay in memory for an hour
+        List<String> keys = new ArrayList<>();
+        LoginLimits counting = new LoginLimits(new Attempts(clock) {
+            @Override
+            public void add(String key) {
+                keys.add(key);
+                super.add(key);
+            }
+        });
+
+        counting.failed("a".repeat(1_000_000) + "@example.com", IP);
+
+        assertThat(keys).hasSize(2).allSatisfy(key -> assertThat(key).hasSizeLessThan(100));
     }
 
     @Test
