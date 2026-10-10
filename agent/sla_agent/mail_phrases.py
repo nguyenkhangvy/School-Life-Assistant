@@ -31,9 +31,6 @@ VIETNAM = timedelta(hours=7)
 JOIN = re.compile(r"\s*,?\s*(?:den|toi|-|–|—|to|until|till)\s+(?:het\s+)?(?:ngay\s+)?$|\s*[-–—]\s*$")
 FILLER = re.compile(r"\s*[,(]?\s*(?:(?:ngay|vao|luc|vao luc|on|at|cung ngay)\s*)*[,)]?\s*$")
 FROM_NOW = re.compile(r"\btu\s+nay\s+(?:den|toi)\s+(?:het\s+)?(?:ngay\s+)?$")
-# On folded text, right after a time: the time of day ("2h chiều" is 14:00).
-TIME_OF_DAY_AFTER = re.compile(r"\s*(sang|chieu|toi|trua)\b")
-TIME_OF_DAY = re.compile(r"\b(sang|chieu|toi|trua)\b")
 FILLER_MOST = 40  # FILLER never spans more letters: a longer gap is never folded (a line full of dates)
 EARLIEST_BARE_HOUR = 6  # a bare hour under this, without minutes or AM/PM, is a length: "(2h)"
 # A length: a lead word, then hours and/or minutes, on folded text. After a weak lead ("khoảng", "about") only units
@@ -152,28 +149,27 @@ def lengths_in(sentence):
     return found
 
 
-def _ampm(sentence, match, folded):
-    """"a" / "p" for this time: its own AM/PM or SA/CH; else a time-of-day word right after it ("2h chiều"), else the
-    nearest one before it in its part, else the only kind the sentence has; else None. "Trưa" is noon: only
-    1h–3h trưa are afternoon."""
+def _ampm(sentence, match, times_of_day):
+    """"a" / "p" for this time: its own AM/PM or SA/CH; else a time-of-day word (the sentence's are `times_of_day`,
+    from words.TIME_OF_DAY) right after it ("2h chiều"), else the nearest one before it in its part, else the only
+    kind the sentence has; else None. "Trưa" is noon: only 1h–3h trưa are afternoon."""
     if match.group("ampm"):
         return match.group("ampm").lower()
     if match.group("vn"):
         return "a" if match.group("vn") == "SA" else "p"
     hour = int(match.group("hour"))
-    word = TIME_OF_DAY_AFTER.match(folded, match.end())
-    if not word:
-        part_start = max(folded.rfind(",", 0, match.start()), folded.rfind(";", 0, match.start())) + 1
-        before = list(TIME_OF_DAY.finditer(folded, part_start, match.start()))
+    word = next((w for w in times_of_day if w[0] >= match.end() and not sentence[match.end():w[0]].strip()), None)
+    if word is None:
+        part_start = max(sentence.rfind(",", 0, match.start()), sentence.rfind(";", 0, match.start())) + 1
+        before = [w for w in times_of_day if part_start <= w[0] and w[1] <= match.start()]
         word = before[-1] if before else None
-    if not word:
-        kinds = {w.group(1) for w in TIME_OF_DAY.finditer(folded)}
-        word = TIME_OF_DAY.search(folded) if len(kinds) == 1 else None
-    if not word:
+    if word is None and len({code for _, _, code in times_of_day}) == 1:
+        word = times_of_day[0]
+    if word is None:
         return None
-    if word.group(1) == "trua":
+    if word[2] == "noon":
         return "p" if hour <= 3 else None
-    return "a" if word.group(1) == "sang" else "p"
+    return word[2]
 
 
 def _clock_value(match, ampm):
@@ -201,15 +197,15 @@ def clocks_in(sentence, taken):
     """[Clock] in `sentence` outside the spans in `taken` (its dates and lengths), in order. Two times joined by
     "-", "đến", "to" … make one range; a range's end that isn't after its start is dropped. A bare small hour
     ("(2h)") is a length, not a time; a dotted number after a score word ("điểm trung bình từ 7.50") is a score."""
-    folded = words.fold_in_place(sentence)
     scores = words.SCORE.spans(sentence)
+    times_of_day = words.TIME_OF_DAY.spans(sentence)
     singles = []
     for match in TIME.finditer(sentence):
         if any(match.start() < end and start < match.end() for start, end in taken):
             continue
         if "." in match.group(0) and any(end <= match.start() for _, end in scores):
             continue
-        ampm = _ampm(sentence, match, folded)
+        ampm = _ampm(sentence, match, times_of_day)
         if (match.group("minute") is None and match.group("gminute") is None and ampm is None
                 and "gi" not in match.group(0).lower() and int(match.group("hour")) < EARLIEST_BARE_HOUR):
             continue

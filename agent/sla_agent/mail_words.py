@@ -153,6 +153,12 @@ NOT_A_MEETING = Words(("gặp gỡ", "hẹn gặp lại"))  # meeting people at 
 REGISTERED = Words(("bạn đã đăng ký", "em đã đăng ký", "bạn đã xác nhận", "em đã xác nhận", "cảm ơn bạn đã đăng ký",
                     "cảm ơn em đã đăng ký", "you have registered", "you are registered"))
 
+# ---- times of day (§4.2) ---------------------------------------------------------------------------------------------
+
+# Morning ("a") or afternoon ("p") for a time: "2h chiều" is 14:00. Matched with their accents, so "tôi" (I) and
+# "tới" (to, next) are not "tối". "Trưa" is noon: only 1h–3h trưa are afternoon.
+TIME_OF_DAY = Labels({"sáng": "a", "chiều": "p", "tối": "p", "trưa": "noon"})
+
 # ---- labels and relative days (§3.2) ---------------------------------------------------------------------------------
 
 LABELS = Labels({**{f"vòng {n}": f"round_{n}" for n in range(1, 6)}, **{f"ca {n}": f"shift_{n}" for n in range(1, 6)},

@@ -68,6 +68,17 @@ def test_morning_and_afternoon_words(sentence, expected):
     assert clocks(sentence) == expected
 
 
+@pytest.mark.parametrize("sentence, expected", [
+    ("Chúng tôi trân trọng kính mời bạn tham dự hội thảo lúc 8h30", [("08:30", None)]),  # "tôi" is "I"
+    ("Phòng CTSV thông báo tới các bạn về buổi workshop lúc 9h", [("09:00", None)]),  # "tới" is "to"
+    ("Buổi họp lớp sắp tới vào 8h30", [("08:30", None)]),  # "sắp tới": coming
+    ("Họp lớp vào thứ Hai tuần tới lúc 9h", [("09:00", None)]),  # "tuần tới": next week
+    ("Hop luc 7h toi", [("19:00", None)]),  # written without accents, "toi" may still be "tối"
+])
+def test_words_that_only_look_like_a_time_of_day(sentence, expected):
+    assert clocks(sentence) == expected
+
+
 @pytest.mark.parametrize("written", ["13:00 - 16:30", "13h00 – 16h30", "từ 13h đến 16h30", "1:00 – 4:30 PM",
                                      "13:00 until 16:30", "13:00\u00a0-\u00a016:30"])
 def test_a_start_and_an_end(written):
