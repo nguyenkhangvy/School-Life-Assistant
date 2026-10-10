@@ -16,8 +16,6 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL:?Put the database's address in deploy/server/.env}
-      # Caddy handles https; this lets the site's redirects use https too.
-      SERVER_FORWARD_HEADERS_STRATEGY: framework
       # The first Admin: this account becomes one while the site has no active Admin (README, "Accounts and roles").
       SITE_ADMIN_EMAIL: ${SITE_ADMIN_EMAIL:-}
     # web/Dockerfile gives Java 60% of the memory it sees: 600 MB here, not 60% of the whole VM.
