@@ -1,12 +1,12 @@
 # The website online, as Render builds it (render.yaml; README, "Putting the site online").
 # The database comes from the DATABASE_URL setting, the same one .env holds on a laptop.
 
-FROM eclipse-temurin:17-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /src
 COPY . .
 RUN sh mvnw -B -q -DskipTests package && cp target/sla-web-*.jar app.jar
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:25-jre
 RUN useradd --system --no-create-home sla
 WORKDIR /app
 COPY --from=build /src/app.jar app.jar
