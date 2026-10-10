@@ -85,6 +85,10 @@ def test_a_start_and_an_end(written):
     assert clocks(f"Thời gian: {written}") == [("13:00", "16:30")]
 
 
+def test_a_range_written_with_colons():
+    assert clocks("Thời gian: Từ: 13h00 Đến: 16h30") == [("13:00", "16:30")]
+
+
 def test_a_range_ending_in_the_afternoon_starts_in_it_too():
     assert clocks("Từ 1h - 3h chiều") == [("13:00", "15:00")]
 

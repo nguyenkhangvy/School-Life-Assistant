@@ -33,6 +33,9 @@ QUOTE_FROM = re.compile(r"\s*(?:from|tu)\s*:(?!\s*\d)")  # "Từ: 14h00" is a ti
 QUOTE_HEADER = re.compile(r"\s*(?:sent|date|to|da gui|gui|ngay|den)\s*:")
 ORIGINAL = re.compile(r"\s*-{2,}\s*original message\s*-{2,}")
 WROTE = re.compile(r"\s*(?:on|vao)\b.*\b(?:wrote|da viet)\s*:\s*$")
+# A "Từ:" line with a "Đến:" line right after it is one range: "Từ: 14h00" then "Đến: 16h00".
+FROM_LINE = re.compile(r"\s*(?:tu|from)\s*:")
+TO_LINE = re.compile(r"\s*(?:den|to)\s*:")
 # Step 2 (§4.3), on folded text.
 DUE_TO = re.compile(r"\s+to\b")  # "due to the rain" is not a deadline
 LINK_BEFORE = re.compile(r"\btruoc\s+(?:do\s+)?(\d{1,3})\s*phut\b")  # "gửi trước 30 phút": 30 minutes before
@@ -128,7 +131,7 @@ def clean(subject, text):
 def _sentences(text):
     """The sentences of `text`, split as in Events §3.2. A heading line about registration or a deadline, with no
     number or link in it ("THỜI GIAN ĐĂNG KÝ", then "Từ ngày 20/09 đến 22/09/2026."), is read together with the line
-    after it."""
+    after it, and so is a "Từ:" line with a "Đến:" line after it."""
     found = [s for s in SENTENCE_END.split(text) if s.strip()]
     merged, i = [], 0
     while i < len(found):
@@ -138,6 +141,9 @@ def _sentences(text):
                    and (words.REGISTRATION.spans(line) or words.CLOSING_STRONG.spans(line)))
         if heading:
             merged.append(line.strip().rstrip(":") + ": " + found[i + 1].strip())
+            i += 2
+        elif i + 1 < len(found) and FROM_LINE.match(fold(line)) and TO_LINE.match(fold(found[i + 1])):
+            merged.append(line.strip() + " " + found[i + 1].strip())
             i += 2
         else:
             merged.append(line)

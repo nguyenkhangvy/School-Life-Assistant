@@ -74,6 +74,12 @@ def test_other_lines_stay_on_their_own(text):
     assert len(_sentences(text)) == 2
 
 
+def test_a_from_line_and_a_to_line_are_one_range():
+    found = read_times("", "Lịch họp nhóm:\nTừ: 14h00\nĐến: 16h00\nNgày: 15/10/2026", date(2026, 10, 7))
+
+    assert [(s.day, s.start, s.end) for s in found.sessions] == [(date(2026, 10, 15), time(14, 0), time(16, 0))]
+
+
 @pytest.mark.parametrize("text, session", [
     ("Link đăng ký: https://forms.gle/AbCdEf123\nThời gian: 14h00 - 16h30 ngày 20/10/2026\nĐịa điểm: Hội trường A2",
      (date(2026, 10, 20), time(14, 0), time(16, 30))),

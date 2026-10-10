@@ -28,7 +28,7 @@ ZONE = re.compile(r"\s*\(?\s*(?:(?P<named>ICT|EST|EDT|PST|PDT|CET|CEST|JST|KST|S
 ZONE_HOURS = {"ICT": 7, "EST": -5, "EDT": -4, "PST": -8, "PDT": -7, "CET": 1, "CEST": 2, "JST": 9, "KST": 9, "SGT": 8}
 VIETNAM = timedelta(hours=7)
 # On folded text: what joins the two ends of a range, and what may sit between a time and its date.
-JOIN = re.compile(r"\s*,?\s*(?:den|toi|-|–|—|to|until|till)\s+(?:het\s+)?(?:ngay\s+)?$|\s*[-–—]\s*$")
+JOIN = re.compile(r"\s*,?\s*(?:den|toi|-|–|—|to|until|till)(?:\s*:)?\s+(?:het\s+)?(?:ngay\s+)?$|\s*[-–—]\s*$")
 FILLER = re.compile(r"\s*[,(]?\s*(?:(?:ngay|vao|luc|vao luc|on|at|cung ngay)\s*)*[,)]?\s*$")
 FROM_NOW = re.compile(r"\btu\s+nay\s+(?:den|toi)\s+(?:het\s+)?(?:ngay\s+)?$")
 FILLER_MOST = 40  # FILLER never spans more letters: a longer gap is never folded (a line full of dates)
