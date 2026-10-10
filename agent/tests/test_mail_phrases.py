@@ -136,6 +136,15 @@ def test_not_lengths(sentence):
     assert lengths(sentence) == []
 
 
+@pytest.mark.parametrize("sentence, start", [
+    ("Thời gian dự kiến: 14h00 ngày 20/10/2026", "14:00"),
+    ("Workshop bắt đầu lúc 9h00, sau đó 13h30 tiếp tục phần thảo luận", "13:30"),
+])
+def test_a_time_after_du_kien_or_sau_do_is_a_time(sentence, start):
+    assert lengths(sentence) == []
+    assert start in [begin for begin, _ in clocks(sentence)]
+
+
 def test_lengths_that_add_up_and_slot_lengths():
     presented = lengths_in("Thời gian trình bày là 15 phút, sau đó có 10 phút hỏi đáp")
     slot = lengths_in("Mỗi lượt tư vấn kéo dài khoảng 30 phút")

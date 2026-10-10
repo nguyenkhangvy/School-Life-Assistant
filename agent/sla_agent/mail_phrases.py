@@ -133,7 +133,9 @@ def lengths_in(sentence):
     folded = words.fold_in_place(sentence)
     found = []
     for match in LENGTH.finditer(folded):
-        if match.group("weak") and match.group("unit") in ("gio", "h"):
+        # "Dự kiến" and "sau đó" also come before a time ("Thời gian dự kiến: 14h00"): like a weak lead.
+        weak = match.group("weak") or match.group("lead") in ("du kien", "sau do")
+        if weak and match.group("unit") in ("gio", "h"):
             continue
         if match.group("lead") == "trong" and match.group("minutes"):
             continue
