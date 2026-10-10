@@ -117,6 +117,8 @@ ARRIVAL = Words(("check-in", "check in", "checkin", "điểm danh", "có mặt",
 DOORS = Words(("mở cửa",))  # with one time an arrival; with a time range open hours (any time)
 LINK = Words(("link", "đường link", "đường dẫn"))
 START = Words(("bắt đầu", "diễn ra", "tổ chức", "khởi hành", "starts", "begins"))
+# An event's own time: "đăng ký tham gia workshop lúc 8h00 - 11h30" says when the workshop is, not a registration window.
+AT = Words(("lúc", "vào lúc"))
 END = Words(("kết thúc", "ends", "finishes"))
 ANY_TIME = Words(("bất kỳ lúc nào", "bất kỳ thời điểm nào", "bất cứ lúc nào", "bất cứ thời điểm nào", "tùy nhu cầu",
                   "trong thời gian trên", "trong khung giờ trên", "trong khung giờ mở cửa", "không bắt buộc phải ở lại",

@@ -158,6 +158,17 @@ def test_opening_words(text, expected):
     assert deadlines(text) == expected
 
 
+@pytest.mark.parametrize("text", [
+    "Mời các bạn đăng ký tham gia workshop lúc 8h00 - 11h30 ngày 24/10/2026 tại phòng A2.301.",  # "lúc": the event's
+    "Đăng ký tham gia workshop diễn ra từ 8h00 đến 11h30 ngày 24/10/2026.",  # the range's own "đến" closes nothing
+])
+def test_an_events_own_time_is_not_a_registration_window(text):
+    found = read_times("", text, ARRIVED)
+
+    assert [(s.day, s.start, s.end) for s in found.sessions] == [(date(2026, 10, 24), time(8, 0), time(11, 30))]
+    assert found.deadlines == ()
+
+
 def test_the_same_deadline_is_kept_once_with_its_time():
     text = "Sinh viên đăng ký lịch phỏng vấn từ 05/11 đến 09/11. Hệ thống sẽ đóng đăng ký lúc 23:59 ngày 09/11."
 

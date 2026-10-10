@@ -297,9 +297,9 @@ def _deadlines(sentence):
             sentence.use(*items)
 
     registration = sentence.spans(words.REGISTRATION)
-    starts = sentence.spans(words.START) + sentence.spans(words.EVENT)
+    starts = sentence.spans(words.START) + sentence.spans(words.EVENT) + sentence.spans(words.AT)
     # D2: a registration word, then in its part a date range, a window, or a time range with a date, with no event
-    # word between them.
+    # word or "lúc" between them.
     for reg in registration:
         part = sentence.part(reg[0])
         for item in sentence.free(sentence.windows + sentence.ranges + [c for c in sentence.clocks if c.finish]):
@@ -323,10 +323,12 @@ def _deadlines(sentence):
             target = _target(sentence, span)
             if target is not None:
                 add("opens", span[0], *_moment(sentence, target))
-    # D1: closing words. "Due to the rain" is not a deadline.
-    strong = [s for s in sentence.spans(words.CLOSING_STRONG)
-              if not (fold(sentence.text[s[0]:s[1]]) == "due" and DUE_TO.match(fold(sentence.text[s[1]:])))]
-    soft = [s for s in sentence.spans(words.CLOSING_SOFT) if not _within(s, strong)]
+    # D1: closing words. "Due to the rain" is not a deadline, and a range's own "đến" ("từ 8h00 đến 11h30") closes
+    # nothing.
+    ranges = [(x.start, x.end) for x in sentence.ranges + sentence.windows + [c for c in sentence.clocks if c.finish]]
+    strong = [s for s in sentence.spans(words.CLOSING_STRONG) if not _within(s, ranges)
+              and not (fold(sentence.text[s[0]:s[1]]) == "due" and DUE_TO.match(fold(sentence.text[s[1]:])))]
+    soft = [s for s in sentence.spans(words.CLOSING_SOFT) if not _within(s, strong) and not _within(s, ranges)]
     only_in_registration = sentence.spans(words.ONLY_IN_REGISTRATION)
     right_after = sentence.spans(words.RIGHT_BEFORE)
     for span in sorted(set(strong + soft)):
